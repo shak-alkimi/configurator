@@ -157,7 +157,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                     </div>
                     <div>
                       <div className="text-xs text-slate-500">Cost</div>
-                      <div className="text-sm font-semibold">${calculateRunCost(run).toFixed(2)}</div>
+                      <div className="text-sm">${calculateRunCost(run).toFixed(2)}</div>
                     </div>
                   </div>
                 </div>
