@@ -114,7 +114,7 @@ export default function MaterialsCalculator({ runs }) {
   }
 
   const formatType = (type) => {
-    return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()).replace(/k\b/gi, 'K');
   };
 
   return (
