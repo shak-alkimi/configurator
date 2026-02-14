@@ -27,7 +27,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
         run_name: '',
         length_feet: '',
         length_inches: '',
-        tape_type: 'standard_warm',
+        tape_type: '3000k',
         channel_type: 'surface_mount',
         notes: ''
       });
