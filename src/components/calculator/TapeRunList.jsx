@@ -131,7 +131,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
               </Select>
             </div>
             <div className="col-span-3 space-y-1.5">
-              <Label className="text-xs">Channel Type</Label>
+              <Label className="text-xs">Housing</Label>
               <Select
                 value={newRun.channel_type}
                 onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })}
@@ -176,7 +176,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                       <div className="text-sm">{formatTapeType(run.tape_type)}</div>
                     </div>
                     <div>
-                      <div className="text-xs text-slate-500">Channel</div>
+                      <div className="text-xs text-slate-500">Housing</div>
                       <div className="text-sm">{formatChannelType(run.channel_type)}</div>
                     </div>
                     <div>
