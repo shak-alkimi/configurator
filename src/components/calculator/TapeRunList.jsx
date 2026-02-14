@@ -85,14 +85,28 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 className="h-9"
               />
             </div>
-            <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs">Length (ft) *</Label>
+            <div className="col-span-1 space-y-1.5">
+              <Label className="text-xs">Feet</Label>
               <Input
                 type="number"
-                step="0.1"
+                step="1"
+                min="0"
                 value={newRun.length_feet}
                 onChange={(e) => setNewRun({ ...newRun, length_feet: e.target.value })}
                 placeholder="10"
+                className="h-9"
+              />
+            </div>
+            <div className="col-span-1 space-y-1.5">
+              <Label className="text-xs">Inches</Label>
+              <Input
+                type="number"
+                step="2"
+                min="0"
+                max="11"
+                value={newRun.length_inches}
+                onChange={(e) => setNewRun({ ...newRun, length_inches: e.target.value })}
+                placeholder="0"
                 className="h-9"
               />
             </div>
