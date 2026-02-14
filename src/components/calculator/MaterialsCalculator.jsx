@@ -19,9 +19,7 @@ const CHANNEL_SPECS = {
 
 const DRIVER_SPECS = [
   { max_watts: 60, price: 45, name: "60W Driver" },
-  { max_watts: 96, price: 65, name: "96W Driver" },
-  { max_watts: 150, price: 85, name: "150W Driver" },
-  { max_watts: 320, price: 125, name: "320W Driver" }
+  { max_watts: 96, price: 65, name: "96W Driver" }
 ];
 
 export default function MaterialsCalculator({ runs }) {
