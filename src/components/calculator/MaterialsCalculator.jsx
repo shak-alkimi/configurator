@@ -7,7 +7,13 @@ const TAPE_SPECS = {
   '3000k': { watts_per_foot: 4.4, price_per_foot: 12 },
   '3500k': { watts_per_foot: 4.4, price_per_foot: 12 },
   'warm_dim': { watts_per_foot: 7.2, price_per_foot: 18 },
-  'tunable_white': { watts_per_foot: 9.6, price_per_foot: 24 }
+  'tunable_white': { watts_per_foot: 9.6, price_per_foot: 24 },
+  // Legacy values
+  'standard_white': { watts_per_foot: 4.4, price_per_foot: 12 },
+  'standard_warm': { watts_per_foot: 4.4, price_per_foot: 12 },
+  'rgb': { watts_per_foot: 7.2, price_per_foot: 18 },
+  'rgbw': { watts_per_foot: 9.6, price_per_foot: 24 },
+  'high_output': { watts_per_foot: 7.2, price_per_foot: 18 }
 };
 
 const CHANNEL_SPECS = {
@@ -33,7 +39,7 @@ export default function MaterialsCalculator({ runs }) {
       if (!tapeByType[type]) {
         tapeByType[type] = { feet: 0, watts: 0, cost: 0 };
       }
-      const specs = TAPE_SPECS[type];
+      const specs = TAPE_SPECS[type] || { watts_per_foot: 4.4, price_per_foot: 12 };
       tapeByType[type].feet += run.length_feet;
       tapeByType[type].watts += run.length_feet * specs.watts_per_foot;
       tapeByType[type].cost += run.length_feet * specs.price_per_foot;

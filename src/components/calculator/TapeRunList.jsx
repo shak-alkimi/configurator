@@ -50,7 +50,13 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
       '3000k': { price_per_foot: 12 },
       '3500k': { price_per_foot: 12 },
       'warm_dim': { price_per_foot: 18 },
-      'tunable_white': { price_per_foot: 24 }
+      'tunable_white': { price_per_foot: 24 },
+      // Legacy values
+      'standard_white': { price_per_foot: 12 },
+      'standard_warm': { price_per_foot: 12 },
+      'rgb': { price_per_foot: 18 },
+      'rgbw': { price_per_foot: 24 },
+      'high_output': { price_per_foot: 18 }
     };
 
     const CHANNEL_SPECS = {
@@ -60,8 +66,8 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
       none: { price_per_foot: 0 }
     };
 
-    const tapeCost = run.length_feet * TAPE_SPECS[run.tape_type].price_per_foot;
-    const channelCost = run.length_feet * CHANNEL_SPECS[run.channel_type].price_per_foot;
+    const tapeCost = run.length_feet * (TAPE_SPECS[run.tape_type]?.price_per_foot || 12);
+    const channelCost = run.length_feet * (CHANNEL_SPECS[run.channel_type]?.price_per_foot || 0);
     return tapeCost + channelCost;
   };
 
