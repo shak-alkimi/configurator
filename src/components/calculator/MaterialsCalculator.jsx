@@ -154,12 +154,10 @@ export default function MaterialsCalculator({ runs }) {
                 <span>Total Power Required:</span>
                 <span>{calculations.totalWatts.toFixed(1)}W</span>
               </div>
-              {calculations.requiredDrivers.map((driver, idx) => (
-                <div key={idx} className="flex justify-between text-sm">
-                  <span className="text-slate-600">{driver.name}</span>
-                  <span className="font-medium">1 unit</span>
-                </div>
-              ))}
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600">Power Drivers</span>
+                <span className="font-medium">{calculations.requiredDrivers.length} units</span>
+              </div>
             </div>
           </div>
 
