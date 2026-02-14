@@ -198,7 +198,7 @@ export default function Calculator() {
       <div className="w-80 border-r bg-white">
         <div className="h-full flex flex-col">
           <div className="p-4 border-b">
-            <h1 className="text-xl font-bold text-slate-900">Tape Light Calculator</h1>
+            <h1 className="text-xl font-bold text-slate-900">ALKILINE</h1>
             <p className="text-xs text-slate-500 mt-1">Project Quotes & Estimates</p>
           </div>
           <ProjectsList
