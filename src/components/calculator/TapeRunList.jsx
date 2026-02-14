@@ -54,8 +54,8 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
   };
 
   const formatOutput = (type) => {
-    if (type === '2w') return '2W, 200lm/ft';
-    if (type === '4w') return '4W, 400lm/ft';
+    if (type === '2w') return '2W/ft, 200lm/ft';
+    if (type === '4w') return '4W/ft, 400lm/ft';
     return type;
   };
 
