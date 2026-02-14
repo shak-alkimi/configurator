@@ -95,6 +95,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 onChange={(e) => setNewRun({ ...newRun, length_feet: e.target.value })}
                 placeholder="10"
                 className="h-9"
+                style={{ width: '5.5ch' }}
               />
             </div>
             <div className="col-span-1 space-y-1.5">
@@ -108,6 +109,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 onChange={(e) => setNewRun({ ...newRun, length_inches: e.target.value })}
                 placeholder="0"
                 className="h-9"
+                style={{ width: '3ch' }}
               />
             </div>
             <div className="col-span-3 space-y-1.5">
