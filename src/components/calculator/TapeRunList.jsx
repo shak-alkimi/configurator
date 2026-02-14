@@ -125,8 +125,8 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                   <SelectItem value="2700k">2700K</SelectItem>
                   <SelectItem value="3000k">3000K</SelectItem>
                   <SelectItem value="3500k">3500K</SelectItem>
-                  <SelectItem value="warm_dim">Warm Dim (2200K - 3000K)</SelectItem>
-                  <SelectItem value="tunable_white">Tunable White (2200K - 3500K)</SelectItem>
+                  <SelectItem value="warm_dim">Warm Dim (2200K-3000K)</SelectItem>
+                  <SelectItem value="tunable_white">Tunable White (2200K-3500K)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
