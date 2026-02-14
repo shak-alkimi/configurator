@@ -197,14 +197,14 @@ export default function Calculator() {
       {/* Sidebar - Projects List */}
       <div className="w-80 border-r bg-white">
         <div className="h-full flex flex-col">
-          <div className="p-4 border-b">
+          <div className="pt-4 pr-4 pb-4 border-b">
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
               alt="ALKIMI Logo"
-              className="h-12 mb-3"
+              className="h-12 mb-3 w-full object-cover object-left"
               style={{ filter: 'invert(1)' }}
             />
-            <p className="text-xs text-slate-500">Project Quotes & Estimates</p>
+            <p className="text-xs text-slate-500 pl-4">Project Quotes & Estimates</p>
           </div>
           <ProjectsList
             projects={projects}
