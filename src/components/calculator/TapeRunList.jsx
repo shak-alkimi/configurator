@@ -142,7 +142,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 flex-1">
                   <Ruler className="h-4 w-4 text-slate-400" />
-                  <div className="flex-1 grid grid-cols-4 gap-4">
+                  <div className="flex-1 grid grid-cols-5 gap-4">
                     <div>
                       <div className="text-sm font-medium">{run.run_name || 'Unnamed Run'}</div>
                       <div className="text-xs text-slate-500">{run.length_feet} ft</div>
@@ -154,6 +154,10 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                     <div>
                       <div className="text-xs text-slate-500">Channel</div>
                       <div className="text-sm">{formatChannelType(run.channel_type)}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-500">Cost</div>
+                      <div className="text-sm font-semibold">${calculateRunCost(run).toFixed(2)}</div>
                     </div>
                   </div>
                 </div>
