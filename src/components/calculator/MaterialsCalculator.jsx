@@ -182,8 +182,13 @@ export default function MaterialsCalculator({ runs }) {
 
       {/* Pricing Summary */}
       <Card className="border-black" style={{ backgroundColor: '#000000' }}>
-        <CardHeader>
+        <CardHeader className="relative">
           <CardTitle className="text-lg text-white">Quote Summary</CardTitle>
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/553bf5e5d_Screenshot2026-02-14155939.png" 
+            alt="Logo" 
+            className="absolute top-4 right-6 h-8"
+          />
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex justify-between text-sm">
