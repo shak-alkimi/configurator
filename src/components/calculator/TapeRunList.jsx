@@ -17,11 +17,16 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
   });
 
   const handleAdd = () => {
-    if (newRun.length_feet) {
-      onAdd({ ...newRun, length_feet: parseFloat(newRun.length_feet) });
+    const feet = parseFloat(newRun.length_feet) || 0;
+    const inches = parseFloat(newRun.length_inches) || 0;
+    const totalFeet = feet + (inches / 12);
+    
+    if (totalFeet > 0) {
+      onAdd({ ...newRun, length_feet: totalFeet });
       setNewRun({
         run_name: '',
         length_feet: '',
+        length_inches: '',
         tape_type: 'standard_warm',
         channel_type: 'surface_mount',
         notes: ''
