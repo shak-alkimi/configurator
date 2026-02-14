@@ -29,6 +29,10 @@ const DRIVER_SPECS = [
 ];
 
 export default function MaterialsCalculator({ runs }) {
+  const formatUSD = (amount) => {
+    return amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
   const calculations = React.useMemo(() => {
     // Calculate tape totals by type
     const tapeByType = {};
@@ -199,26 +203,26 @@ export default function MaterialsCalculator({ runs }) {
         <CardContent className="space-y-3">
           <div className="flex justify-between text-sm">
             <span className="text-slate-300">Tape Light</span>
-            <span className="font-medium text-white">${calculations.tapeCost.toFixed(2)}</span>
+            <span className="font-medium text-white">${formatUSD(calculations.tapeCost)}</span>
           </div>
           {calculations.channelCost > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-slate-300">Channels</span>
-              <span className="font-medium text-white">${calculations.channelCost.toFixed(2)}</span>
+              <span className="font-medium text-white">${formatUSD(calculations.channelCost)}</span>
             </div>
           )}
           <div className="flex justify-between text-sm">
             <span className="text-slate-300">Power Drivers</span>
-            <span className="font-medium text-white">${calculations.driverCost.toFixed(2)}</span>
+            <span className="font-medium text-white">${formatUSD(calculations.driverCost)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-slate-300">Mounting Hardware</span>
-            <span className="font-medium text-white">${calculations.clipCost.toFixed(2)}</span>
+            <span className="font-medium text-white">${formatUSD(calculations.clipCost)}</span>
           </div>
           <Separator className="bg-slate-600" />
           <div className="flex justify-between text-lg font-semibold">
             <span className="text-white">Total Project Cost</span>
-            <span className="text-white">${calculations.totalCost.toFixed(2)}</span>
+            <span className="text-white">${formatUSD(calculations.totalCost)}</span>
           </div>
         </CardContent>
       </Card>

@@ -59,6 +59,10 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
     return type;
   };
 
+  const formatUSD = (amount) => {
+    return amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
   const calculateRunCost = (run) => {
     const TAPE_SPECS = {
       '2700k': { price_per_foot: 12 },
@@ -241,7 +245,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                     </div>
                     <div>
                       <div className="text-xs text-slate-500">Cost</div>
-                      <div className="text-sm font-medium">${calculateRunCost(run).toFixed(2)}</div>
+                      <div className="text-sm font-medium">${formatUSD(calculateRunCost(run))}</div>
                     </div>
                   </div>
                 </div>
