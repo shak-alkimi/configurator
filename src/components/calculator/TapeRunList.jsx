@@ -83,7 +83,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
               <Label className="text-xs">Length (ft) *</Label>
               <Input
                 type="number"
-                step="0.1"
+                step="0.1667"
                 value={newRun.length_feet}
                 onChange={(e) => setNewRun({ ...newRun, length_feet: e.target.value })}
                 placeholder="10"
