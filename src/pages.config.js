@@ -47,8 +47,14 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import Calculator from './pages/Calculator';
 
-export const pagesConfig = {
-	Pages: {}
+
+export const PAGES = {
+    "Calculator": Calculator,
 }
 
+export const pagesConfig = {
+    mainPage: "Calculator",
+    Pages: PAGES,
+};
