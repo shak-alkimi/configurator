@@ -199,8 +199,8 @@ export default function Calculator() {
         <div className="h-full flex flex-col">
           <div className="p-4 border-b">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/9c2a55f24_Screenshot2026-02-14155939.png" 
-              alt="ALKILINE Logo"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
+              alt="ALKIMI Logo"
               className="h-12 mb-3"
               style={{ filter: 'invert(1)' }}
             />
