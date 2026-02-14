@@ -11,7 +11,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
     run_name: '',
     length_feet: '',
     length_inches: '',
-    tape_type: 'standard_warm',
+    tape_type: '3000k',
     channel_type: 'surface_mount',
     notes: ''
   });
@@ -45,11 +45,11 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
 
   const calculateRunCost = (run) => {
     const TAPE_SPECS = {
-      standard_white: { price_per_foot: 12 },
-      standard_warm: { price_per_foot: 12 },
-      rgb: { price_per_foot: 18 },
-      rgbw: { price_per_foot: 24 },
-      high_output: { price_per_foot: 28 }
+      '2700k': { price_per_foot: 12 },
+      '3000k': { price_per_foot: 12 },
+      '3500k': { price_per_foot: 12 },
+      'warm_dim': { price_per_foot: 18 },
+      'tunable_white': { price_per_foot: 24 }
     };
 
     const CHANNEL_SPECS = {
@@ -121,11 +121,11 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="standard_white">Standard White</SelectItem>
-                  <SelectItem value="standard_warm">Standard Warm</SelectItem>
-                  <SelectItem value="rgb">RGB</SelectItem>
-                  <SelectItem value="rgbw">RGBW</SelectItem>
-                  <SelectItem value="high_output">High Output</SelectItem>
+                  <SelectItem value="2700k">2700K</SelectItem>
+                  <SelectItem value="3000k">3000K</SelectItem>
+                  <SelectItem value="3500k">3500K</SelectItem>
+                  <SelectItem value="warm_dim">Warm Dim (2200K - 3000K)</SelectItem>
+                  <SelectItem value="tunable_white">Tunable White (2200K - 3500K)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
