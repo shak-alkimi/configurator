@@ -63,10 +63,11 @@ export default function MaterialsCalculator({ runs }) {
       remainingWatts -= driver.max_watts;
     }
 
-    // Calculate mounting hardware (clips)
+    // Calculate mounting hardware (clips) - 4 clips per 4' channel section
     const totalClips = runs.reduce((sum, run) => {
-      const specs = CHANNEL_SPECS[run.channel_type];
-      return sum + (run.length_feet * specs.clips_per_foot);
+      if (run.channel_type === 'none') return sum;
+      const sections = Math.ceil(run.length_feet / 4);
+      return sum + (sections * 4);
     }, 0);
     const clipSets = Math.ceil(totalClips / 50); // Assume clips come in sets of 50
     const clipCost = clipSets * 15; // $15 per set
