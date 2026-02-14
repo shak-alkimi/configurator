@@ -132,14 +132,17 @@ export default function MaterialsCalculator({ runs }) {
           {Object.keys(calculations.channelByType).length > 0 && (
             <>
               <div>
-                <h4 className="text-sm font-semibold text-slate-700 mb-2">Channels</h4>
+                <h4 className="text-sm font-semibold text-slate-700 mb-2">Channels (4' sections)</h4>
                 <div className="space-y-2">
-                  {Object.entries(calculations.channelByType).map(([type, data]) => (
-                    <div key={type} className="flex justify-between text-sm">
-                      <span className="text-slate-600">{formatType(type)}</span>
-                      <span className="font-medium">{data.feet.toFixed(1)} ft</span>
-                    </div>
-                  ))}
+                  {Object.entries(calculations.channelByType).map(([type, data]) => {
+                    const sections = Math.ceil(data.feet / 4);
+                    return (
+                      <div key={type} className="flex justify-between text-sm">
+                        <span className="text-slate-600">{formatType(type)}</span>
+                        <span className="font-medium">{sections} sections ({data.feet.toFixed(1)} ft)</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
               <Separator />
