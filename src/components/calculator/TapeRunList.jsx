@@ -13,6 +13,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
     length_inches: '',
     tape_type: '3000k',
     channel_type: 'surface_mount',
+    optic: 'frosted',
     notes: ''
   });
 
@@ -29,6 +30,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
         length_inches: '',
         tape_type: '3000k',
         channel_type: 'surface_mount',
+        optic: 'frosted',
         notes: ''
       });
     }
@@ -41,6 +43,11 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
   const formatChannelType = (type) => {
     if (type === 'surface_mount') return 'Surface';
     if (type === 'recessed') return 'Recessed Flange';
+    return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const formatOptic = (type) => {
+    if (type === '25_degree_asymmetric') return '25° Asymmetric';
     return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
@@ -84,7 +91,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
       <Card className="border-dashed">
         <CardContent className="pt-4">
           <div className="grid grid-cols-12 gap-3 items-end">
-            <div className="col-span-3 space-y-1.5">
+            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">Run Name</Label>
               <Input
                 value={newRun.run_name}
@@ -118,7 +125,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 className="h-9"
               />
             </div>
-            <div className="col-span-3 space-y-1.5">
+            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">Color Temperature</Label>
               <Select
                 value={newRun.tape_type}
@@ -136,7 +143,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-3 space-y-1.5">
+            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">Housing</Label>
               <Select
                 value={newRun.channel_type}
@@ -150,6 +157,22 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                   <SelectItem value="recessed">Recessed Flange</SelectItem>
                   <SelectItem value="corner">Corner</SelectItem>
                   <SelectItem value="none">None</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="col-span-3 space-y-1.5">
+              <Label className="text-xs">Optic</Label>
+              <Select
+                value={newRun.optic}
+                onValueChange={(value) => setNewRun({ ...newRun, optic: value })}
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="frosted">Frosted</SelectItem>
+                  <SelectItem value="milky">Milky</SelectItem>
+                  <SelectItem value="25_degree_asymmetric">25 Degree Asymmetric</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -170,7 +193,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 flex-1">
                   <Ruler className="h-4 w-4 text-slate-400" />
-                  <div className="flex-1 grid grid-cols-5 gap-4">
+                  <div className="flex-1 grid grid-cols-6 gap-4">
                    <div>
                      <div className="text-sm font-medium">{run.run_name || 'Unnamed Run'}</div>
                      <div className="text-xs text-slate-500">
@@ -184,6 +207,10 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                     <div>
                       <div className="text-xs text-slate-500">Housing</div>
                       <div className="text-sm">{formatChannelType(run.channel_type)}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-500">Optic</div>
+                      <div className="text-sm">{formatOptic(run.optic || 'frosted')}</div>
                     </div>
                     <div>
                       <div className="text-xs text-slate-500">Cost</div>
