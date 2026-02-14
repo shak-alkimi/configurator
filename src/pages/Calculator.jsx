@@ -266,7 +266,7 @@ export default function Calculator() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Tape Light Layout</CardTitle>
+                  <CardTitle>ALKILINE</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <TapeRunList
