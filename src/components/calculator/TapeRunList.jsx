@@ -36,6 +36,27 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
     return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
+  const calculateRunCost = (run) => {
+    const TAPE_SPECS = {
+      standard_white: { price_per_foot: 12 },
+      standard_warm: { price_per_foot: 12 },
+      rgb: { price_per_foot: 18 },
+      rgbw: { price_per_foot: 24 },
+      high_output: { price_per_foot: 28 }
+    };
+
+    const CHANNEL_SPECS = {
+      surface_mount: { price_per_foot: 8 },
+      recessed: { price_per_foot: 12 },
+      corner: { price_per_foot: 10 },
+      none: { price_per_foot: 0 }
+    };
+
+    const tapeCost = run.length_feet * TAPE_SPECS[run.tape_type].price_per_foot;
+    const channelCost = run.length_feet * CHANNEL_SPECS[run.channel_type].price_per_foot;
+    return tapeCost + channelCost;
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
