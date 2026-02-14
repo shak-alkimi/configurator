@@ -198,8 +198,12 @@ export default function Calculator() {
       <div className="w-80 border-r bg-white">
         <div className="h-full flex flex-col">
           <div className="p-4 border-b">
-            <h1 className="text-xl font-bold text-slate-900">ALKILINE</h1>
-            <p className="text-xs text-slate-500 mt-1">Project Quotes & Estimates</p>
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/9c2a55f24_Screenshot2026-02-14155939.png" 
+              alt="ALKILINE Logo"
+              className="h-12 mb-3"
+            />
+            <p className="text-xs text-slate-500">Project Quotes & Estimates</p>
           </div>
           <ProjectsList
             projects={projects}
