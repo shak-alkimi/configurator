@@ -185,7 +185,7 @@ export default function MaterialsCalculator({ runs }) {
         <CardHeader className="relative">
           <CardTitle className="text-lg text-white">Quote Summary</CardTitle>
           <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/553bf5e5d_Screenshot2026-02-14155939.png" 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/8dbb9078f_Screenshot2026-02-14155939.png" 
             alt="Logo" 
             className="absolute top-4 right-6 h-8"
           />
