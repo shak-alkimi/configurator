@@ -14,6 +14,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
     tape_type: '3000k',
     channel_type: 'surface_mount',
     optic: 'frosted',
+    output: '2w',
     notes: ''
   });
 
@@ -31,6 +32,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
         tape_type: '3000k',
         channel_type: 'surface_mount',
         optic: 'frosted',
+        output: '2w',
         notes: ''
       });
     }
@@ -49,6 +51,12 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
   const formatOptic = (type) => {
     if (type === '25_degree_asymmetric') return '25° Asymmetric';
     return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const formatOutput = (type) => {
+    if (type === '2w') return '2W, 200lm/ft';
+    if (type === '4w') return '4W, 400lm/ft';
+    return type;
   };
 
   const calculateRunCost = (run) => {
@@ -160,7 +168,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-3 space-y-1.5">
+            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">Optic</Label>
               <Select
                 value={newRun.optic}
@@ -173,6 +181,21 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                   <SelectItem value="frosted">Frosted</SelectItem>
                   <SelectItem value="milky">Milky</SelectItem>
                   <SelectItem value="25_degree_asymmetric">25 Degree Asymmetric</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="col-span-1 space-y-1.5">
+              <Label className="text-xs">Output</Label>
+              <Select
+                value={newRun.output}
+                onValueChange={(value) => setNewRun({ ...newRun, output: value })}
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2w">2W</SelectItem>
+                  <SelectItem value="4w">4W</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -193,7 +216,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 flex-1">
                   <Ruler className="h-4 w-4 text-slate-400" />
-                  <div className="flex-1 grid grid-cols-6 gap-4">
+                  <div className="flex-1 grid grid-cols-7 gap-4">
                    <div>
                      <div className="text-sm font-medium">{run.run_name || 'Unnamed Run'}</div>
                      <div className="text-xs text-slate-500">
@@ -211,6 +234,10 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                     <div>
                       <div className="text-xs text-slate-500">Optic</div>
                       <div className="text-sm">{formatOptic(run.optic || 'frosted')}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-500">Output</div>
+                      <div className="text-sm">{formatOutput(run.output || '2w')}</div>
                     </div>
                     <div>
                       <div className="text-xs text-slate-500">Cost</div>
