@@ -202,6 +202,7 @@ export default function Calculator() {
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/9c2a55f24_Screenshot2026-02-14155939.png" 
               alt="ALKILINE Logo"
               className="h-12 mb-3"
+              style={{ filter: 'invert(1)' }}
             />
             <p className="text-xs text-slate-500">Project Quotes & Estimates</p>
           </div>
