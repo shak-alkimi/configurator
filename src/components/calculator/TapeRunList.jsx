@@ -39,6 +39,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
   };
 
   const formatChannelType = (type) => {
+    if (type === 'surface_mount') return 'Surface';
     return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
@@ -138,7 +139,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="surface_mount">Surface Mount</SelectItem>
+                  <SelectItem value="surface_mount">Surface</SelectItem>
                   <SelectItem value="recessed">Recessed</SelectItem>
                   <SelectItem value="corner">Corner</SelectItem>
                   <SelectItem value="none">None</SelectItem>
