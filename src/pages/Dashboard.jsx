@@ -78,8 +78,9 @@ export default function Dashboard() {
                   <p className="text-slate-600 text-sm">View details for approved projects</p>
                 </div>
               <Link to={createPageUrl('Calculator')}>
-                <Button className="mt-4 bg-slate-900 hover:bg-slate-800 text-white">
+                <Button className="mt-2 gap-2" style={{ backgroundColor: '#e9ff64', color: '#000' }}>
                   Open Projects
+                  <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
             </CardContent>
