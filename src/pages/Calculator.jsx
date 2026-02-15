@@ -287,7 +287,7 @@ export default function Calculator() {
                   </Button>
                 </div>
               )}
-              <Button size="sm" onClick={handleSaveProject} style={{ backgroundColor: '#e9ff64', color: '#000' }} className="hover:opacity-90 text-xs h-10 w-full px-8">
+              <Button size="sm" onClick={handleSaveProject} style={{ backgroundColor: '#e9ff64', color: '#000' }} className="hover:opacity-90 text-xs h-10 w-full px-16">
                 <Save className="h-3 w-3 mr-1" />
                 Save Project
               </Button>
