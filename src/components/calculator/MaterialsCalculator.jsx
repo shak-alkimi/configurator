@@ -99,6 +99,7 @@ export default function MaterialsCalculator({ runs }) {
       tapeCost,
       channelCost,
       driverCost,
+      shippingCost,
       totalCost
     };
   }, [runs]);
