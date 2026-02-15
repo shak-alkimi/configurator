@@ -177,7 +177,7 @@ export default function MaterialsCalculator({ runs }) {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600 whitespace-nowrap">Drivers</span>
-                <span className="font-medium whitespace-nowrap">{calculations.requiredDrivers.length} units</span>
+                <span className="font-medium whitespace-nowrap">{calculations.requiredDrivers.length}</span>
               </div>
             </div>
           </div>
@@ -190,7 +190,7 @@ export default function MaterialsCalculator({ runs }) {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600 whitespace-nowrap">Terminal Blocks</span>
-                <span className="font-medium whitespace-nowrap">{calculations.terminalBlocks} units</span>
+                <span className="font-medium whitespace-nowrap">{calculations.terminalBlocks}</span>
               </div>
             </div>
           </div>
@@ -203,7 +203,7 @@ export default function MaterialsCalculator({ runs }) {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600 whitespace-nowrap">External Clips</span>
-                <span className="font-medium whitespace-nowrap">{calculations.totalClips} clips</span>
+                <span className="font-medium whitespace-nowrap">{calculations.totalClips}</span>
               </div>
             </div>
           </div>
