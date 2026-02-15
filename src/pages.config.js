@@ -47,14 +47,14 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Calculator from './pages/Calculator';
 import ProjectDetail from './pages/ProjectDetail';
+import Calculator from './pages/Calculator';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Calculator": Calculator,
     "ProjectDetail": ProjectDetail,
+    "Calculator": Calculator,
 }
 
 export const pagesConfig = {
