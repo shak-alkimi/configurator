@@ -65,24 +65,13 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
             >
               <CardContent className="p-3 h-32 flex flex-col justify-center">
               <div>
-                <div className="flex gap-2 items-start mb-2">
-                  <div className="flex-1 pr-2">
-                    <h3 className="font-semibold text-sm break-words">{project.project_name}</h3>
-                  </div>
-                  <Badge className={`${statusColors[project.status]} text-xs flex-shrink-0`}>
-                    {project.status.replace('_', ' ')}
-                  </Badge>
-                </div>
-                 <div className="text-xs text-slate-600 space-y-1">
-                   <div>{project.customer_name}</div>
-                   {project.total_price && (
-                    <div className="font-semibold text-slate-900">
-                      ${project.total_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                   )}
-                   <div className="text-slate-400">
-                     {format(new Date(project.created_date), 'MMM d, yyyy')}
+                <div className="flex gap-2 items-start">
+                   <div className="flex-1 pr-2">
+                     <h3 className="font-semibold text-sm break-words">{project.project_name}</h3>
                    </div>
+                   <Badge className={`${statusColors[project.status]} text-xs flex-shrink-0`}>
+                     {project.status.replace('_', ' ')}
+                   </Badge>
                  </div>
                </div>
                {project.status === 'approved' && (
