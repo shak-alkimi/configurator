@@ -162,7 +162,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-2 space-y-1.5">
+            <div className="col-span-2 space-y-2">
               <Label className="text-xs">Housing</Label>
               <Select
                 value={newRun.channel_type}
