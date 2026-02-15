@@ -71,7 +71,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
                  <div className="flex-1">
                    <h3 className="font-semibold text-sm">{project.project_name}</h3>
                  </div>
-                 <div className="flex flex-col items-center gap-1">
+                 <div className="flex flex-col items-end gap-1">
                    {project.status === 'approved' && (
                      <Link 
                        to={createPageUrl('ProjectDetail') + '?id=' + project.id}
