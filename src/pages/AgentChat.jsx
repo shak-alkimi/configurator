@@ -118,7 +118,7 @@ export default function AgentChat() {
              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
              placeholder="..."
              disabled={isLoading || !conversationId}
-             className="w-full h-8"
+             className="w-full h-7 sm:h-8"
             />
           <Button
             size="sm"
