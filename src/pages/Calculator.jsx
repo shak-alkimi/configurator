@@ -40,6 +40,12 @@ export default function Calculator() {
     enabled: !!selectedProjectId,
   });
 
+  // Fetch pricing catalog
+  const { data: productCatalog = [] } = useQuery({
+    queryKey: ['productCatalog'],
+    queryFn: () => base44.entities.ProductCatalog.list(),
+  });
+
   // Create/Update project mutation
   const saveProjectMutation = useMutation({
     mutationFn: async (data) => {
