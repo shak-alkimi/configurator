@@ -124,7 +124,7 @@ export default function MaterialsCalculator({ runs }) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Card className="min-w-[320px]">
         <CardHeader>
           <CardTitle className="text-lg">Materials Required</CardTitle>
