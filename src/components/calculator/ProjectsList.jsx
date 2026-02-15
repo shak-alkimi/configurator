@@ -60,13 +60,13 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
         ) : (
           filteredProjects.map((project) => (
             <Card
-              key={project.id}
-              className={`cursor-pointer transition-all hover:shadow-md ${
-                selectedId === project.id ? 'ring-2 ring-slate-900 shadow-md' : ''
-              }`}
-              onClick={() => onSelect(project.id)}
+             key={project.id}
+             className={`cursor-pointer transition-all hover:shadow-md relative ${
+               selectedId === project.id ? 'ring-2 ring-slate-900 shadow-md' : ''
+             }`}
+             onClick={() => onSelect(project.id)}
             >
-              <CardContent className="p-3 h-24 flex flex-col justify-between">
+              <CardContent className="p-3 h-24 flex flex-col justify-between pr-10">
                <div>
                  <div className="flex items-start justify-between mb-2">
                    <div className="flex-1">
