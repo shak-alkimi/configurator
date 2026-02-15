@@ -241,7 +241,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
             <CardContent className="py-3 px-4">
               <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 flex-1">
-               <div className="flex-1 grid gap-4 text-xs min-w-0" style={{gridTemplateColumns: '1fr 0.7fr 1fr 1fr 1fr 1fr 0.7fr 0.8fr'}}>
+               <div className="flex-1 grid gap-4 text-xs min-w-0" style={{gridTemplateColumns: '1fr 0.7fr 1fr 1fr 1fr 1fr 1fr 0.8fr'}}>
                <div className="min-w-0">
                 <div className="text-xs text-slate-500 whitespace-nowrap">Type</div>
                 <div className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis">{run.run_name || 'Unnamed Run'}</div>
