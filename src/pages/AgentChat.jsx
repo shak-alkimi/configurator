@@ -79,8 +79,8 @@ export default function AgentChat() {
         {messages.length === 0 ? (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
-              <MessageSquare className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500 mb-2">Message about your quotes, projects, or products</p>
+              <MessageSquare className="h-8 w-8 sm:h-12 sm:w-12 text-slate-300 mx-auto mb-2 sm:mb-4" />
+              <p className="text-slate-500 mb-2 text-xs sm:text-sm">Message about your quotes, projects, or products</p>
             </div>
           </div>
         ) : (
