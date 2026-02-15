@@ -61,6 +61,22 @@ export default function ProjectDetail() {
     );
   }
 
+  if (project.status !== 'approved') {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-slate-500 mb-4">This project detail page is only available for approved quotes</p>
+            <p className="text-sm text-slate-400 mb-4">Current status: <strong>{project.status}</strong></p>
+            <Link to={createPageUrl('Calculator')}>
+              <Button>Back to Projects</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const statusColors = {
     draft: "bg-slate-100 text-slate-800",
     quoted: "bg-blue-100 text-blue-800",
