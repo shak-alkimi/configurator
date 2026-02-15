@@ -63,7 +63,7 @@ export default function AgentChat() {
   return (
     <div className="h-screen flex flex-col bg-slate-50">
       {/* Header */}
-      <div className="border-b bg-white p-6">
+      <div className="border-b bg-white p-6 pl-4">
         <img 
           src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
           alt="ALKIMI Logo"
