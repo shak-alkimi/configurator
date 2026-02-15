@@ -103,7 +103,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
       <Card className="border-dashed">
         <CardContent className="pt-4 px-4">
           <div className="grid grid-cols-12 gap-3 items-end">
-            <div className="col-span-2 space-y-1.5">
+            <div className="col-span-1 space-y-1.5">
               <Label className="text-xs">Type</Label>
               <Input
                 value={newRun.run_name}
@@ -112,7 +112,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 className="h-9"
               />
             </div>
-            <div className="col-span-1 space-y-1.5">
+            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">Feet</Label>
               <Input
                 type="number"
@@ -124,7 +124,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 className="h-9"
               />
             </div>
-            <div className="col-span-1 space-y-1.5">
+            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">Inches</Label>
               <Input
                 type="number"
