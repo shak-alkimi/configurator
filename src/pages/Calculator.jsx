@@ -292,7 +292,7 @@ export default function Calculator() {
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
               alt="ALKIMI Logo"
-              className="h-12 mb-3 w-full object-cover object-left"
+              className="h-8 mb-2 object-cover object-left"
               style={{ filter: 'invert(1)' }}
             />
             <p className="text-xs text-slate-500 pl-4">Project Quotes</p>
