@@ -89,16 +89,15 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
                  </div>
                </div>
                {project.status === 'approved' && (
-                 <div className="flex justify-end">
-                   <Link 
-                     to={createPageUrl('ProjectDetail') + '?id=' + project.id}
-                     onClick={(e) => e.stopPropagation()}
-                   >
-                     <Button variant="ghost" size="icon" className="h-6 w-6">
-                       <ExternalLink className="h-3 w-3" />
-                     </Button>
-                   </Link>
-                 </div>
+                 <Link 
+                   to={createPageUrl('ProjectDetail') + '?id=' + project.id}
+                   onClick={(e) => e.stopPropagation()}
+                   className="absolute bottom-3 right-3"
+                 >
+                   <Button variant="ghost" size="icon" className="h-6 w-6">
+                     <ExternalLink className="h-3 w-3" />
+                   </Button>
+                 </Link>
                )}
               </CardContent>
             </Card>
