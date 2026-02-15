@@ -221,7 +221,7 @@ export default function MaterialsCalculator({ runs }) {
           </div>
           <Separator className="bg-slate-600" />
           <div className="flex justify-between text-lg font-semibold">
-            <span className="text-white whitespace-nowrap">Total Project Cost</span>
+            <span className="text-white whitespace-nowrap">Project Total</span>
             <span className="text-white whitespace-nowrap">${formatUSD(calculations.totalCost)}</span>
           </div>
         </CardContent>
