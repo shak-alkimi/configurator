@@ -182,7 +182,35 @@ export default function Calculator() {
     return total;
   };
 
-  const handleExportQuote = async () => {
+  const handleExportQuoteCSV = () => {
+    try {
+      const headers = ['Item', 'Quantity', 'Unit Price', 'Total'];
+      const rows = [];
+      
+      // Tape light totals
+      tapeRuns.forEach(run => {
+        const tapePrice = productCatalog.find(p => p.product_type === 'tape' && p.variant === run.tape_type)?.price_per_unit || 0;
+        rows.push([`${run.tape_type} - ${run.run_name}`, run.length_feet, tapePrice.toFixed(2), (run.length_feet * tapePrice).toFixed(2)]);
+      });
+      
+      // Build CSV
+      const csv = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${projectData.project_name || 'quote'}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      toast.success('Quote exported as CSV');
+    } catch (error) {
+      toast.error('Failed to export CSV');
+    }
+  };
+
+  const handleExportQuotePDF = async () => {
     try {
       const response = await base44.functions.invoke('exportQuotePDF', {
         projectData,
