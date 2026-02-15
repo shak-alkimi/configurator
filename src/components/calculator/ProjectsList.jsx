@@ -66,7 +66,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
              }`}
              onClick={() => onSelect(project.id)}
             >
-              <CardContent className="p-3 h-32 flex flex-col justify-between">
+              <CardContent className="p-3 h-32 flex flex-col justify-center">
               <div>
                 <div className="mb-2 pr-20">
                   <h3 className="font-semibold text-sm break-words">{project.project_name}</h3>
