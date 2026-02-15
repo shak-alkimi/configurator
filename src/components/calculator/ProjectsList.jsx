@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, FileText, Search, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
-import { createPageUrl } from "utils";
+import { createPageUrl } from "@/utils";
 
 export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading }) {
   const [searchQuery, setSearchQuery] = React.useState('');
