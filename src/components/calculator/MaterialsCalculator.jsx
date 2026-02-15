@@ -182,7 +182,7 @@ export default function MaterialsCalculator({ runs }) {
             <h4 className="text-sm font-semibold text-slate-700 mb-2">Mounting Hardware</h4>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-600 whitespace-nowrap">Mounting Clips</span>
+                <span className="text-slate-600 whitespace-nowrap">External Clips</span>
                 <span className="font-medium whitespace-nowrap">{calculations.clipSets} sets ({calculations.totalClips} clips)</span>
               </div>
             </div>
