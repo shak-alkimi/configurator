@@ -15,14 +15,27 @@ import { format } from "date-fns";
 export default function ProjectDetail() {
   const urlParams = new URLSearchParams(window.location.search);
   const projectId = urlParams.get('id');
+  const [userOrg, setUserOrg] = React.useState(null);
+
+  // Fetch current user's organization
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      const user = await base44.auth.me();
+      if (user?.organization_id) {
+        setUserOrg(user.organization_id);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const { data: project, isLoading: projectLoading } = useQuery({
-    queryKey: ['project', projectId],
+    queryKey: ['project', projectId, userOrg],
     queryFn: async () => {
-      const projects = await base44.entities.Project.filter({ id: projectId });
+      if (!userOrg) return null;
+      const projects = await base44.entities.Project.filter({ id: projectId, organization_id: userOrg });
       return projects[0];
     },
-    enabled: !!projectId
+    enabled: !!projectId && !!userOrg
   });
 
   const { data: tasks = [] } = useQuery({
