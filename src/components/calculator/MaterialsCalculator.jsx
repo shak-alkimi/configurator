@@ -175,10 +175,19 @@ export default function MaterialsCalculator({ runs }) {
           <div>
             <h4 className="text-sm font-semibold text-slate-700 mb-2">Drivers</h4>
             <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-600 whitespace-nowrap">Drivers</span>
-                <span className="font-medium whitespace-nowrap">{calculations.requiredDrivers.length}</span>
-              </div>
+              {(() => {
+                const driverCounts = {};
+                calculations.requiredDrivers.forEach(driver => {
+                  const key = `${driver.max_watts}W`;
+                  driverCounts[key] = (driverCounts[key] || 0) + 1;
+                });
+                return Object.entries(driverCounts).map(([wattage, count]) => (
+                  <div key={wattage} className="flex justify-between text-sm">
+                    <span className="text-slate-600 whitespace-nowrap">{wattage} Driver</span>
+                    <span className="font-medium whitespace-nowrap">{count}</span>
+                  </div>
+                ));
+              })()}
             </div>
           </div>
 
