@@ -33,13 +33,15 @@ export default function Dashboard() {
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="border-b border-slate-200 bg-white">
-        <div className="px-6 py-6">
+        <div className="px-6 py-3">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
             alt="ALKIMI Logo"
             className="h-12 mb-3"
             style={{ filter: 'invert(1)' }}
           />
+        </div>
+        <div className="max-w-6xl mx-auto px-6 py-6">
           <h1 className="text-3xl font-bold text-slate-900">Welcome back, {userInfo?.full_name?.split(' ')[0]}</h1>
           <p className="text-slate-500 mt-1">Manage your quotes and projects</p>
         </div>
