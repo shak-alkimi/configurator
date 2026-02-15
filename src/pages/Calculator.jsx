@@ -161,37 +161,22 @@ export default function Calculator() {
   };
 
   const calculateTotalPrice = (runs) => {
-    const TAPE_SPECS = {
-      '2700k': { price_per_foot: 12 },
-      '3000k': { price_per_foot: 12 },
-      '3500k': { price_per_foot: 12 },
-      'warm_dim': { price_per_foot: 18 },
-      'tunable_white': { price_per_foot: 24 },
-      'standard_white': { price_per_foot: 12 },
-      'standard_warm': { price_per_foot: 12 },
-      'rgb': { price_per_foot: 18 },
-      'rgbw': { price_per_foot: 24 },
-      'high_output': { price_per_foot: 18 }
-    };
-
-    const CHANNEL_SPECS = {
-      surface_mount: { price_per_foot: 8 },
-      recessed: { price_per_foot: 12 },
-      corner: { price_per_foot: 10 },
-      none: { price_per_foot: 0 }
-    };
-
     let total = 0;
+    
     runs.forEach(run => {
-      const tapeSpec = TAPE_SPECS[run.tape_type] || { price_per_foot: 0 };
-      const channelSpec = CHANNEL_SPECS[run.channel_type] || { price_per_foot: 0 };
-      total += run.length_feet * tapeSpec.price_per_foot;
-      total += run.length_feet * channelSpec.price_per_foot;
+      const tapePrice = productCatalog.find(p => p.product_type === 'tape' && p.variant === run.tape_type)?.price_per_unit || 0;
+      const channelPrice = productCatalog.find(p => p.product_type === 'channel' && p.variant === run.channel_type)?.price_per_unit || 0;
+      
+      total += run.length_feet * tapePrice;
+      total += run.length_feet * channelPrice;
     });
 
-    // Add drivers and hardware (simplified)
-    total += 85; // Base driver cost
-    total += 15; // Hardware cost
+    // Add drivers and hardware
+    const driverPrice = productCatalog.find(p => p.product_type === 'driver' && p.variant === '60w')?.price_per_unit || 85;
+    const hardwarePrice = productCatalog.find(p => p.product_type === 'hardware')?.price_per_unit || 15;
+    
+    total += driverPrice;
+    total += hardwarePrice;
 
     return total;
   };
