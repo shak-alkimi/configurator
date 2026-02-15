@@ -11,7 +11,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
     run_name: '',
     length_feet: '',
     length_inches: '',
-    tape_type: '3000k',
+    tape_type: '2700k',
     channel_type: 'surface_mount',
     optic: 'frosted',
     output: '2w',
