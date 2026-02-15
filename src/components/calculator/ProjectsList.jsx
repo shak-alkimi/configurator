@@ -3,8 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Plus, FileText, Search } from "lucide-react";
+import { Plus, FileText, Search, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "../utils";
 
 export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading }) {
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -21,6 +23,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
     draft: "bg-slate-100 text-slate-700",
     quoted: "bg-blue-100 text-blue-700",
     approved: "bg-green-100 text-green-700",
+    in_progress: "bg-yellow-100 text-yellow-700",
     completed: "bg-purple-100 text-purple-700"
   };
 
@@ -64,23 +67,35 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
               onClick={() => onSelect(project.id)}
             >
               <CardContent className="p-3">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-sm">{project.project_name}</h3>
-                  <Badge className={`${statusColors[project.status]} text-xs`}>
-                    {project.status}
-                  </Badge>
-                </div>
-                <div className="text-xs text-slate-600 space-y-1">
-                  <div>{project.customer_name}</div>
-                  {project.total_price && (
-                   <div className="font-semibold text-slate-900">
-                     ${project.total_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                   </div>
-                  )}
-                  <div className="text-slate-400">
-                    {format(new Date(project.created_date), 'MMM d, yyyy')}
+               <div className="flex items-start justify-between mb-2">
+                 <div className="flex-1">
+                   <h3 className="font-semibold text-sm">{project.project_name}</h3>
+                 </div>
+                 <div className="flex items-center gap-2">
+                   <Badge className={`${statusColors[project.status]} text-xs`}>
+                     {project.status.replace('_', ' ')}
+                   </Badge>
+                   <Link 
+                     to={createPageUrl('ProjectDetail') + '?id=' + project.id}
+                     onClick={(e) => e.stopPropagation()}
+                   >
+                     <Button variant="ghost" size="icon" className="h-6 w-6">
+                       <ExternalLink className="h-3 w-3" />
+                     </Button>
+                   </Link>
+                 </div>
+               </div>
+               <div className="text-xs text-slate-600 space-y-1">
+                 <div>{project.customer_name}</div>
+                 {project.total_price && (
+                  <div className="font-semibold text-slate-900">
+                    ${project.total_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
-                </div>
+                 )}
+                 <div className="text-slate-400">
+                   {format(new Date(project.created_date), 'MMM d, yyyy')}
+                 </div>
+               </div>
               </CardContent>
             </Card>
           ))
