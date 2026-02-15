@@ -60,10 +60,10 @@ export default function Dashboard() {
                   <h2 className="text-xl font-bold text-slate-900 mb-2">Tape Light Calculator</h2>
                   <p className="text-slate-600 text-sm">Create new quotes and manage your projects</p>
                 </div>
-                <Button className="mt-2 gap-2" style={{ backgroundColor: '#e9ff64', color: '#000' }}>
-                  Open Calculator
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
+                <Button size="sm" className="mt-2 gap-2 text-xs h-8 hover:opacity-90" style={{ backgroundColor: '#e9ff64', color: '#000' }}>
+                   Open Calculator
+                   <ArrowRight className="h-4 w-4" />
+                 </Button>
               </CardContent>
             </Card>
           </Link>
