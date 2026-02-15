@@ -104,7 +104,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
         <CardContent className="pt-4 px-4">
           <div className="grid grid-cols-12 gap-3 items-end">
             <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs">Run Name</Label>
+              <Label className="text-xs">Type</Label>
               <Input
                 value={newRun.run_name}
                 onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })}
@@ -222,9 +222,9 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                <Ruler className="h-4 w-4 text-slate-400 flex-shrink-0" />
                <div className="flex-1 grid gap-4 text-xs min-w-0" style={{gridTemplateColumns: '1.2fr 0.8fr 1fr 1fr 1fr 1.3fr 0.9fr'}}>
                 <div className="min-w-0">
-                 <div className="text-xs text-slate-500 whitespace-nowrap">Run Name</div>
+                 <div className="text-xs text-slate-500 whitespace-nowrap">Type</div>
                  <div className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis">{run.run_name || 'Unnamed Run'}</div>
-               </div>
+                </div>
                 <div className="min-w-0">
                   <div className="text-xs text-slate-500 whitespace-nowrap">Length</div>
                   <div className="text-sm whitespace-nowrap">
