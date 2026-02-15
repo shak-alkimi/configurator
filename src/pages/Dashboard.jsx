@@ -85,22 +85,22 @@ export default function Dashboard() {
         {/* Approved Projects List */}
         {approvedProjects.length > 0 && (
           <div>
-            <h2 className="text-2xl font-bold text-white mb-6">Approved Projects</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Approved Projects</h2>
             <div className="grid gap-4">
               {approvedProjects.map((project) => (
                 <Link key={project.id} to={createPageUrl('ProjectDetail') + '?id=' + project.id}>
-                  <Card className="bg-slate-800 border-slate-700 hover:border-slate-500 transition-all cursor-pointer">
+                  <Card className="bg-slate-50 border-slate-200 hover:border-slate-300 transition-all cursor-pointer">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="text-lg font-semibold text-white">{project.project_name}</h3>
-                          <p className="text-slate-400 text-sm mt-1">{project.customer_name}</p>
+                          <h3 className="text-lg font-semibold text-slate-900">{project.project_name}</h3>
+                          <p className="text-slate-500 text-sm mt-1">{project.customer_name}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-lg font-bold text-white">
+                          <p className="text-lg font-bold text-slate-900">
                             ${project.total_price?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || 'N/A'}
                           </p>
-                          <p className="text-xs text-slate-400 mt-1">
+                          <p className="text-xs text-slate-500 mt-1">
                             {format(new Date(project.updated_date), 'MMM d, yyyy')}
                           </p>
                         </div>
