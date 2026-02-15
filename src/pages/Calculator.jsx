@@ -288,7 +288,7 @@ export default function Calculator() {
       {/* Sidebar - Projects List */}
       <div className="w-80 border-r bg-white">
         <div className="h-full flex flex-col">
-          <div className="pt-4 pb-4 border-b pl-4">
+          <div className="pt-4 pb-4 border-b">
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
               alt="ALKIMI Logo"
