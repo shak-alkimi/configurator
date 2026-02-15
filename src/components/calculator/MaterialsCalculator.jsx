@@ -220,7 +220,7 @@ export default function MaterialsCalculator({ runs }) {
       </Card>
 
       {/* Pricing Summary */}
-      <Card className="border-black min-w-[320px]" style={{ backgroundColor: '#000000' }}>
+      <Card className="border-black" style={{ backgroundColor: '#000000' }}>
         <CardHeader className="relative">
           <CardTitle className="text-lg text-white">Quote Summary</CardTitle>
           <img 
