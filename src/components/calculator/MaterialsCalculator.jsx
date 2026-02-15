@@ -54,8 +54,13 @@ export default function MaterialsCalculator({ runs }) {
     // Calculate required drivers
     const requiredDrivers = [];
     let remainingWatts = totalWatts;
+    const driverSpecs = [
+      { variant: '60w', max_watts: getDriverMaxWatts('60w'), price: getDriverPrice('60w') },
+      { variant: '96w', max_watts: getDriverMaxWatts('96w'), price: getDriverPrice('96w') }
+    ].sort((a, b) => a.max_watts - b.max_watts);
+    
     while (remainingWatts > 0) {
-      const driver = DRIVER_SPECS.find(d => d.max_watts >= remainingWatts) || DRIVER_SPECS[DRIVER_SPECS.length - 1];
+      const driver = driverSpecs.find(d => d.max_watts >= remainingWatts) || driverSpecs[driverSpecs.length - 1];
       requiredDrivers.push(driver);
       remainingWatts -= driver.max_watts;
     }
