@@ -226,7 +226,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
               </Select>
             </div>
             <div className="col-span-1">
-              <Button onClick={handleAdd} size="sm" className="w-20 hover:opacity-90 text-xs" style={{ backgroundColor: '#e9ff64', color: '#000', height: '36px' }}>
+              <Button onClick={handleAdd} size="sm" className="w-full hover:opacity-90 text-xs" style={{ backgroundColor: '#e9ff64', color: '#000', height: '36px' }}>
                 <Plus className="h-3 w-3" />
               </Button>
             </div>
