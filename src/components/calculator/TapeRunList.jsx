@@ -220,38 +220,38 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
               <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 flex-1">
                <Ruler className="h-4 w-4 text-slate-400 flex-shrink-0" />
-               <div className="flex-1 grid grid-cols-7 gap-4 text-xs min-w-0">
-                 <div className="min-w-0">
+               <div className="flex-1 grid gap-4 text-xs min-w-0" style={{gridTemplateColumns: '1.2fr 0.8fr 1fr 1fr 1fr 1.3fr 0.9fr'}}>
+                <div className="min-w-0">
                  <div className="text-xs text-slate-500 whitespace-nowrap">Run Name</div>
                  <div className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis">{run.run_name || 'Unnamed Run'}</div>
-                 </div>
-                 <div className="min-w-0">
+               </div>
+                <div className="min-w-0">
                   <div className="text-xs text-slate-500 whitespace-nowrap">Length</div>
                   <div className="text-sm whitespace-nowrap">
                     {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
                   </div>
-                 </div>
-                 <div className="min-w-0">
+                </div>
+                <div className="min-w-0">
                   <div className="text-xs text-slate-500 whitespace-nowrap">Color Temp</div>
                   <div className="text-sm whitespace-nowrap overflow-hidden text-ellipsis">{formatTapeType(run.tape_type)}</div>
-                 </div>
-                 <div className="min-w-0">
+                </div>
+                <div className="min-w-0">
                   <div className="text-xs text-slate-500 whitespace-nowrap">Housing</div>
                   <div className="text-sm whitespace-nowrap overflow-hidden text-ellipsis">{formatChannelType(run.channel_type)}</div>
-                 </div>
-                 <div className="min-w-0">
+                </div>
+                <div className="min-w-0">
                   <div className="text-xs text-slate-500 whitespace-nowrap">Optic</div>
                   <div className="text-sm whitespace-nowrap overflow-hidden text-ellipsis">{formatOptic(run.optic || 'frosted')}</div>
-                 </div>
-                 <div className="min-w-0">
+                </div>
+                <div className="min-w-0">
                   <div className="text-xs text-slate-500 whitespace-nowrap">Output</div>
-                  <div className="text-sm whitespace-nowrap overflow-hidden text-ellipsis">{formatOutput(run.output || '2w')}</div>
-                 </div>
-                 <div className="min-w-0">
+                  <div className="text-sm whitespace-nowrap">{formatOutput(run.output || '2w')}</div>
+                </div>
+                <div className="min-w-0">
                   <div className="text-xs text-slate-500 whitespace-nowrap">Cost</div>
                   <div className="text-sm font-medium whitespace-nowrap">${formatUSD(calculateRunCost(run))}</div>
-                 </div>
-                 </div>
+                </div>
+               </div>
                 </div>
                 <Button
                   variant="ghost"
