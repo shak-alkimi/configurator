@@ -277,7 +277,7 @@ export default function Calculator() {
                 {isNewProject ? 'Create a new tape light quote' : 'Edit project details and runs'}
               </p>
             </div>
-            <div className="flex flex-col gap-2 w-full">
+            <div className="lg:col-span-1 flex flex-col gap-2">
               {!isNewProject && (
                 <div className="flex gap-2 w-full">
                   <Button variant="outline" size="sm" onClick={handleExportQuote} className="flex-1 h-8 justify-center text-xs">
