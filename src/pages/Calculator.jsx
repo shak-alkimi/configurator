@@ -277,7 +277,7 @@ export default function Calculator() {
                 {isNewProject ? 'Create a new tape light quote' : projectData.customer_name}
               </p>
             </div>
-            <div className="lg:col-span-1 flex flex-col gap-2">
+            <div className="lg:col-span-1 flex flex-col gap-2 self-start">
               {!isNewProject && (
                 <div className="grid grid-cols-3 gap-2 w-full">
                   <Button variant="outline" size="sm" onClick={handleExportQuote} className="h-8 justify-center text-xs">
