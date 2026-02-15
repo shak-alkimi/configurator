@@ -182,7 +182,7 @@ export default function MaterialsCalculator({ runs }) {
                   driverCounts[key] = (driverCounts[key] || 0) + 1;
                 });
                 return Object.entries(driverCounts).map(([wattage, count]) => (
-                  <div key={wattage} className="flex justify-between text-sm gap-4">
+                  <div key={wattage} className="flex justify-between text-sm gap-2">
                     <span className="text-slate-600 whitespace-nowrap">{wattage} Driver</span>
                     <span className="font-medium whitespace-nowrap">{count}</span>
                   </div>
