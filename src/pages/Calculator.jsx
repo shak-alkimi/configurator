@@ -286,7 +286,7 @@ export default function Calculator() {
                   </Button>
                   <Button variant="outline" size="sm" onClick={handleExportSubmittal} className="h-8 justify-center text-xs">
                     <FileText className="h-3 w-3 mr-1" />
-                    Submittal
+                    Specs
                   </Button>
                   <Button variant="outline" size="sm" onClick={handleDeleteProject} className="h-8 justify-center text-xs">
                     <Trash2 className="h-3 w-3 mr-1" />
