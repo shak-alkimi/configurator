@@ -210,7 +210,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-1 space-y-1.5">
+            <div className="col-span-1 space-y-2">
               <Label className="text-xs">Driver</Label>
               <Select
                 value={newRun.driver_type}
