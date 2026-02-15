@@ -260,9 +260,9 @@ export default function Calculator() {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto p-6 space-y-6">
-          {/* Header */}
-          <div className="flex items-start justify-between">
-            <div>
+          {/* Header Actions */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-3">
               <h2 className="text-2xl font-bold text-slate-900">
                 {isNewProject ? 'New Project' : projectData.project_name}
               </h2>
@@ -270,31 +270,29 @@ export default function Calculator() {
                 {isNewProject ? 'Create a new tape light quote' : 'Edit project details and runs'}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2">
               {!isNewProject && (
-                <>
-                  <Button variant="outline" size="sm" onClick={handleExportQuote} className="w-24 h-8 justify-center text-xs">
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handleExportQuote} className="flex-1 h-8 justify-center text-xs">
                     <Download className="h-3 w-3 mr-1" />
                     Export
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleExportSubmittal} className="w-24 h-8 justify-center text-xs">
+                  <Button variant="outline" size="sm" onClick={handleExportSubmittal} className="flex-1 h-8 justify-center text-xs">
                     <FileText className="h-3 w-3 mr-1" />
                     Submittal
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleDeleteProject} className="w-24 h-8 justify-center text-xs">
+                  <Button variant="outline" size="sm" onClick={handleDeleteProject} className="flex-1 h-8 justify-center text-xs">
                     <Trash2 className="h-3 w-3 mr-1" />
                     Delete
                   </Button>
-                </>
+                </div>
               )}
+              <Button size="sm" onClick={handleSaveProject} style={{ backgroundColor: '#e9ff64', color: '#000' }} className="hover:opacity-90 text-xs h-10 w-full">
+                <Save className="h-3 w-3 mr-1" />
+                Save Project
+              </Button>
             </div>
           </div>
-
-          {/* Save Button */}
-          <Button size="sm" onClick={handleSaveProject} style={{ backgroundColor: '#e9ff64', color: '#000' }} className="hover:opacity-90 text-xs h-10 w-full lg:w-1/3">
-            <Save className="h-3 w-3 mr-1" />
-            Save Project
-          </Button>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Left Column - Project Details */}
