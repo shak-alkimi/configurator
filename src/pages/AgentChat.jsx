@@ -115,7 +115,7 @@ export default function AgentChat() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-            placeholder="Type your message..."
+            placeholder="..."
             disabled={isLoading || !conversationId}
             className="flex-1"
           />
