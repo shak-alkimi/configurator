@@ -247,6 +247,10 @@ export default function MaterialsCalculator({ runs }) {
             <span className="text-slate-300 whitespace-nowrap">Mounting Hardware</span>
             <span className="font-medium text-white whitespace-nowrap">${formatUSD(calculations.clipCost)}</span>
           </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-300 whitespace-nowrap">Shipping Estimate</span>
+            <span className="font-medium text-white whitespace-nowrap">${formatUSD(calculations.shippingCost)}</span>
+          </div>
           <Separator className="bg-slate-600" />
           <div className="flex justify-between text-lg font-semibold">
             <span className="text-white whitespace-nowrap">Project Total</span>
