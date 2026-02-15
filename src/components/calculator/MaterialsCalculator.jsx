@@ -82,7 +82,9 @@ export default function MaterialsCalculator({ runs }) {
     const tapeCost = Object.values(tapeByType).reduce((sum, t) => sum + t.cost, 0);
     const channelCost = Object.values(channelByType).reduce((sum, c) => sum + c.cost, 0);
     const driverCost = requiredDrivers.reduce((sum, d) => sum + d.price, 0);
-    const totalCost = tapeCost + channelCost + driverCost + terminalBlockCost + clipCost;
+    const subtotalCost = tapeCost + channelCost + driverCost + terminalBlockCost + clipCost;
+    const shippingCost = subtotalCost * 0.1;
+    const totalCost = subtotalCost + shippingCost;
 
     return {
       tapeByType,
