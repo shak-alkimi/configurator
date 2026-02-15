@@ -310,6 +310,16 @@ export default function Calculator() {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-6xl mx-auto p-6 space-y-6">
+          {/* Logo */}
+          <div className="mb-6">
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
+              alt="ALKIMI Logo"
+              className="h-8"
+              style={{ filter: 'invert(1)' }}
+            />
+          </div>
+
           {/* Header Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-3">
@@ -373,10 +383,7 @@ export default function Calculator() {
               </Card>
 
               <Card>
-                <CardHeader>
-                  <CardTitle>ALKILINE</CardTitle>
-                </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   <TapeRunList
                     runs={tapeRuns}
                     onAdd={handleAddTapeRun}
