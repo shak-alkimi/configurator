@@ -1,34 +1,20 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-
-const TAPE_SPECS = {
-  '2700k': { watts_per_foot: 4.4, price_per_foot: 12 },
-  '3000k': { watts_per_foot: 4.4, price_per_foot: 12 },
-  '3500k': { watts_per_foot: 4.4, price_per_foot: 12 },
-  'warm_dim': { watts_per_foot: 7.2, price_per_foot: 18 },
-  'tunable_white': { watts_per_foot: 9.6, price_per_foot: 24 },
-  // Legacy values
-  'standard_white': { watts_per_foot: 4.4, price_per_foot: 12 },
-  'standard_warm': { watts_per_foot: 4.4, price_per_foot: 12 },
-  'rgb': { watts_per_foot: 7.2, price_per_foot: 18 },
-  'rgbw': { watts_per_foot: 9.6, price_per_foot: 24 },
-  'high_output': { watts_per_foot: 7.2, price_per_foot: 18 }
-};
-
-const CHANNEL_SPECS = {
-  surface_mount: { price_per_foot: 8 },
-  recessed: { price_per_foot: 12 },
-  corner: { price_per_foot: 10 },
-  none: { price_per_foot: 0 }
-};
-
-const DRIVER_SPECS = [
-  { max_watts: 60, price: 45, name: "60W Driver" },
-  { max_watts: 96, price: 65, name: "96W Driver" }
-];
+import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
 
 export default function MaterialsCalculator({ runs }) {
+  const { data: productCatalog = [] } = useQuery({
+    queryKey: ['productCatalog'],
+    queryFn: () => base44.entities.ProductCatalog.list(),
+  });
+
+  const getTapePrice = (variant) => productCatalog.find(p => p.product_type === 'tape' && p.variant === variant)?.price_per_unit || 12;
+  const getTapeWatts = (variant) => productCatalog.find(p => p.product_type === 'tape' && p.variant === variant)?.watts_per_foot || 4.4;
+  const getChannelPrice = (variant) => productCatalog.find(p => p.product_type === 'channel' && p.variant === variant)?.price_per_unit || 8;
+  const getDriverPrice = (variant) => productCatalog.find(p => p.product_type === 'driver' && p.variant === variant)?.price_per_unit || 85;
+  const getDriverMaxWatts = (variant) => productCatalog.find(p => p.product_type === 'driver' && p.variant === variant)?.max_watts || 60;
   const formatUSD = (amount) => {
     return amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
