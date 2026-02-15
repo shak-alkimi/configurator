@@ -300,10 +300,18 @@ export default function Calculator() {
             <div className="lg:col-span-1 flex flex-col gap-2 self-start">
               {!isNewProject && (
                 <div className="grid grid-cols-3 gap-2 w-full">
-                  <Button variant="outline" size="sm" onClick={handleExportQuote} className="h-8 justify-center text-xs">
-                    <Download className="h-3 w-3 mr-1" />
-                    Export
-                  </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-8 justify-center text-xs">
+                          <Download className="h-3 w-3 mr-1" />
+                          Export
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={handleExportQuoteCSV}>CSV</DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExportQuotePDF}>PDF</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   <Button variant="outline" size="sm" onClick={handleExportSubmittal} className="h-8 justify-center text-xs">
                     <FileText className="h-3 w-3 mr-1" />
                     Specs
