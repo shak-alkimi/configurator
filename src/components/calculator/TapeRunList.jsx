@@ -109,8 +109,8 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
       {/* Add New Run */}
       <Card className="border-dashed">
         <CardContent className="pt-4 px-4">
-          <div className="grid grid-cols-12 gap-3 items-end">
-            <div className="col-span-1 space-y-1.5">
+          <div className="grid grid-cols-12 gap-4 items-end">
+            <div className="col-span-1 space-y-2">
               <Label className="text-xs">Type</Label>
               <Input
                 value={newRun.run_name}
