@@ -49,7 +49,9 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
         {isLoading ? (
           <div className="text-center py-8 text-slate-400 text-sm">Loading...</div>
         ) : projects.length === 0 ? (
-          <div className="text-center py-8" />
+          <div className="text-center py-8 text-slate-400 text-sm">
+            <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
+          </div>
         ) : filteredProjects.length === 0 ? (
           <div className="text-center py-8 text-slate-400 text-sm">
             No projects match your search.
