@@ -141,6 +141,11 @@ export default function Calculator() {
       return;
     }
 
+    if (!userOrg) {
+      toast.error('Unable to save project - organization not loaded');
+      return;
+    }
+
     // Calculate total price from tape runs
     const totalPrice = calculateTotalPrice(tapeRuns);
 
@@ -156,6 +161,10 @@ export default function Calculator() {
       // Save project first
       if (!projectData.project_name || !projectData.customer_name) {
         toast.error('Please save project details first');
+        return;
+      }
+      if (!userOrg) {
+        toast.error('Unable to save project - organization not loaded');
         return;
       }
       const result = await saveProjectMutation.mutateAsync({ ...projectData, organization_id: userOrg });
