@@ -64,11 +64,11 @@ export default function AgentChat() {
     <div className="h-screen flex flex-col bg-slate-50">
       {/* Header */}
       <div className="border-b border-slate-200 bg-white">
-        <div className="pt-10 pb-6 pr-6 pl-0">
+        <div className="flex items-center py-6 pr-6 pl-0">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
             alt="ALKIMI Logo"
-            className="h-12 mb-1"
+            className="h-12"
             style={{ filter: 'invert(1)' }}
           />
         </div>
