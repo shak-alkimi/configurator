@@ -86,6 +86,18 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
                    {format(new Date(project.created_date), 'MMM d, yyyy')}
                  </div>
                </div>
+               {project.status === 'approved' && (
+                 <div className="mt-3 flex justify-end">
+                   <Link 
+                     to={createPageUrl('ProjectDetail') + '?id=' + project.id}
+                     onClick={(e) => e.stopPropagation()}
+                   >
+                     <Button variant="ghost" size="icon" className="h-6 w-6">
+                       <ExternalLink className="h-3 w-3" />
+                     </Button>
+                   </Link>
+                 </div>
+               )}
               </CardContent>
             </Card>
           ))
