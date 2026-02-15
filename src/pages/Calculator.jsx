@@ -279,7 +279,7 @@ export default function Calculator() {
                   </Button>
                   <Button variant="outline" size="sm" onClick={handleExportSubmittal}>
                     <FileText className="h-4 w-4 mr-2" />
-                    Submittal Package
+                    Submittal
                   </Button>
                   <Button variant="outline" size="sm" onClick={handleDeleteProject}>
                     <Trash2 className="h-4 w-4 mr-2" />
