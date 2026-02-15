@@ -279,16 +279,16 @@ export default function Calculator() {
             </div>
             <div className="lg:col-span-1 flex flex-col gap-2">
               {!isNewProject && (
-                <div className="flex gap-2 w-full">
-                  <Button variant="outline" size="sm" onClick={handleExportQuote} className="flex-1 h-8 justify-center text-xs">
+                <div className="grid grid-cols-3 gap-2 w-full">
+                  <Button variant="outline" size="sm" onClick={handleExportQuote} className="h-8 justify-center text-xs">
                     <Download className="h-3 w-3 mr-1" />
                     Export
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleExportSubmittal} className="flex-1 h-8 justify-center text-xs">
+                  <Button variant="outline" size="sm" onClick={handleExportSubmittal} className="h-8 justify-center text-xs">
                     <FileText className="h-3 w-3 mr-1" />
                     Submittal
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleDeleteProject} className="flex-1 h-8 justify-center text-xs">
+                  <Button variant="outline" size="sm" onClick={handleDeleteProject} className="h-8 justify-center text-xs">
                     <Trash2 className="h-3 w-3 mr-1" />
                     Delete
                   </Button>
