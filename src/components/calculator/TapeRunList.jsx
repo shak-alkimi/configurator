@@ -112,7 +112,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 className="h-9"
               />
             </div>
-            <div className="col-span-2 space-y-1.5">
+            <div className="col-span-1 space-y-1.5">
               <Label className="text-xs">Feet</Label>
               <Input
                 type="number"
@@ -124,7 +124,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 className="h-9"
               />
             </div>
-            <div className="col-span-2 space-y-1.5">
+            <div className="col-span-1 space-y-1.5">
               <Label className="text-xs">Inches</Label>
               <Input
                 type="number"
@@ -172,7 +172,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-1 space-y-1.5">
+            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">Optic</Label>
               <Select
                 value={newRun.optic}
@@ -188,7 +188,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-2 space-y-1.5">
+            <div className="col-span-1 space-y-1.5">
               <Label className="text-xs">Output</Label>
               <Select
                 value={newRun.output}
