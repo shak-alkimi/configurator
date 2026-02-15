@@ -156,11 +156,12 @@ export default function MaterialsCalculator({ runs }) {
                 <h4 className="text-sm font-semibold text-slate-700 mb-2">Channels (4' sections)</h4>
                 <div className="space-y-2">
                   {Object.entries(calculations.channelByType).map(([type, data]) => {
-                    const sections = Math.ceil(data.feet / 4);
+                    const feet = Math.floor(data.feet);
+                    const inches = Math.round((data.feet % 1) * 12);
                     return (
                       <div key={type} className="flex justify-between text-sm">
                         <span className="text-slate-600 whitespace-nowrap">{type === 'surface_mount' ? 'Surface' : formatType(type)}</span>
-                        <span className="font-medium whitespace-nowrap">{sections} sections ({data.feet.toFixed(1)} ft)</span>
+                        <span className="font-medium whitespace-nowrap">{feet}'{inches}"</span>
                       </div>
                     );
                   })}
