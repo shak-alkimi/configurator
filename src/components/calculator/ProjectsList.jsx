@@ -30,8 +30,8 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 border-b space-y-3">
-        <Button onClick={onNew} className="w-full hover:opacity-90" size="sm" style={{ backgroundColor: '#e9ff64', color: '#000' }}>
-          <Plus className="h-4 w-4 mr-2" />
+        <Button onClick={onNew} className="w-full hover:opacity-90 text-xs" size="sm" style={{ backgroundColor: '#e9ff64', color: '#000' }}>
+          <Plus className="h-3 w-3 mr-1" />
           New Project
         </Button>
         <div className="relative">
