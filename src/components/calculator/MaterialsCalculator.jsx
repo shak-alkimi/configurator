@@ -120,18 +120,18 @@ export default function MaterialsCalculator({ runs }) {
   return (
     <div className="space-y-4">
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Materials Required</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg whitespace-nowrap">Materials Required</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 pt-3">
           {/* Tape Light */}
           <div>
-            <h4 className="text-sm font-semibold text-slate-700 mb-2">Tape Light</h4>
+            <h4 className="text-sm font-semibold text-slate-700 mb-2 whitespace-nowrap">Tape Light</h4>
             <div className="space-y-2">
               {Object.entries(calculations.tapeByType).map(([type, data]) => (
-                <div key={type} className="flex justify-between text-sm">
-                  <span className="text-slate-600">{formatType(type)}</span>
-                  <span className="font-medium">{data.feet.toFixed(1)} ft</span>
+                <div key={type} className="flex justify-between text-sm gap-4">
+                  <span className="text-slate-600 whitespace-nowrap">{formatType(type)}</span>
+                  <span className="font-medium whitespace-nowrap">{data.feet.toFixed(1)} ft</span>
                 </div>
               ))}
             </div>
@@ -143,14 +143,14 @@ export default function MaterialsCalculator({ runs }) {
           {Object.keys(calculations.channelByType).length > 0 && (
             <>
               <div>
-                <h4 className="text-sm font-semibold text-slate-700 mb-2">Channels (4' sections)</h4>
+                <h4 className="text-sm font-semibold text-slate-700 mb-2 whitespace-nowrap">Channels (4' sections)</h4>
                 <div className="space-y-2">
                   {Object.entries(calculations.channelByType).map(([type, data]) => {
                     const sections = Math.ceil(data.feet / 4);
                     return (
-                      <div key={type} className="flex justify-between text-sm">
-                        <span className="text-slate-600">{formatType(type)}</span>
-                        <span className="font-medium">{sections} sections ({data.feet.toFixed(1)} ft)</span>
+                      <div key={type} className="flex justify-between text-sm gap-4">
+                        <span className="text-slate-600 whitespace-nowrap">{formatType(type)}</span>
+                        <span className="font-medium whitespace-nowrap">{sections} sections ({data.feet.toFixed(1)} ft)</span>
                       </div>
                     );
                   })}
@@ -162,15 +162,15 @@ export default function MaterialsCalculator({ runs }) {
 
           {/* Drivers */}
           <div>
-            <h4 className="text-sm font-semibold text-slate-700 mb-2">Power Drivers</h4>
+            <h4 className="text-sm font-semibold text-slate-700 mb-2 whitespace-nowrap">Power Drivers</h4>
             <div className="space-y-2">
-              <div className="flex justify-between text-sm text-slate-500">
-                <span>Total Power Required:</span>
-                <span>{calculations.totalWatts.toFixed(1)}W</span>
+              <div className="flex justify-between text-sm text-slate-500 gap-4">
+                <span className="whitespace-nowrap">Total Power Required:</span>
+                <span className="whitespace-nowrap">{calculations.totalWatts.toFixed(1)}W</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Power Drivers</span>
-                <span className="font-medium">{calculations.requiredDrivers.length} units</span>
+              <div className="flex justify-between text-sm gap-4">
+                <span className="text-slate-600 whitespace-nowrap">Power Drivers</span>
+                <span className="font-medium whitespace-nowrap">{calculations.requiredDrivers.length} units</span>
               </div>
             </div>
           </div>
@@ -179,11 +179,11 @@ export default function MaterialsCalculator({ runs }) {
 
           {/* Mounting Hardware */}
           <div>
-            <h4 className="text-sm font-semibold text-slate-700 mb-2">Mounting Hardware</h4>
+            <h4 className="text-sm font-semibold text-slate-700 mb-2 whitespace-nowrap">Mounting Hardware</h4>
             <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Mounting Clips</span>
-                <span className="font-medium">{calculations.clipSets} sets ({calculations.totalClips} clips)</span>
+              <div className="flex justify-between text-sm gap-4">
+                <span className="text-slate-600 whitespace-nowrap">Mounting Clips</span>
+                <span className="font-medium whitespace-nowrap">{calculations.clipSets} sets ({calculations.totalClips} clips)</span>
               </div>
             </div>
           </div>
@@ -192,37 +192,37 @@ export default function MaterialsCalculator({ runs }) {
 
       {/* Pricing Summary */}
       <Card className="border-black" style={{ backgroundColor: '#000000' }}>
-        <CardHeader className="relative">
-          <CardTitle className="text-lg text-white">Quote Summary</CardTitle>
+        <CardHeader className="relative pb-3">
+          <CardTitle className="text-lg text-white whitespace-nowrap">Quote Summary</CardTitle>
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/8dbb9078f_Screenshot2026-02-14155939.png" 
             alt="Logo" 
             className="absolute top-4 right-6 h-8"
           />
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-300">Tape Light</span>
-            <span className="font-medium text-white">${formatUSD(calculations.tapeCost)}</span>
+        <CardContent className="space-y-2 pt-3">
+          <div className="flex justify-between text-sm gap-4">
+            <span className="text-slate-300 whitespace-nowrap">Tape Light</span>
+            <span className="font-medium text-white whitespace-nowrap">${formatUSD(calculations.tapeCost)}</span>
           </div>
           {calculations.channelCost > 0 && (
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-300">Channels</span>
-              <span className="font-medium text-white">${formatUSD(calculations.channelCost)}</span>
+            <div className="flex justify-between text-sm gap-4">
+              <span className="text-slate-300 whitespace-nowrap">Channels</span>
+              <span className="font-medium text-white whitespace-nowrap">${formatUSD(calculations.channelCost)}</span>
             </div>
           )}
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-300">Power Drivers</span>
-            <span className="font-medium text-white">${formatUSD(calculations.driverCost)}</span>
+          <div className="flex justify-between text-sm gap-4">
+            <span className="text-slate-300 whitespace-nowrap">Power Drivers</span>
+            <span className="font-medium text-white whitespace-nowrap">${formatUSD(calculations.driverCost)}</span>
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-300">Mounting Hardware</span>
-            <span className="font-medium text-white">${formatUSD(calculations.clipCost)}</span>
+          <div className="flex justify-between text-sm gap-4">
+            <span className="text-slate-300 whitespace-nowrap">Mounting Hardware</span>
+            <span className="font-medium text-white whitespace-nowrap">${formatUSD(calculations.clipCost)}</span>
           </div>
           <Separator className="bg-slate-600" />
-          <div className="flex justify-between text-lg font-semibold">
-            <span className="text-white">Total Project Cost</span>
-            <span className="text-white">${formatUSD(calculations.totalCost)}</span>
+          <div className="flex justify-between text-lg font-semibold gap-4">
+            <span className="text-white whitespace-nowrap">Total Project Cost</span>
+            <span className="text-white whitespace-nowrap">${formatUSD(calculations.totalCost)}</span>
           </div>
         </CardContent>
       </Card>
