@@ -109,9 +109,9 @@ export default function AgentChat() {
       </div>
 
       {/* Input */}
-      <div className="border-t bg-white p-4 sm:p-6">
+      <div className="border-t bg-white p-2 sm:p-4">
         <div className="flex justify-center">
-          <div className="flex gap-3 w-full max-w-2xl">
+          <div className="flex gap-2 w-full max-w-2xl">
             <Input
              value={inputValue}
              onChange={(e) => setInputValue(e.target.value)}
