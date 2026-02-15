@@ -183,8 +183,26 @@ export default function Calculator() {
     return total;
   };
 
-  const handleExportQuote = () => {
-    toast.info('Export feature coming soon');
+  const handleExportQuote = async () => {
+    try {
+      const response = await base44.functions.invoke('exportQuotePDF', {
+        projectData,
+        runs: tapeRuns
+      });
+      
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${projectData.project_name || 'quote'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      toast.success('Quote exported as PDF');
+    } catch (error) {
+      toast.error('Failed to export quote');
+    }
   };
 
   const handleDeleteProject = () => {
