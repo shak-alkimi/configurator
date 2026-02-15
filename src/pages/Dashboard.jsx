@@ -50,14 +50,14 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {/* Calculator Card */}
           <Link to={createPageUrl('Calculator')}>
-            <Card className="h-full bg-slate-800 border-slate-700 hover:border-slate-500 transition-all cursor-pointer hover:shadow-lg">
+            <Card className="h-full bg-slate-50 border-slate-200 hover:border-slate-300 transition-all cursor-pointer hover:shadow-lg">
               <CardContent className="p-8 flex flex-col items-center justify-center text-center h-full gap-4">
-                <div className="p-4 bg-blue-500/20 rounded-lg">
-                  <Calculator className="h-8 w-8 text-blue-400" />
+                <div className="p-4 bg-blue-100 rounded-lg">
+                  <Calculator className="h-8 w-8 text-blue-600" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white mb-2">Tape Light Calculator</h2>
-                  <p className="text-slate-400 text-sm">Create new quotes and manage your projects</p>
+                  <h2 className="text-xl font-bold text-slate-900 mb-2">Tape Light Calculator</h2>
+                  <p className="text-slate-600 text-sm">Create new quotes and manage your projects</p>
                 </div>
                 <Button className="mt-2 gap-2" style={{ backgroundColor: '#e9ff64', color: '#000' }}>
                   Open Calculator
