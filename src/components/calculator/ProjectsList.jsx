@@ -71,10 +71,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
                  <div className="flex-1">
                    <h3 className="font-semibold text-sm">{project.project_name}</h3>
                  </div>
-                 <div className="flex items-center gap-2">
-                   <Badge className={`${statusColors[project.status]} text-xs`}>
-                     {project.status.replace('_', ' ')}
-                   </Badge>
+                 <div className="flex flex-col items-center gap-1">
                    {project.status === 'approved' && (
                      <Link 
                        to={createPageUrl('ProjectDetail') + '?id=' + project.id}
@@ -85,6 +82,9 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
                        </Button>
                      </Link>
                    )}
+                   <Badge className={`${statusColors[project.status]} text-xs`}>
+                     {project.status.replace('_', ' ')}
+                   </Badge>
                  </div>
                </div>
                <div className="text-xs text-slate-600 space-y-1">
