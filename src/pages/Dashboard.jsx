@@ -51,9 +51,7 @@ export default function Dashboard() {
           <Link to={createPageUrl('Calculator')}>
             <Card className="h-full bg-slate-50 border-slate-200 hover:border-slate-300 transition-all cursor-pointer hover:shadow-lg">
               <CardContent className="p-8 flex flex-col items-center justify-center text-center h-full gap-4">
-                <div className="p-4 bg-blue-100 rounded-lg">
-                  <Calculator className="h-8 w-8 text-blue-600" />
-                </div>
+                <Calculator className="h-8 w-8 text-black" />
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 mb-2">Quotations</h2>
                    <p className="text-slate-600 text-sm">Create and manage quotes</p>
