@@ -29,11 +29,12 @@ export default function MaterialsCalculator({ runs }) {
       if (!tapeByType[type]) {
         tapeByType[type] = { feet: 0, watts: 0, cost: 0 };
       }
-      const specs = TAPE_SPECS[type] || { watts_per_foot: 4.4, price_per_foot: 12 };
+      const pricePerFoot = getTapePrice(type);
+      const wattsPerFoot = getTapeWatts(type);
       tapeByType[type].feet += run.length_feet;
-      tapeByType[type].watts += run.length_feet * specs.watts_per_foot;
-      tapeByType[type].cost += run.length_feet * specs.price_per_foot;
-      totalWatts += run.length_feet * specs.watts_per_foot;
+      tapeByType[type].watts += run.length_feet * wattsPerFoot;
+      tapeByType[type].cost += run.length_feet * pricePerFoot;
+      totalWatts += run.length_feet * wattsPerFoot;
     });
 
     // Calculate channel totals by type
