@@ -105,9 +105,9 @@ export default function ProjectDetail() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to={createPageUrl('Calculator')}>
-              <Button variant="outline" size="icon">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
+              <Button variant="outline" size="icon" className="h-8 w-8">
+                 <ArrowLeft className="h-4 w-4" />
+               </Button>
             </Link>
             <div>
               <h1 className="text-3xl font-bold">{project.project_name}</h1>
@@ -191,7 +191,7 @@ export default function ProjectDetail() {
                   <div className="py-12 text-center text-slate-400">
                     <p>No tape runs added yet</p>
                     <Link to={createPageUrl('Calculator')}>
-                      <Button className="mt-4" variant="outline">
+                      <Button size="sm" className="mt-4 h-8 text-xs" variant="outline">
                         Add Materials
                       </Button>
                     </Link>
