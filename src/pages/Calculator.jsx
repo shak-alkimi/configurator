@@ -158,7 +158,7 @@ export default function Calculator() {
         toast.error('Please save project details first');
         return;
       }
-      const result = await saveProjectMutation.mutateAsync(projectData);
+      const result = await saveProjectMutation.mutateAsync({ ...projectData, organization_id: userOrg });
       setSelectedProjectId(result.id);
       setIsNewProject(false);
       
