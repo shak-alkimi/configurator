@@ -52,6 +52,7 @@ import Calculator from './pages/Calculator';
 import ProjectDetail from './pages/ProjectDetail';
 import Inventory from './pages/Inventory';
 import Analytics from './pages/Analytics';
+import Dashboard from './pages/Dashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -61,6 +62,7 @@ export const PAGES = {
     "ProjectDetail": ProjectDetail,
     "Inventory": Inventory,
     "Analytics": Analytics,
+    "Dashboard": Dashboard,
 }
 
 export const pagesConfig = {
