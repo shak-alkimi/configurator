@@ -35,14 +35,14 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
           New Project
         </Button>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder=""
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9"
-          />
-        </div>
+           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+           <Input
+             placeholder=""
+             value={searchQuery}
+             onChange={(e) => setSearchQuery(e.target.value)}
+             className="pl-9 h-8"
+           />
+         </div>
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
