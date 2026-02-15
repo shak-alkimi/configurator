@@ -70,7 +70,7 @@ export default function Calculator() {
       }
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['projects', userOrg] });
       if (isNewProject) {
         setSelectedProjectId(result.id);
         setIsNewProject(false);
