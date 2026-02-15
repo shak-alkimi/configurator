@@ -108,7 +108,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
               <Input
                 value={newRun.run_name}
                 onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })}
-                placeholder="Under Cabinet"
+                placeholder="L01"
                 className="h-9"
               />
             </div>
