@@ -70,7 +70,7 @@ export default function Dashboard() {
               <FileText className="h-12 w-12 text-black" />
               <div>
                   <h2 className="text-xl font-bold text-slate-900 mb-2">Projects</h2>
-                  <p className="text-slate-600 text-sm">View details for approved projects</p>
+                  <p className="text-slate-600 text-sm">View project details</p>
                 </div>
               <Link to={createPageUrl('Calculator')}>
                 <Button size="sm" className="mt-2 gap-2 text-xs h-8 hover:opacity-90" style={{ backgroundColor: '#e9ff64', color: '#000' }}>
