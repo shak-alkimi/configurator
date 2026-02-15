@@ -30,6 +30,7 @@ export default function ProjectForm({ project, onChange }) {
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="quoted">Quoted</SelectItem>
               <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="in_progress">In Progress</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
             </SelectContent>
           </Select>
@@ -66,6 +67,30 @@ export default function ProjectForm({ project, onChange }) {
           onChange={(e) => onChange({ ...project, customer_phone: e.target.value })}
           placeholder="(555) 123-4567"
         />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="deadline">Project Deadline</Label>
+          <Input
+            id="deadline"
+            type="date"
+            value={project.deadline || ''}
+            onChange={(e) => onChange({ ...project, deadline: e.target.value })}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="progress">Progress (%)</Label>
+          <Input
+            id="progress"
+            type="number"
+            min="0"
+            max="100"
+            value={project.progress || 0}
+            onChange={(e) => onChange({ ...project, progress: parseInt(e.target.value) || 0 })}
+            placeholder="0"
+          />
+        </div>
       </div>
 
       <div className="space-y-2">
