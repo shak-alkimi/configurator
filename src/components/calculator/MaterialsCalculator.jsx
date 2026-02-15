@@ -45,9 +45,9 @@ export default function MaterialsCalculator({ runs }) {
         if (!channelByType[type]) {
           channelByType[type] = { feet: 0, cost: 0 };
         }
-        const specs = CHANNEL_SPECS[type];
+        const pricePerFoot = getChannelPrice(type);
         channelByType[type].feet += run.length_feet;
-        channelByType[type].cost += run.length_feet * specs.price_per_foot;
+        channelByType[type].cost += run.length_feet * pricePerFoot;
       }
     });
 
