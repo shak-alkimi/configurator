@@ -193,7 +193,7 @@ export default function Calculator() {
   };
 
   return (
-    <div className="h-screen flex bg-slate-50">
+    <div className="h-screen flex" style={{ backgroundColor: '#eeeeee' }}>
       {/* Sidebar - Projects List */}
       <div className="w-80 border-r bg-white">
         <div className="h-full flex flex-col">
