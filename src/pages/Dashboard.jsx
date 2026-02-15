@@ -56,7 +56,7 @@ export default function Dashboard() {
                   <h2 className="text-xl font-bold text-slate-900 mb-2">Quotations</h2>
                    <p className="text-slate-600 text-sm">Create and manage quotes</p>
                   </div>
-                  <Button size="sm" className="mt-2 gap-2 text-xs h-8 hover:opacity-90 w-full" style={{ backgroundColor: '#e9ff64', color: '#000' }}>
+                  <Button size="sm" className="mt-2 gap-2 text-xs h-8 hover:opacity-90" style={{ backgroundColor: '#e9ff64', color: '#000' }}>
                    Open
                    <ArrowRight className="h-4 w-4" />
                   </Button>
