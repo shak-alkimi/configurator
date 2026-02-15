@@ -68,11 +68,11 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
             >
               <CardContent className="p-3 h-24 flex flex-col justify-between pr-10">
                <div>
-                 <div className="flex items-start justify-between mb-2">
+                 <div className="flex items-start mb-2">
                    <div className="flex-1">
                      <h3 className="font-semibold text-sm">{project.project_name}</h3>
                    </div>
-                   <Badge className={`${statusColors[project.status]} text-xs`}>
+                   <Badge className={`${statusColors[project.status]} text-xs ml-2`}>
                      {project.status.replace('_', ' ')}
                    </Badge>
                  </div>
