@@ -272,7 +272,7 @@ export default function Calculator() {
             </div>
             <div className="flex flex-col gap-2">
               {!isNewProject && (
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full">
                   <Button variant="outline" size="sm" onClick={handleExportQuote} className="flex-1 h-8 justify-center text-xs">
                     <Download className="h-3 w-3 mr-1" />
                     Export
@@ -287,7 +287,7 @@ export default function Calculator() {
                   </Button>
                 </div>
               )}
-              <Button size="sm" onClick={handleSaveProject} style={{ backgroundColor: '#e9ff64', color: '#000' }} className="hover:opacity-90 text-xs h-10 w-full px-16">
+              <Button size="sm" onClick={handleSaveProject} style={{ backgroundColor: '#e9ff64', color: '#000' }} className="hover:opacity-90 text-xs h-10 w-full">
                 <Save className="h-3 w-3 mr-1" />
                 Save Project
               </Button>
