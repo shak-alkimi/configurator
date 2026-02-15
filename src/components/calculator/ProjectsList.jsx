@@ -66,13 +66,11 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
              }`}
              onClick={() => onSelect(project.id)}
             >
-              <CardContent className="p-3 h-24 flex flex-col justify-between">
-               <div>
-                 <div className="flex items-start mb-2">
-                   <div className="flex-1">
-                     <h3 className="font-semibold text-sm">{project.project_name}</h3>
-                   </div>
-                 </div>
+              <CardContent className="p-3 h-32 flex flex-col justify-between">
+              <div>
+                <div className="mb-2 pr-20">
+                  <h3 className="font-semibold text-sm break-words">{project.project_name}</h3>
+                </div>
                  <Badge className={`absolute top-3 right-3 ${statusColors[project.status]} text-xs`}>
                    {project.status.replace('_', ' ')}
                  </Badge>
