@@ -273,15 +273,15 @@ export default function Calculator() {
             <div className="flex gap-2">
               {!isNewProject && (
                 <>
-                  <Button variant="outline" size="sm" onClick={handleExportQuote}>
+                  <Button variant="outline" size="sm" onClick={handleExportQuote} className="w-24">
                     <Download className="h-4 w-4 mr-2" />
                     Export
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleExportSubmittal}>
+                  <Button variant="outline" size="sm" onClick={handleExportSubmittal} className="w-24">
                     <FileText className="h-4 w-4 mr-2" />
                     Submittal
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleDeleteProject}>
+                  <Button variant="outline" size="sm" onClick={handleDeleteProject} className="w-24">
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete
                   </Button>
