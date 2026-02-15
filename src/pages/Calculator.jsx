@@ -156,11 +156,16 @@ export default function Calculator() {
 
   const calculateTotalPrice = (runs) => {
     const TAPE_SPECS = {
-      standard_white: { price_per_foot: 12 },
-      standard_warm: { price_per_foot: 12 },
-      rgb: { price_per_foot: 18 },
-      rgbw: { price_per_foot: 24 },
-      high_output: { price_per_foot: 28 }
+      '2700k': { price_per_foot: 12 },
+      '3000k': { price_per_foot: 12 },
+      '3500k': { price_per_foot: 12 },
+      'warm_dim': { price_per_foot: 18 },
+      'tunable_white': { price_per_foot: 24 },
+      'standard_white': { price_per_foot: 12 },
+      'standard_warm': { price_per_foot: 12 },
+      'rgb': { price_per_foot: 18 },
+      'rgbw': { price_per_foot: 24 },
+      'high_output': { price_per_foot: 18 }
     };
 
     const CHANNEL_SPECS = {
@@ -172,8 +177,10 @@ export default function Calculator() {
 
     let total = 0;
     runs.forEach(run => {
-      total += run.length_feet * TAPE_SPECS[run.tape_type].price_per_foot;
-      total += run.length_feet * CHANNEL_SPECS[run.channel_type].price_per_foot;
+      const tapeSpec = TAPE_SPECS[run.tape_type] || { price_per_foot: 0 };
+      const channelSpec = CHANNEL_SPECS[run.channel_type] || { price_per_foot: 0 };
+      total += run.length_feet * tapeSpec.price_per_foot;
+      total += run.length_feet * channelSpec.price_per_foot;
     });
 
     // Add drivers and hardware (simplified)
