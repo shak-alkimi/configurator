@@ -72,10 +72,10 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
                    <div className="flex-1">
                      <h3 className="font-semibold text-sm">{project.project_name}</h3>
                    </div>
-                   <Badge className={`${statusColors[project.status]} text-xs ml-2`}>
-                     {project.status.replace('_', ' ')}
-                   </Badge>
                  </div>
+                 <Badge className={`absolute top-3 right-3 ${statusColors[project.status]} text-xs`}>
+                   {project.status.replace('_', ' ')}
+                 </Badge>
                  <div className="text-xs text-slate-600 space-y-1">
                    <div>{project.customer_name}</div>
                    {project.total_price && (
