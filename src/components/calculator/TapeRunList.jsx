@@ -131,7 +131,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 className="h-9"
               />
             </div>
-            <div className="col-span-1 space-y-1.5">
+            <div className="col-span-1 space-y-2">
               <Label className="text-xs">Inches</Label>
               <Input
                 type="number"
