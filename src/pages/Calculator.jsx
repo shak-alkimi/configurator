@@ -146,6 +146,7 @@ export default function Calculator() {
 
     await saveProjectMutation.mutateAsync({
       ...projectData,
+      organization_id: userOrg,
       total_price: totalPrice
     });
   };
