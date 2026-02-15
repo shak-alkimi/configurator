@@ -245,7 +245,7 @@ export default function Calculator() {
               className="h-12 mb-3 w-full object-cover object-left"
               style={{ filter: 'invert(1)' }}
             />
-            <p className="text-xs text-slate-500 pl-4">Project Quotes & Estimates</p>
+            <p className="text-xs text-slate-500 pl-4">Project Quotes</p>
           </div>
           <ProjectsList
             projects={projects}
