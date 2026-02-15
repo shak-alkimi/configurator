@@ -261,8 +261,8 @@ export default function Calculator() {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto p-6 space-y-6">
           {/* Header Actions */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-3">
+          <div>
+            <div className="mb-6">
               <h2 className="text-2xl font-bold text-slate-900">
                 {isNewProject ? 'New Project' : projectData.project_name}
               </h2>
@@ -270,7 +270,9 @@ export default function Calculator() {
                 {isNewProject ? 'Create a new tape light quote' : 'Edit project details and runs'}
               </p>
             </div>
-            <div className="flex gap-2 lg:justify-end items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div className="lg:col-span-3"></div>
+              <div className="flex gap-2 flex-col">
               {!isNewProject && (
                 <>
                   <Button variant="outline" size="sm" onClick={handleExportQuote} className="w-24 h-8 justify-center text-xs">
@@ -287,10 +289,11 @@ export default function Calculator() {
                   </Button>
                 </>
               )}
-              <Button size="sm" onClick={handleSaveProject} style={{ backgroundColor: '#e9ff64', color: '#000' }} className="hover:opacity-90 text-xs">
+              <Button size="sm" onClick={handleSaveProject} style={{ backgroundColor: '#e9ff64', color: '#000' }} className="hover:opacity-90 text-xs w-full">
                 <Save className="h-3 w-3 mr-1" />
                 Save Project
               </Button>
+              </div>
             </div>
           </div>
 
