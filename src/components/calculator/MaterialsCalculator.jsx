@@ -203,7 +203,7 @@ export default function MaterialsCalculator({ runs }) {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600 whitespace-nowrap">External Clips</span>
-                <span className="font-medium whitespace-nowrap">{calculations.clipSets} sets ({calculations.totalClips} clips)</span>
+                <span className="font-medium whitespace-nowrap">{calculations.totalClips} clips</span>
               </div>
             </div>
           </div>
