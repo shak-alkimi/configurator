@@ -321,7 +321,7 @@ export default function Calculator() {
             </div>
             <div className="lg:col-span-1 flex flex-col gap-2 self-start">
               {!isNewProject && (
-                <div className="flex flex-col gap-2 w-full">
+                <div className="grid grid-cols-3 gap-2 w-full">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm" className="h-8 justify-center text-xs">
