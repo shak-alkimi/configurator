@@ -80,7 +80,7 @@ export default function AgentChat() {
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
               <MessageSquare className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500 mb-2">Start a conversation with our support agent</p>
+              <p className="text-slate-500 mb-2">Ask about your quotes, projects, or products</p>
               <p className="text-xs text-slate-400">Ask about your projects, quotes, or products</p>
             </div>
           </div>
