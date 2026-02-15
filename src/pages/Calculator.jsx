@@ -273,6 +273,9 @@ export default function Calculator() {
               <h2 className="text-2xl font-bold text-slate-900">
                 {isNewProject ? 'New Project' : projectData.project_name}
               </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                {isNewProject ? 'Create a new tape light quote' : 'Edit project details and runs'}
+              </p>
             </div>
             <div className="lg:col-span-1 flex flex-col gap-2">
               {!isNewProject && (
@@ -291,7 +294,7 @@ export default function Calculator() {
                   </Button>
                 </div>
               )}
-              <Button size="sm" onClick={handleSaveProject} style={{ backgroundColor: '#e9ff64', color: '#000' }} className="w-full hover:opacity-90 text-xs">
+              <Button size="sm" onClick={handleSaveProject} style={{ backgroundColor: '#e9ff64', color: '#000' }} className="hover:opacity-90 text-xs h-8 w-full">
                 <Save className="h-3 w-3 mr-1" />
                 Save Project
               </Button>
