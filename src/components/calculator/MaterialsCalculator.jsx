@@ -166,7 +166,7 @@ export default function MaterialsCalculator({ runs }) {
             <div className="space-y-2">
               <div className="flex justify-between text-sm text-slate-500">
                 <span className="whitespace-nowrap">Total Power Required:</span>
-                <span className="whitespace-nowrap">{calculations.totalWatts.toFixed(1)}W</span>
+                <span className="whitespace-nowrap">{calculations.totalWatts.toFixed(1)}w</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600 whitespace-nowrap">Power Drivers</span>
