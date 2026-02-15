@@ -68,12 +68,14 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
             >
               <CardContent className="p-3 h-32 flex flex-col justify-center">
               <div>
-                <div className="mb-2 pr-20">
-                  <h3 className="font-semibold text-sm break-words">{project.project_name}</h3>
+                <div className="flex gap-2 items-start mb-2">
+                  <div className="flex-1 pr-2">
+                    <h3 className="font-semibold text-sm break-words">{project.project_name}</h3>
+                  </div>
+                  <Badge className={`${statusColors[project.status]} text-xs flex-shrink-0`}>
+                    {project.status.replace('_', ' ')}
+                  </Badge>
                 </div>
-                 <Badge className={`absolute top-3 right-3 ${statusColors[project.status]} text-xs`}>
-                   {project.status.replace('_', ' ')}
-                 </Badge>
                  <div className="text-xs text-slate-600 space-y-1">
                    <div>{project.customer_name}</div>
                    {project.total_price && (
