@@ -37,7 +37,7 @@ export default function Dashboard() {
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
             alt="ALKIMI Logo"
-            className="h-10 mb-3 w-full object-cover"
+            className="h-10 mb-3"
           />
           <h1 className="text-3xl font-bold text-slate-900">Welcome back, {userInfo?.full_name?.split(' ')[0]}</h1>
           <p className="text-slate-500 mt-1">Manage your tape lighting projects</p>
