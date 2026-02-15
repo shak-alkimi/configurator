@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Trash2, Ruler } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
   const [newRun, setNewRun] = useState({
@@ -219,7 +219,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
             <CardContent className="py-3 px-4">
               <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 flex-1">
-               <Ruler className="h-4 w-4 text-slate-400 flex-shrink-0" />
                <div className="flex-1 grid gap-4 text-xs min-w-0" style={{gridTemplateColumns: '1.2fr 0.8fr 1fr 1fr 1fr 1.3fr 0.9fr'}}>
                 <div className="min-w-0">
                  <div className="text-xs text-slate-500 whitespace-nowrap">Type</div>
