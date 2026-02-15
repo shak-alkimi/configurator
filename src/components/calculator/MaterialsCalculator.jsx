@@ -153,7 +153,7 @@ export default function MaterialsCalculator({ runs }) {
           {Object.keys(calculations.channelByType).length > 0 && (
             <>
               <div>
-                <h4 className="text-sm font-semibold text-slate-700 mb-2">Channels (4' sections)</h4>
+                <h4 className="text-sm font-semibold text-slate-700 mb-2">Housings (4' sections)</h4>
                 <div className="space-y-2">
                   {Object.entries(calculations.channelByType).map(([type, data]) => {
                     const feet = Math.floor(data.feet);
@@ -227,12 +227,12 @@ export default function MaterialsCalculator({ runs }) {
           </div>
           {calculations.channelCost > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-slate-300 whitespace-nowrap">Channels</span>
+              <span className="text-slate-300 whitespace-nowrap">Housings</span>
               <span className="font-medium text-white whitespace-nowrap">${formatUSD(calculations.channelCost)}</span>
             </div>
           )}
           <div className="flex justify-between text-sm">
-            <span className="text-slate-300 whitespace-nowrap">Power Drivers</span>
+            <span className="text-slate-300 whitespace-nowrap">Drivers</span>
             <span className="font-medium text-white whitespace-nowrap">${formatUSD(calculations.driverCost)}</span>
           </div>
           <div className="flex justify-between text-sm">
