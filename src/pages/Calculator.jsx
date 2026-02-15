@@ -335,17 +335,17 @@ export default function Calculator() {
             <div className="flex gap-2">
               {!isNewProject && (
                 <>
-                  <Button variant="outline" size="sm" onClick={handleExportSpec} disabled={tapeRuns.length === 0}>
+                  <Button variant="outline" size="sm" onClick={handleExportSpec} disabled={tapeRuns.length === 0} className="flex-1">
                     <Download className="h-4 w-4 mr-2" />
                     Spec Sheet
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleDeleteProject}>
+                  <Button variant="outline" size="sm" onClick={handleDeleteProject} className="flex-1">
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete
                   </Button>
                 </>
               )}
-              <Button size="sm" onClick={handleSaveProject} style={{ backgroundColor: '#e9ff64', color: '#000' }} className="hover:opacity-90">
+              <Button size="sm" onClick={handleSaveProject} style={{ backgroundColor: '#e9ff64', color: '#000' }} className="hover:opacity-90 flex-1">
                 <Save className="h-4 w-4 mr-2" />
                 Save Project
               </Button>
