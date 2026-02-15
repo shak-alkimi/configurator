@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Save, Download, Trash2, ChevronDown } from "lucide-react";
+import { Save, Download, Trash2, ChevronDown, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 import ProjectsList from "../components/calculator/ProjectsList";
@@ -205,6 +205,28 @@ export default function Calculator() {
     }
   };
 
+  const handleExportSubmittal = async () => {
+    try {
+      const response = await base44.functions.invoke('exportSubmittalPackage', {
+        projectData,
+        runs: tapeRuns
+      });
+      
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${projectData.project_name || 'submittal'} - Submittal Package.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      toast.success('Submittal package exported as PDF');
+    } catch (error) {
+      toast.error('Failed to export submittal package');
+    }
+  };
+
   const handleDeleteProject = () => {
     if (selectedProjectId && confirm('Are you sure you want to delete this project?')) {
       deleteProjectMutation.mutate(selectedProjectId);
@@ -253,7 +275,11 @@ export default function Calculator() {
                 <>
                   <Button variant="outline" size="sm" onClick={handleExportQuote}>
                     <Download className="h-4 w-4 mr-2" />
-                    Export
+                    Export Quote
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleExportSubmittal}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Submittal Package
                   </Button>
                   <Button variant="outline" size="sm" onClick={handleDeleteProject}>
                     <Trash2 className="h-4 w-4 mr-2" />
