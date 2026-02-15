@@ -293,7 +293,6 @@ export default function Calculator() {
               </Button>
             </div>
           </div>
-          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Left Column - Project Details */}
