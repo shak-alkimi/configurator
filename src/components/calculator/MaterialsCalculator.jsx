@@ -153,7 +153,7 @@ export default function MaterialsCalculator({ runs }) {
           {Object.keys(calculations.channelByType).length > 0 && (
             <>
               <div>
-                <h4 className="text-sm font-semibold text-slate-700 mb-2">Housings (4' sections)</h4>
+                <h4 className="text-sm font-semibold text-slate-700 mb-2">Housings (4'sections)</h4>
                 <div className="space-y-2">
                   {Object.entries(calculations.channelByType).map(([type, data]) => {
                     const feet = Math.floor(data.feet);
