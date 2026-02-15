@@ -54,8 +54,8 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
   };
 
   const formatOutput = (type) => {
-    if (type === '2w') return '2W/ft, 200lm/ft';
-    if (type === '4w') return '4W/ft, 400lm/ft';
+    if (type === '2w') return '2w/ft, 200lm/ft';
+    if (type === '4w') return '4w/ft, 400lm/ft';
     return type;
   };
 
@@ -101,7 +101,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
 
       {/* Add New Run */}
       <Card className="border-dashed">
-        <CardContent className="pt-4">
+        <CardContent className="pt-4 px-4">
           <div className="grid grid-cols-12 gap-3 items-end">
             <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">Run Name</Label>
@@ -216,11 +216,11 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
       <div className="space-y-2">
         {runs.map((run) => (
           <Card key={run.id} className="border-slate-200">
-            <CardContent className="py-3">
+            <CardContent className="py-3 px-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 flex-1">
-                 <Ruler className="h-4 w-4 text-slate-400" />
-                 <div className="flex-1 grid grid-cols-7 gap-3 text-xs min-w-0">
+              <div className="flex items-center gap-3 flex-1">
+               <Ruler className="h-4 w-4 text-slate-400 flex-shrink-0" />
+               <div className="flex-1 grid grid-cols-7 gap-4 text-xs min-w-0">
                  <div className="min-w-0">
                  <div className="text-xs text-slate-500 whitespace-nowrap">Run Name</div>
                  <div className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis">{run.run_name || 'Unnamed Run'}</div>
