@@ -74,10 +74,14 @@ export default function Dashboard() {
                 <FileText className="h-8 w-8 text-green-600" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-900 mb-2">Active Projects</h2>
-                <p className="text-slate-600 text-sm">View details for approved projects</p>
-              </div>
-              <p className="text-2xl font-bold text-slate-900">{approvedProjects.length}</p>
+                  <h2 className="text-xl font-bold text-slate-900 mb-2">Projects</h2>
+                  <p className="text-slate-600 text-sm">View details for approved projects</p>
+                </div>
+              <Link to={createPageUrl('Calculator')}>
+                <Button className="mt-4 bg-slate-900 hover:bg-slate-800 text-white">
+                  Open Projects
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
