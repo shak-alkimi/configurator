@@ -110,15 +110,16 @@ export default function AgentChat() {
 
       {/* Input */}
       <div className="border-t bg-white p-6">
-        <div className="max-w-6xl mx-auto flex gap-3">
-          <Input
-           value={inputValue}
-           onChange={(e) => setInputValue(e.target.value)}
-           onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-           placeholder="..."
-           disabled={isLoading || !conversationId}
-           className="w-64 h-8"
-          />
+        <div className="flex justify-center">
+          <div className="flex gap-3">
+            <Input
+             value={inputValue}
+             onChange={(e) => setInputValue(e.target.value)}
+             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+             placeholder="..."
+             disabled={isLoading || !conversationId}
+             className="w-128 h-8"
+            />
           <Button
             size="sm"
             onClick={handleSendMessage}
