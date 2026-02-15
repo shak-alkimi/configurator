@@ -273,9 +273,6 @@ export default function Calculator() {
               <h2 className="text-2xl font-bold text-slate-900">
                 {isNewProject ? 'New Project' : projectData.project_name}
               </h2>
-              <p className="text-sm text-slate-500 mt-1">
-                {isNewProject ? 'Create a new tape light quote' : 'Edit project details and runs'}
-              </p>
             </div>
             <div className="lg:col-span-1 flex flex-col gap-2">
               {!isNewProject && (
