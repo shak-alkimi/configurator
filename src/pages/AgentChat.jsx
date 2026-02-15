@@ -61,15 +61,15 @@ export default function AgentChat() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="h-screen flex flex-col bg-slate-50">
       {/* Header */}
-      <div className="border-b bg-white p-4">
-        <h1 className="text-2xl font-bold text-slate-900">ALKIMI Support Chat</h1>
+      <div className="border-b bg-white p-6">
+        <h1 className="text-3xl font-bold text-slate-900">ALKIMI Support Chat</h1>
         <p className="text-sm text-slate-500 mt-1">Ask about quotes, products, and projects</p>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.length === 0 ? (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
@@ -103,8 +103,8 @@ export default function AgentChat() {
       </div>
 
       {/* Input */}
-      <div className="border-t bg-white p-4">
-        <div className="flex gap-2">
+      <div className="border-t bg-white p-6">
+        <div className="max-w-6xl mx-auto flex gap-3">
           <Input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -114,10 +114,11 @@ export default function AgentChat() {
             className="flex-1"
           />
           <Button
+            size="sm"
             onClick={handleSendMessage}
             disabled={isLoading || !conversationId || !inputValue.trim()}
             style={{ backgroundColor: '#e9ff64', color: '#000' }}
-            className="hover:opacity-90"
+            className="gap-2 text-xs h-8 hover:opacity-90"
           >
             <Send className="h-4 w-4" />
           </Button>

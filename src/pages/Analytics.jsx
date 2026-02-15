@@ -78,8 +78,8 @@ export default function AnalyticsPage() {
   return (
     <div className="h-screen flex flex-col bg-slate-50">
       {/* Header */}
-      <div className="border-b bg-white p-4">
-        <div className="max-w-4xl mx-auto flex items-center gap-2">
+      <div className="border-b bg-white p-6">
+        <div className="max-w-6xl mx-auto flex items-center gap-2">
           <Zap className="h-5 w-5 text-blue-600" />
           <div>
             <h1 className="text-lg font-bold text-slate-900">Business Analytics</h1>
@@ -89,8 +89,8 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-4xl mx-auto space-y-4">
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="max-w-6xl mx-auto space-y-4">
           {messages.length === 0 ? (
             <div className="text-center py-12">
               <Zap className="h-12 w-12 mx-auto text-slate-300 mb-3" />
@@ -168,8 +168,8 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Input */}
-      <div className="border-t bg-white p-4">
-        <div className="max-w-4xl mx-auto flex gap-3">
+      <div className="border-t bg-white p-6">
+        <div className="max-w-6xl mx-auto flex gap-3">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -179,9 +179,10 @@ export default function AnalyticsPage() {
             className="flex-1"
           />
           <Button
+            size="sm"
             onClick={handleSendMessage}
             disabled={loading || !input.trim()}
-            className="gap-2"
+            className="gap-2 text-xs h-8 hover:opacity-90"
             style={{ backgroundColor: "#e9ff64", color: "#000" }}
           >
             <Send className="h-4 w-4" />

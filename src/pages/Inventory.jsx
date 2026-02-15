@@ -115,9 +115,10 @@ export default function InventoryPage() {
             <p className="text-sm text-slate-500 mt-1">Track stock levels and sync with QuickBooks</p>
           </div>
           <Button
+            size="sm"
             onClick={() => syncMutation.mutate()}
             disabled={syncMutation.isPending}
-            className="gap-2"
+            className="gap-2 text-xs h-8 hover:opacity-90"
             style={{ backgroundColor: '#e9ff64', color: '#000' }}
           >
             <RefreshCw className={`h-4 w-4 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
