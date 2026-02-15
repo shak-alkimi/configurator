@@ -120,7 +120,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 min="0"
                 value={newRun.length_feet}
                 onChange={(e) => setNewRun({ ...newRun, length_feet: e.target.value })}
-                placeholder="10"
+                placeholder="0"
                 className="h-9"
               />
             </div>
