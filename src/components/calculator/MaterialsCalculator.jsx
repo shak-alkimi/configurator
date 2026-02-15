@@ -149,7 +149,7 @@ export default function MaterialsCalculator({ runs }) {
                     const sections = Math.ceil(data.feet / 4);
                     return (
                       <div key={type} className="flex justify-between text-sm">
-                        <span className="text-slate-600 whitespace-nowrap">{formatType(type)}</span>
+                        <span className="text-slate-600 whitespace-nowrap">{type === 'surface_mount' ? 'Surface' : formatType(type)}</span>
                         <span className="font-medium whitespace-nowrap">{sections} sections ({data.feet.toFixed(1)} ft)</span>
                       </div>
                     );
