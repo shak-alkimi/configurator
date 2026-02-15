@@ -49,12 +49,14 @@
  */
 import Calculator from './pages/Calculator';
 import ProjectDetail from './pages/ProjectDetail';
+import AgentChat from './pages/AgentChat';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Calculator": Calculator,
     "ProjectDetail": ProjectDetail,
+    "AgentChat": AgentChat,
 }
 
 export const pagesConfig = {
