@@ -124,7 +124,7 @@ export default function AgentChat() {
             onClick={handleSendMessage}
             disabled={isLoading || !conversationId || !inputValue.trim()}
             style={{ backgroundColor: '#e9ff64', color: '#000' }}
-            className="gap-2 text-xs h-8 hover:opacity-90"
+            className="gap-2 text-xs h-8 hover:opacity-90 w-20"
           >
             <Send className="h-4 w-4" />
           </Button>
