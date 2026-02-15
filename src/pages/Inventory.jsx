@@ -12,7 +12,19 @@ export default function InventoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editValues, setEditValues] = useState({});
+  const [isAdmin, setIsAdmin] = useState(false);
   const queryClient = useQueryClient();
+
+  // Check if user is admin
+  React.useEffect(() => {
+    const checkAdmin = async () => {
+      const user = await base44.auth.me();
+      if (user?.role === 'admin') {
+        setIsAdmin(true);
+      }
+    };
+    checkAdmin();
+  }, []);
 
   // Fetch inventory
   const { data: inventory = [], isLoading } = useQuery({
