@@ -47,16 +47,18 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AgentChat from './pages/AgentChat';
 import Calculator from './pages/Calculator';
 import ProjectDetail from './pages/ProjectDetail';
-import AgentChat from './pages/AgentChat';
+import Inventory from './pages/Inventory';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AgentChat": AgentChat,
     "Calculator": Calculator,
     "ProjectDetail": ProjectDetail,
-    "AgentChat": AgentChat,
+    "Inventory": Inventory,
 }
 
 export const pagesConfig = {
