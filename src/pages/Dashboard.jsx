@@ -67,7 +67,7 @@ export default function Dashboard() {
           {/* Projects Card */}
           <Card className="bg-slate-50 border-slate-200">
             <CardContent className="p-8 flex flex-col items-center justify-center text-center h-full gap-4">
-              <FileText className="h-8 w-8 text-black" />
+              <FileText className="h-3 w-3 text-black" />
               <div>
                   <h2 className="text-xl font-bold text-slate-900 mb-2">Projects</h2>
                   <p className="text-slate-600 text-sm">View details for approved projects</p>
