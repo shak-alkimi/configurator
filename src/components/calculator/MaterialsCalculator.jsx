@@ -128,12 +128,16 @@ export default function MaterialsCalculator({ runs }) {
           <div>
             <h4 className="text-sm font-semibold text-slate-700 mb-2">Tape Light</h4>
             <div className="space-y-2">
-              {Object.entries(calculations.tapeByType).map(([type, data]) => (
-                <div key={type} className="flex justify-between text-sm">
-                  <span className="text-slate-600 whitespace-nowrap">{formatType(type)}</span>
-                  <span className="font-medium whitespace-nowrap">{data.feet.toFixed(1)} ft</span>
-                </div>
-              ))}
+              {Object.entries(calculations.tapeByType).map(([type, data]) => {
+                const feet = Math.floor(data.feet);
+                const inches = Math.round((data.feet % 1) * 12);
+                return (
+                  <div key={type} className="flex justify-between text-sm">
+                    <span className="text-slate-600 whitespace-nowrap">{formatType(type)}</span>
+                    <span className="font-medium whitespace-nowrap">{feet}'{inches}"</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
