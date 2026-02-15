@@ -183,8 +183,110 @@ export default function Calculator() {
     return total;
   };
 
-  const handleExportQuote = () => {
-    toast.info('Export feature coming soon');
+  const handleExportSpec = async () => {
+    const materialsData = {
+      tapeByType: {},
+      channelByType: {},
+      requiredDrivers: [],
+      terminalBlocks: 0,
+      totalClips: 0,
+      tapeCost: 0,
+      channelCost: 0,
+      driverCost: 0,
+      terminalBlockCost: 0,
+      clipCost: 0,
+      totalCost: 0
+    };
+
+    // Recalculate materials for PDF
+    const TAPE_SPECS = {
+      '2700k': { watts_per_foot: 4.4, price_per_foot: 12 },
+      '3000k': { watts_per_foot: 4.4, price_per_foot: 12 },
+      '3500k': { watts_per_foot: 4.4, price_per_foot: 12 },
+      'warm_dim': { watts_per_foot: 7.2, price_per_foot: 18 },
+      'tunable_white': { watts_per_foot: 9.6, price_per_foot: 24 },
+      'standard_white': { watts_per_foot: 4.4, price_per_foot: 12 },
+      'standard_warm': { watts_per_foot: 4.4, price_per_foot: 12 },
+      'rgb': { watts_per_foot: 7.2, price_per_foot: 18 },
+      'rgbw': { watts_per_foot: 9.6, price_per_foot: 24 },
+      'high_output': { watts_per_foot: 7.2, price_per_foot: 18 }
+    };
+
+    const CHANNEL_SPECS = {
+      surface_mount: { price_per_foot: 8 },
+      recessed: { price_per_foot: 12 },
+      corner: { price_per_foot: 10 },
+      none: { price_per_foot: 0 }
+    };
+
+    const DRIVER_SPECS = [
+      { max_watts: 60, price: 45, name: "60W Driver" },
+      { max_watts: 96, price: 65, name: "96W Driver" }
+    ];
+
+    let totalWatts = 0;
+    tapeRuns.forEach(run => {
+      const type = run.tape_type;
+      if (!materialsData.tapeByType[type]) {
+        materialsData.tapeByType[type] = { feet: 0, watts: 0, cost: 0 };
+      }
+      const specs = TAPE_SPECS[type] || { watts_per_foot: 4.4, price_per_foot: 12 };
+      materialsData.tapeByType[type].feet += run.length_feet;
+      materialsData.tapeByType[type].watts += run.length_feet * specs.watts_per_foot;
+      materialsData.tapeByType[type].cost += run.length_feet * specs.price_per_foot;
+      totalWatts += run.length_feet * specs.watts_per_foot;
+    });
+
+    tapeRuns.forEach(run => {
+      const type = run.channel_type;
+      if (type !== 'none') {
+        if (!materialsData.channelByType[type]) {
+          materialsData.channelByType[type] = { feet: 0, cost: 0 };
+        }
+        const specs = CHANNEL_SPECS[type];
+        materialsData.channelByType[type].feet += run.length_feet;
+        materialsData.channelByType[type].cost += run.length_feet * specs.price_per_foot;
+      }
+    });
+
+    let remainingWatts = totalWatts;
+    while (remainingWatts > 0) {
+      const driver = DRIVER_SPECS.find(d => d.max_watts >= remainingWatts) || DRIVER_SPECS[DRIVER_SPECS.length - 1];
+      materialsData.requiredDrivers.push(driver);
+      remainingWatts -= driver.max_watts;
+    }
+
+    materialsData.terminalBlocks = materialsData.requiredDrivers.length;
+    materialsData.terminalBlockCost = materialsData.terminalBlocks * 8;
+
+    const totalClips = tapeRuns.reduce((sum, run) => {
+      if (run.channel_type === 'none') return sum;
+      const sections = Math.ceil(run.length_feet / 4);
+      return sum + (sections * 4);
+    }, 0);
+    materialsData.totalClips = totalClips;
+    materialsData.clipCost = Math.ceil(totalClips / 50) * 15;
+
+    materialsData.tapeCost = Object.values(materialsData.tapeByType).reduce((sum, t) => sum + t.cost, 0);
+    materialsData.channelCost = Object.values(materialsData.channelByType).reduce((sum, c) => sum + c.cost, 0);
+    materialsData.driverCost = materialsData.requiredDrivers.reduce((sum, d) => sum + d.price, 0);
+    materialsData.totalCost = materialsData.tapeCost + materialsData.channelCost + materialsData.driverCost + materialsData.terminalBlockCost + materialsData.clipCost;
+
+    const response = await base44.functions.invoke('generateSpecSheet', {
+      projectData,
+      tapeRuns,
+      materialsData
+    });
+
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${projectData.project_name}-spec-sheet.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
   };
 
   const handleDeleteProject = () => {
@@ -233,9 +335,9 @@ export default function Calculator() {
             <div className="flex gap-2">
               {!isNewProject && (
                 <>
-                  <Button variant="outline" size="sm" onClick={handleExportQuote}>
+                  <Button variant="outline" size="sm" onClick={handleExportSpec} disabled={tapeRuns.length === 0}>
                     <Download className="h-4 w-4 mr-2" />
-                    Export
+                    Spec Sheet
                   </Button>
                   <Button variant="outline" size="sm" onClick={handleDeleteProject}>
                     <Trash2 className="h-4 w-4 mr-2" />
