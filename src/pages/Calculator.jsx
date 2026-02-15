@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Save, Download, Trash2 } from "lucide-react";
+import { Save, Download, Trash2, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
 import ProjectsList from "../components/calculator/ProjectsList";
@@ -23,6 +23,7 @@ export default function Calculator() {
     status: 'draft'
   });
   const [isNewProject, setIsNewProject] = useState(true);
+  const [detailsExpanded, setDetailsExpanded] = useState(true);
 
   const queryClient = useQueryClient();
 
@@ -253,15 +254,20 @@ export default function Calculator() {
             {/* Left Column - Project Details */}
             <div className="lg:col-span-3 space-y-6">
               <Card>
-                <CardHeader>
-                  <CardTitle>Project Details</CardTitle>
+                <CardHeader className="cursor-pointer" onClick={() => setDetailsExpanded(!detailsExpanded)}>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Project Details</CardTitle>
+                    <ChevronDown className={`h-5 w-5 transition-transform ${detailsExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  <ProjectForm
-                    project={projectData}
-                    onChange={setProjectData}
-                  />
-                </CardContent>
+                {detailsExpanded && (
+                  <CardContent>
+                    <ProjectForm
+                      project={projectData}
+                      onChange={setProjectData}
+                    />
+                  </CardContent>
+                )}
               </Card>
 
               <Card>
