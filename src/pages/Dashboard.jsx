@@ -64,20 +64,20 @@ export default function Dashboard() {
           </Link>
 
           {/* Projects Card */}
-          <Card className="bg-slate-50 border-slate-200">
-            <CardContent className="p-8 flex flex-col items-center justify-center text-center h-full gap-4">
-              <FileText className="h-12 w-12 text-black" />
-              <div>
-                  <h2 className="text-xl font-bold text-slate-900 mb-2">Projects</h2>
-                  <p className="text-slate-600 text-sm">View project details</p>
-                </div>
-              <Link to={createPageUrl('Calculator')}>
+          <Link to={createPageUrl('Calculator')}>
+            <Card className="h-full bg-slate-50 border-slate-200 hover:border-slate-300 transition-all cursor-pointer hover:shadow-lg">
+              <CardContent className="p-8 flex flex-col items-center justify-center text-center h-full gap-4">
+                <FileText className="h-12 w-12 text-black" />
+                <div>
+                    <h2 className="text-xl font-bold text-slate-900 mb-2">Projects</h2>
+                    <p className="text-slate-600 text-sm">View project details</p>
+                  </div>
                 <Button size="sm" className="mt-2 gap-2 text-xs h-8 hover:opacity-90 w-8" style={{ backgroundColor: '#e9ff64', color: '#000' }}>
                    <ArrowRight className="h-4 w-4" />
                  </Button>
-              </Link>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Approved Projects List */}
