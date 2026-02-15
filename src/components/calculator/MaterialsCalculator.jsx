@@ -73,6 +73,10 @@ export default function MaterialsCalculator({ runs }) {
       remainingWatts -= driver.max_watts;
     }
 
+    // Calculate terminal blocks - 1 per driver
+    const terminalBlocks = requiredDrivers.length;
+    const terminalBlockCost = terminalBlocks * 8; // $8 per terminal block
+
     // Calculate mounting hardware (clips) - 4 clips per 4' channel section
     const totalClips = runs.reduce((sum, run) => {
       if (run.channel_type === 'none') return sum;
@@ -86,12 +90,14 @@ export default function MaterialsCalculator({ runs }) {
     const tapeCost = Object.values(tapeByType).reduce((sum, t) => sum + t.cost, 0);
     const channelCost = Object.values(channelByType).reduce((sum, c) => sum + c.cost, 0);
     const driverCost = requiredDrivers.reduce((sum, d) => sum + d.price, 0);
-    const totalCost = tapeCost + channelCost + driverCost + clipCost;
+    const totalCost = tapeCost + channelCost + driverCost + terminalBlockCost + clipCost;
 
     return {
       tapeByType,
       channelByType,
       requiredDrivers,
+      terminalBlocks,
+      terminalBlockCost,
       totalClips,
       clipSets,
       clipCost,
@@ -181,6 +187,19 @@ export default function MaterialsCalculator({ runs }) {
 
           <Separator />
 
+          {/* Terminal Blocks */}
+          <div>
+            <h4 className="text-sm font-semibold text-slate-700 mb-2">Terminal Blocks</h4>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600 whitespace-nowrap">Terminal Blocks</span>
+                <span className="font-medium whitespace-nowrap">{calculations.terminalBlocks} units</span>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
           {/* Mounting Hardware */}
           <div>
             <h4 className="text-sm font-semibold text-slate-700 mb-2">Mounting Hardware</h4>
@@ -218,6 +237,10 @@ export default function MaterialsCalculator({ runs }) {
           <div className="flex justify-between text-sm">
             <span className="text-slate-300 whitespace-nowrap">Power Drivers</span>
             <span className="font-medium text-white whitespace-nowrap">${formatUSD(calculations.driverCost)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-300 whitespace-nowrap">Terminal Blocks</span>
+            <span className="font-medium text-white whitespace-nowrap">${formatUSD(calculations.terminalBlockCost)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-slate-300 whitespace-nowrap">Mounting Hardware</span>
