@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Calendar, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
-import { createPageUrl } from "../utils";
+import { createPageUrl } from "utils";
 import TaskList from "../components/project/TaskList";
 import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
 import { format } from "date-fns";
