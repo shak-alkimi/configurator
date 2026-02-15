@@ -66,7 +66,7 @@ export default function ProjectDetail() {
           <CardContent className="py-12 text-center">
             <p className="text-slate-500 mb-4">Project not found</p>
             <Link to={createPageUrl('Calculator')}>
-              <Button>Back to Projects</Button>
+              <Button size="sm" className="h-8 text-xs">Back to Projects</Button>
             </Link>
           </CardContent>
         </Card>
@@ -82,7 +82,7 @@ export default function ProjectDetail() {
             <p className="text-slate-500 mb-4">This project detail page is only available for approved quotes</p>
             <p className="text-sm text-slate-400 mb-4">Current status: <strong>{project.status}</strong></p>
             <Link to={createPageUrl('Calculator')}>
-              <Button>Back to Projects</Button>
+              <Button size="sm" className="h-8 text-xs">Back to Projects</Button>
             </Link>
           </CardContent>
         </Card>
