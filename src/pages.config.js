@@ -51,6 +51,7 @@ import AgentChat from './pages/AgentChat';
 import Calculator from './pages/Calculator';
 import ProjectDetail from './pages/ProjectDetail';
 import Inventory from './pages/Inventory';
+import Analytics from './pages/Analytics';
 import __Layout from './Layout.jsx';
 
 
@@ -59,6 +60,7 @@ export const PAGES = {
     "Calculator": Calculator,
     "ProjectDetail": ProjectDetail,
     "Inventory": Inventory,
+    "Analytics": Analytics,
 }
 
 export const pagesConfig = {
