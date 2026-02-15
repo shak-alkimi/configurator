@@ -144,7 +144,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 className="h-9"
               />
             </div>
-            <div className="col-span-2 space-y-1.5">
+            <div className="col-span-2 space-y-2">
               <Label className="text-xs">Color Temperature</Label>
               <Select
                 value={newRun.tape_type}
