@@ -58,15 +58,7 @@ export default function ProjectForm({ project, onChange }) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="customer_phone">Customer Phone</Label>
-        <Input
-          id="customer_phone"
-          value={project.customer_phone || ''}
-          onChange={(e) => onChange({ ...project, customer_phone: e.target.value })}
-          placeholder="(555) 123-4567"
-        />
-      </div>
+
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
