@@ -71,21 +71,9 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
                  <div className="flex-1">
                    <h3 className="font-semibold text-sm">{project.project_name}</h3>
                  </div>
-                 <div className="flex flex-col items-end gap-1">
-                   {project.status === 'approved' && (
-                     <Link 
-                       to={createPageUrl('ProjectDetail') + '?id=' + project.id}
-                       onClick={(e) => e.stopPropagation()}
-                     >
-                       <Button variant="ghost" size="icon" className="h-6 w-6">
-                         <ExternalLink className="h-3 w-3" />
-                       </Button>
-                     </Link>
-                   )}
-                   <Badge className={`${statusColors[project.status]} text-xs`}>
-                     {project.status.replace('_', ' ')}
-                   </Badge>
-                 </div>
+                 <Badge className={`${statusColors[project.status]} text-xs`}>
+                   {project.status.replace('_', ' ')}
+                 </Badge>
                </div>
                <div className="text-xs text-slate-600 space-y-1">
                  <div>{project.customer_name}</div>
