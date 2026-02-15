@@ -82,7 +82,7 @@ export default function Dashboard() {
                 </div>
               <Link to={createPageUrl('Calculator')}>
                 <Button size="sm" className="mt-2 gap-2 text-xs h-8 hover:opacity-90" style={{ backgroundColor: '#e9ff64', color: '#000' }}>
-                   Open Projects
+                   Open
                    <ArrowRight className="h-4 w-4" />
                  </Button>
               </Link>
