@@ -66,28 +66,30 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
               }`}
               onClick={() => onSelect(project.id)}
             >
-              <CardContent className="p-3">
-               <div className="flex items-start justify-between mb-2">
-                 <div className="flex-1">
-                   <h3 className="font-semibold text-sm">{project.project_name}</h3>
+              <CardContent className="p-3 h-24 flex flex-col justify-between">
+               <div>
+                 <div className="flex items-start justify-between mb-2">
+                   <div className="flex-1">
+                     <h3 className="font-semibold text-sm">{project.project_name}</h3>
+                   </div>
+                   <Badge className={`${statusColors[project.status]} text-xs`}>
+                     {project.status.replace('_', ' ')}
+                   </Badge>
                  </div>
-                 <Badge className={`${statusColors[project.status]} text-xs`}>
-                   {project.status.replace('_', ' ')}
-                 </Badge>
-               </div>
-               <div className="text-xs text-slate-600 space-y-1">
-                 <div>{project.customer_name}</div>
-                 {project.total_price && (
-                  <div className="font-semibold text-slate-900">
-                    ${project.total_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
-                 )}
-                 <div className="text-slate-400">
-                   {format(new Date(project.created_date), 'MMM d, yyyy')}
+                 <div className="text-xs text-slate-600 space-y-1">
+                   <div>{project.customer_name}</div>
+                   {project.total_price && (
+                    <div className="font-semibold text-slate-900">
+                      ${project.total_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+                   )}
+                   <div className="text-slate-400">
+                     {format(new Date(project.created_date), 'MMM d, yyyy')}
+                   </div>
                  </div>
                </div>
                {project.status === 'approved' && (
-                 <div className="mt-3 flex justify-end">
+                 <div className="flex justify-end">
                    <Link 
                      to={createPageUrl('ProjectDetail') + '?id=' + project.id}
                      onClick={(e) => e.stopPropagation()}
