@@ -337,9 +337,9 @@ export default function Calculator() {
               }
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
             {/* Left Column - Project Details */}
-            <div className="lg:col-span-5 space-y-6">
+            <div className="lg:col-span-6 space-y-6">
               <Card>
                 <CardHeader className="cursor-pointer" onClick={() => setDetailsExpanded(!detailsExpanded)}>
                   <div className="flex items-center justify-between">
