@@ -5,13 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { UserPlus, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function InviteUsers() {
   const [email, setEmail] = useState('');
-  const [selectedOrg, setSelectedOrg] = useState('');
+  const [organizationName, setOrganizationName] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
 
   const queryClient = useQueryClient();
@@ -25,21 +25,15 @@ export default function InviteUsers() {
     checkAdmin();
   }, []);
 
-  // Fetch organizations
-  const { data: organizations = [] } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: () => base44.entities.Organization.list(),
-    enabled: isAdmin,
-  });
+
 
   // Invite mutation
   const inviteMutation = useMutation({
-    mutationFn: async ({ email, orgId, orgName }) => {
+    mutationFn: async ({ email, orgName }) => {
       await base44.users.inviteUser(email, 'user');
       // Store the pending organization assignment
       await base44.entities.UserInvitation.create({
         email,
-        organization_id: orgId,
         organization_name: orgName,
         invited_at: new Date().toISOString()
       });
@@ -47,7 +41,7 @@ export default function InviteUsers() {
     onSuccess: () => {
       toast.success('Invitation sent successfully');
       setEmail('');
-      setSelectedOrg('');
+      setOrganizationName('');
     },
     onError: (error) => {
       toast.error('Failed to send invitation: ' + error.message);
@@ -57,16 +51,14 @@ export default function InviteUsers() {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (!email || !selectedOrg) {
+    if (!email || !organizationName) {
       toast.error('Please fill in all fields');
       return;
     }
 
-    const org = organizations.find(o => o.id === selectedOrg);
     inviteMutation.mutate({ 
       email, 
-      orgId: selectedOrg,
-      orgName: org?.company_name || ''
+      orgName: organizationName
     });
   };
 
@@ -122,19 +114,15 @@ export default function InviteUsers() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="organization">Organization</Label>
-                <Select value={selectedOrg} onValueChange={setSelectedOrg} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select organization" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {organizations.map((org) => (
-                      <SelectItem key={org.id} value={org.id}>
-                        {org.company_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="organization">Organization Name</Label>
+                <Input
+                  id="organization"
+                  type="text"
+                  placeholder="Enter organization name"
+                  value={organizationName}
+                  onChange={(e) => setOrganizationName(e.target.value)}
+                  required
+                />
               </div>
 
               <Button
