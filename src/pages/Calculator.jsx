@@ -251,9 +251,9 @@ export default function Calculator() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-4 gap-6">
             {/* Left Column - Project Details */}
-            <div className="col-span-2 space-y-6">
+            <div className="col-span-3 space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Project Details</CardTitle>
