@@ -26,7 +26,7 @@ export default function Calculator() {
   const [isNewProject, setIsNewProject] = useState(true);
   const [detailsExpanded, setDetailsExpanded] = useState(true);
   const [userOrg, setUserOrg] = useState(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
 
   const queryClient = useQueryClient();
 
