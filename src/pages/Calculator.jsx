@@ -50,20 +50,20 @@ export default function Calculator() {
       // If no org assigned, fetch projects created by this user
       const user = await base44.auth.me();
       return await base44.entities.Project.filter({ created_by: user.email }, '-updated_date');
-    },
+    }
   });
 
   // Fetch tape runs for selected project
   const { data: tapeRuns = [] } = useQuery({
     queryKey: ['tapeRuns', selectedProjectId],
     queryFn: () => selectedProjectId ? base44.entities.TapeRun.filter({ project_id: selectedProjectId }) : [],
-    enabled: !!selectedProjectId,
+    enabled: !!selectedProjectId
   });
 
   // Fetch pricing catalog
   const { data: productCatalog = [] } = useQuery({
     queryKey: ['productCatalog'],
-    queryFn: () => base44.entities.ProductCatalog.list(),
+    queryFn: () => base44.entities.ProductCatalog.list()
   });
 
   // Create/Update project mutation
@@ -82,7 +82,7 @@ export default function Calculator() {
         setIsNewProject(false);
       }
       toast.success('Project saved successfully');
-    },
+    }
   });
 
   // Create tape run mutation
@@ -91,7 +91,7 @@ export default function Calculator() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
       toast.success('Tape run added');
-    },
+    }
   });
 
   // Delete tape run mutation
@@ -100,7 +100,7 @@ export default function Calculator() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
       toast.success('Tape run deleted');
-    },
+    }
   });
 
   // Delete project mutation
@@ -110,13 +110,13 @@ export default function Calculator() {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       handleNewProject();
       toast.success('Project deleted');
-    },
+    }
   });
 
   // Load selected project
   useEffect(() => {
     if (selectedProjectId && !isNewProject) {
-      const project = projects.find(p => p.id === selectedProjectId);
+      const project = projects.find((p) => p.id === selectedProjectId);
       if (project) {
         setProjectData(project);
       }
@@ -170,16 +170,16 @@ export default function Calculator() {
         toast.error('Please save project details first');
         return;
       }
-      
+
       const dataToSave = { ...projectData };
       if (userOrg) {
         dataToSave.organization_id = userOrg;
       }
-      
+
       const result = await saveProjectMutation.mutateAsync(dataToSave);
       setSelectedProjectId(result.id);
       setIsNewProject(false);
-      
+
       // Now add the tape run
       await createTapeRunMutation.mutateAsync({
         ...runData,
@@ -195,19 +195,19 @@ export default function Calculator() {
 
   const calculateTotalPrice = (runs) => {
     let total = 0;
-    
-    runs.forEach(run => {
-      const tapePrice = productCatalog.find(p => p.product_type === 'tape' && p.variant === run.tape_type)?.price_per_unit || 0;
-      const channelPrice = productCatalog.find(p => p.product_type === 'channel' && p.variant === run.channel_type)?.price_per_unit || 0;
-      
+
+    runs.forEach((run) => {
+      const tapePrice = productCatalog.find((p) => p.product_type === 'tape' && p.variant === run.tape_type)?.price_per_unit || 0;
+      const channelPrice = productCatalog.find((p) => p.product_type === 'channel' && p.variant === run.channel_type)?.price_per_unit || 0;
+
       total += run.length_feet * tapePrice;
       total += run.length_feet * channelPrice;
     });
 
     // Add drivers and hardware
-    const driverPrice = productCatalog.find(p => p.product_type === 'driver' && p.variant === '60w')?.price_per_unit || 85;
-    const hardwarePrice = productCatalog.find(p => p.product_type === 'hardware')?.price_per_unit || 15;
-    
+    const driverPrice = productCatalog.find((p) => p.product_type === 'driver' && p.variant === '60w')?.price_per_unit || 85;
+    const hardwarePrice = productCatalog.find((p) => p.product_type === 'hardware')?.price_per_unit || 15;
+
     total += driverPrice;
     total += hardwarePrice;
 
@@ -218,15 +218,15 @@ export default function Calculator() {
     try {
       const headers = ['Item', 'Quantity', 'Unit Price', 'Total'];
       const rows = [];
-      
+
       // Tape light totals
-      tapeRuns.forEach(run => {
-        const tapePrice = productCatalog.find(p => p.product_type === 'tape' && p.variant === run.tape_type)?.price_per_unit || 0;
+      tapeRuns.forEach((run) => {
+        const tapePrice = productCatalog.find((p) => p.product_type === 'tape' && p.variant === run.tape_type)?.price_per_unit || 0;
         rows.push([`${run.tape_type} - ${run.run_name}`, run.length_feet, tapePrice.toFixed(2), (run.length_feet * tapePrice).toFixed(2)]);
       });
-      
+
       // Build CSV
-      const csv = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+      const csv = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n');
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -248,7 +248,7 @@ export default function Calculator() {
         projectData,
         runs: tapeRuns
       });
-      
+
       const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -270,7 +270,7 @@ export default function Calculator() {
         projectData,
         runs: tapeRuns
       });
-      
+
       const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -297,21 +297,21 @@ export default function Calculator() {
       {/* Sidebar - Projects List */}
       <div className="w-80 border-r bg-white">
         <div className="h-full flex flex-col">
-          <div className="flex items-center py-6 pr-4 pl-0 border-b">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
-              alt="ALKIMI Logo"
-              className="h-12"
-              style={{ filter: 'invert(1)' }}
-            />
-          </div>
+          
+
+
+
+
+
+
+
           <ProjectsList
             projects={projects}
             selectedId={selectedProjectId}
             onSelect={handleSelectProject}
             onNew={handleNewProject}
-            isLoading={projectsLoading}
-          />
+            isLoading={projectsLoading} />
+
         </div>
       </div>
 
@@ -329,8 +329,8 @@ export default function Calculator() {
               </p>
             </div>
             <div className="lg:col-span-1 flex flex-col gap-2 self-start">
-              {!isNewProject && (
-                <div className="grid grid-cols-3 gap-2 w-full">
+              {!isNewProject &&
+              <div className="grid grid-cols-3 gap-2 w-full">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm" className="h-8 justify-center text-xs">
@@ -352,7 +352,7 @@ export default function Calculator() {
                     Delete
                   </Button>
                 </div>
-              )}
+              }
               <Button size="sm" onClick={handleSaveProject} style={{ backgroundColor: '#e9ff64', color: '#000' }} className="hover:opacity-90 text-xs h-8 w-full">
                 <Save className="h-3 w-3 mr-1" />
                 Save Project
@@ -370,14 +370,14 @@ export default function Calculator() {
                     <ChevronDown className={`h-5 w-5 transition-transform ${detailsExpanded ? 'rotate-0' : '-rotate-90'}`} />
                   </div>
                 </CardHeader>
-                {detailsExpanded && (
-                  <CardContent>
+                {detailsExpanded &&
+                <CardContent>
                     <ProjectForm
-                      project={projectData}
-                      onChange={setProjectData}
-                    />
+                    project={projectData}
+                    onChange={setProjectData} />
+
                   </CardContent>
-                )}
+                }
               </Card>
 
               <Card>
@@ -389,8 +389,8 @@ export default function Calculator() {
                     runs={tapeRuns}
                     onAdd={handleAddTapeRun}
                     onUpdate={() => {}}
-                    onDelete={(id) => deleteTapeRunMutation.mutate(id)}
-                  />
+                    onDelete={(id) => deleteTapeRunMutation.mutate(id)} />
+
                 </CardContent>
               </Card>
             </div>
@@ -404,6 +404,6 @@ export default function Calculator() {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
