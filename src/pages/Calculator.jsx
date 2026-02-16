@@ -47,9 +47,8 @@ export default function Calculator() {
       if (userOrg) {
         return await base44.entities.Project.filter({ organization_id: userOrg }, '-updated_date');
       }
-      // If no org assigned, fetch projects created by this user
-      const user = await base44.auth.me();
-      return await base44.entities.Project.filter({ created_by: user.email }, '-updated_date');
+      // If no org assigned, return empty array
+      return [];
     }
   });
 
