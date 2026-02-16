@@ -297,8 +297,6 @@ export default function Calculator() {
       {/* Sidebar - Projects List */}
       <div className="w-80 p-6 flex flex-col">
         <Card className="flex-1 flex flex-col overflow-y-auto">
-
-
           <ProjectsList
             projects={projects}
             selectedId={selectedProjectId}
