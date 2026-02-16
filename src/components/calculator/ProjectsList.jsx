@@ -7,9 +7,25 @@ import { Plus, FileText, Search, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading }) {
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [localProjects, setLocalProjects] = React.useState(projects);
+
+  React.useEffect(() => {
+    setLocalProjects(projects);
+  }, [projects]);
+
+  const handleDragEnd = (result) => {
+    const { source, destination } = result;
+    if (!destination) return;
+    
+    const reordered = Array.from(localProjects);
+    const [removed] = reordered.splice(source.index, 1);
+    reordered.splice(destination.index, 0, removed);
+    setLocalProjects(reordered);
+  };
 
   const filteredProjects = React.useMemo(() => {
     if (!searchQuery.trim()) return projects;
