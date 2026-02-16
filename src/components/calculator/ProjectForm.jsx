@@ -61,19 +61,6 @@ export default function ProjectForm({ project, onChange }) {
 
 
       <div className="space-y-2">
-        <Label htmlFor="progress">Progress (%)</Label>
-        <Input
-          id="progress"
-          type="number"
-          min="0"
-          max="100"
-          value={project.progress || 0}
-          onChange={(e) => onChange({ ...project, progress: parseInt(e.target.value) || 0 })}
-          placeholder="0"
-        />
-      </div>
-
-      <div className="space-y-2">
         <Label htmlFor="notes">Project Notes</Label>
         <Textarea
           id="notes"
