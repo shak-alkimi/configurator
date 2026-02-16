@@ -295,7 +295,16 @@ export default function Calculator() {
   return (
     <div className="flex-1 overflow-y-auto hide-scrollbar flex bg-slate-50">
       {/* Sidebar - Projects List */}
-      <div className="w-96 p-6 flex flex-col">
+      <div className={`flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-96'} ${sidebarCollapsed ? 'p-2' : 'p-6'}`}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          className="self-end mb-2 h-8 w-8"
+        >
+          {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        </Button>
+        {!sidebarCollapsed && (
         <Card className="flex-1 flex flex-col overflow-y-auto">
 
 
