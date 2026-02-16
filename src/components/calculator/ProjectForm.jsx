@@ -90,7 +90,7 @@ export default function ProjectForm({ project, onChange }) {
           id="notes"
           value={project.notes || ''}
           onChange={(e) => onChange({ ...project, notes: e.target.value })}
-          placeholder=""
+          placeholder="..."
           rows={3}
         />
       </div>
