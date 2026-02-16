@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 
-import { UserPlus, Mail } from 'lucide-react';
+import { UserPlus, Mail, Send } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function InviteUsers() {
@@ -129,7 +129,7 @@ export default function InviteUsers() {
                 style={{ backgroundColor: '#e9ff64', color: '#000' }}
                 disabled={inviteMutation.isPending}
               >
-                {inviteMutation.isPending ? 'Sending...' : 'Send Invitation'}
+                {inviteMutation.isPending ? 'Sending...' : <Send className="h-4 w-4" />}
               </Button>
             </form>
           </CardContent>
