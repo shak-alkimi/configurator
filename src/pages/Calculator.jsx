@@ -194,7 +194,7 @@ export default function Calculator() {
   };
 
   return (
-    <div className="h-screen flex bg-slate-50">
+    <div className="h-screen flex bg-white">
       {/* Sidebar - Projects List */}
       <div className="w-80 p-4 flex flex-col">
         <Card className="h-full flex flex-col">
