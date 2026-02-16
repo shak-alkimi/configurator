@@ -25,32 +25,11 @@ export default function Calculator() {
   });
   const [isNewProject, setIsNewProject] = useState(true);
   const [detailsExpanded, setDetailsExpanded] = useState(true);
-  const [userOrg, setUserOrg] = useState(null);
-
   const queryClient = useQueryClient();
 
-  // Fetch current user and organization
-  useEffect(() => {
-    const fetchUser = async () => {
-      const user = await base44.auth.me();
-      if (user?.organization_id) {
-        setUserOrg(user.organization_id);
-      }
-    };
-    fetchUser();
-  }, []);
-
-  // Fetch projects filtered by user's organization
-  const { data: projects = [], isLoading: projectsLoading } = useQuery({
-    queryKey: ['projects', userOrg],
-    queryFn: async () => {
-      if (userOrg) {
-        return await base44.entities.Project.filter({ organization_id: userOrg }, '-updated_date');
-      }
-      return [];
-    },
-    enabled: !!userOrg,
-  });
+  // Template page - no projects displayed until organization is assigned
+  const projects = [];
+  const projectsLoading = false;
 
   // Fetch tape runs for selected project
   const { data: tapeRuns = [] } = useQuery({
