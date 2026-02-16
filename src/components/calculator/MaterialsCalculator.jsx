@@ -181,33 +181,33 @@ export default function MaterialsCalculator({ runs }) {
       </Card>
 
       {/* Pricing Summary */}
-      <Card className="border-slate-300 bg-slate-50">
+      <Card className="border-black bg-black">
         <CardHeader>
-          <CardTitle className="text-lg">Quote Summary</CardTitle>
+          <CardTitle className="text-lg text-white">Quote Summary</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="text-slate-600">Tape Light</span>
-            <span className="font-medium">${calculations.tapeCost.toFixed(2)}</span>
+            <span className="text-gray-300">Tape Light</span>
+            <span className="font-medium text-white">${calculations.tapeCost.toFixed(2)}</span>
           </div>
           {calculations.channelCost > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-slate-600">Channels</span>
-              <span className="font-medium">${calculations.channelCost.toFixed(2)}</span>
+              <span className="text-gray-300">Channels</span>
+              <span className="font-medium text-white">${calculations.channelCost.toFixed(2)}</span>
             </div>
           )}
           <div className="flex justify-between text-sm">
-            <span className="text-slate-600">Power Drivers</span>
-            <span className="font-medium">${calculations.driverCost.toFixed(2)}</span>
+            <span className="text-gray-300">Power Drivers</span>
+            <span className="font-medium text-white">${calculations.driverCost.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-slate-600">Mounting Hardware</span>
-            <span className="font-medium">${calculations.clipCost.toFixed(2)}</span>
+            <span className="text-gray-300">Mounting Hardware</span>
+            <span className="font-medium text-white">${calculations.clipCost.toFixed(2)}</span>
           </div>
           <Separator />
           <div className="flex justify-between text-lg font-semibold">
-            <span>Total Project Cost</span>
-            <span className="text-slate-900">${calculations.totalCost.toFixed(2)}</span>
+            <span className="text-white">Total Project Cost</span>
+            <span className="text-white">${calculations.totalCost.toFixed(2)}</span>
           </div>
         </CardContent>
       </Card>
