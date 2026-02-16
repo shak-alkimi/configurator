@@ -30,7 +30,7 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white hide-scrollbar">
       {/* Header */}
       <div className="border-b border-slate-200 bg-white">
         <div className="flex items-center py-6 pr-6 pl-0">
@@ -44,7 +44,7 @@ export default function Dashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 py-12 hide-scrollbar">
+      <div className="max-w-6xl mx-auto px-6 py-12">
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {/* Calculator Card */}
