@@ -108,7 +108,7 @@ export default function MaterialsCalculator({ runs }) {
     return (
       <Card>
         <CardContent className="py-12 text-center text-slate-400">
-          Add tape runs to see materials calculation
+          Add runs to see materials calculation
         </CardContent>
       </Card>
     );
