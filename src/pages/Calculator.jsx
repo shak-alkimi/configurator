@@ -295,15 +295,15 @@ export default function Calculator() {
   return (
     <div className="flex-1 overflow-y-auto hide-scrollbar flex bg-slate-50">
       {/* Sidebar - Projects List */}
-      <div className="w-80 border-r bg-white">
-        <div className="h-full flex flex-col">
+      <div className="w-80 p-6 flex flex-col">
+        <Card className="flex-1 flex flex-col overflow-hidden">
           <ProjectsList
             projects={projects}
             selectedId={selectedProjectId}
             onSelect={handleSelectProject}
             onNew={handleNewProject}
             isLoading={projectsLoading} />
-        </div>
+        </Card>
       </div>
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto hide-scrollbar">
