@@ -128,8 +128,6 @@ export default function MaterialsCalculator({ runs }) {
             </div>
           </div>
 
-          <Separator />
-
           {/* Channels */}
           {Object.keys(calculations.channelByType).length > 0 && (
             <>
@@ -144,9 +142,8 @@ export default function MaterialsCalculator({ runs }) {
                   ))}
                 </div>
               </div>
-              <Separator />
-            </>
-          )}
+              </>
+              )}
 
           {/* Drivers */}
           <div>
@@ -164,8 +161,6 @@ export default function MaterialsCalculator({ runs }) {
               ))}
             </div>
           </div>
-
-          <Separator />
 
           {/* Mounting Hardware */}
           <div>
