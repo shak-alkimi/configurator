@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
   const [newRun, setNewRun] = useState({
@@ -24,20 +25,28 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
     const inches = parseFloat(newRun.length_inches) || 0;
     const totalFeet = feet + (inches / 12);
     
-    if (totalFeet > 0 && newRun.run_name.trim()) {
-      onAdd({ ...newRun, length_feet: totalFeet });
-      setNewRun({
-        run_name: '',
-        length_feet: '',
-        length_inches: '',
-        tape_type: 'standard_white',
-        channel_type: 'surface_mount',
-        optic: 'frosted',
-        output: '2w',
-        driver_type: '60w',
-        notes: ''
-      });
+    if (!newRun.run_name.trim()) {
+      toast.error('Run Name cannot be empty.');
+      return;
     }
+
+    if (totalFeet <= 0) {
+      toast.error('Length (Feet or Inches) must be greater than zero.');
+      return;
+    }
+
+    onAdd({ ...newRun, length_feet: totalFeet });
+    setNewRun({
+      run_name: '',
+      length_feet: '',
+      length_inches: '',
+      tape_type: 'standard_white',
+      channel_type: 'surface_mount',
+      optic: 'frosted',
+      output: '2w',
+      driver_type: '60w',
+      notes: ''
+    });
   };
 
   const formatTapeType = (type) => {
@@ -67,12 +76,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
 
   const calculateRunCost = (run) => {
     const TAPE_SPECS = {
-      '2700k': { price_per_foot: 12 },
-      '3000k': { price_per_foot: 12 },
-      '3500k': { price_per_foot: 12 },
-      'warm_dim': { price_per_foot: 18 },
-      'tunable_white': { price_per_foot: 24 },
-      // Legacy values
       'standard_white': { price_per_foot: 12 },
       'standard_warm': { price_per_foot: 12 },
       'rgb': { price_per_foot: 18 },

@@ -82,6 +82,9 @@ export default function Calculator() {
         setIsNewProject(false);
       }
       toast.success('Project saved successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to save project: ${error.message}`);
     }
   });
 
@@ -91,6 +94,9 @@ export default function Calculator() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
       toast.success('Tape run added');
+    },
+    onError: (error) => {
+      toast.error(`Failed to add tape run: ${error.message}`);
     }
   });
 
