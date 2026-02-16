@@ -75,20 +75,23 @@ export default function InviteUsers() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-6">
-          <div className="flex items-center py-4 pr-6 pl-0">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
-              alt="ALKIMI Logo"
-              className="h-12"
-              style={{ filter: 'invert(1)' }}
-            />
-          </div>
+    <div className="h-screen flex flex-col bg-white overflow-hidden">
+      {/* Header */}
+      <div className="border-b border-slate-200 bg-white flex-shrink-0">
+        <div className="flex items-center py-6 pr-6 pl-0">
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
+            alt="ALKIMI Logo"
+            className="h-12"
+            style={{ filter: 'invert(1)' }}
+          />
         </div>
+      </div>
 
-        <Card>
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto hide-scrollbar">
+        <div className="max-w-2xl mx-auto p-6">
+          <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <UserPlus className="h-5 w-5" />
@@ -136,6 +139,7 @@ export default function InviteUsers() {
             </form>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );
