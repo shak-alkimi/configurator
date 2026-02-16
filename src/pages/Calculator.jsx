@@ -293,28 +293,18 @@ export default function Calculator() {
   };
 
   return (
-    <div className="h-screen flex bg-slate-50">
+    <div className="flex-1 overflow-y-auto hide-scrollbar flex bg-slate-50">
       {/* Sidebar - Projects List */}
       <div className="w-80 border-r bg-white">
         <div className="h-full flex flex-col">
-          
-
-
-
-
-
-
-
           <ProjectsList
             projects={projects}
             selectedId={selectedProjectId}
             onSelect={handleSelectProject}
             onNew={handleNewProject}
             isLoading={projectsLoading} />
-
         </div>
       </div>
-
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto hide-scrollbar">
         <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -404,6 +394,6 @@ export default function Calculator() {
           </div>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

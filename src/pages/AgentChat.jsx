@@ -61,19 +61,7 @@ export default function AgentChat() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50">
-      {/* Header */}
-      <div className="border-b border-slate-200 bg-white flex-shrink-0">
-        <div className="flex items-center py-2 sm:py-4 pr-3 sm:pr-6 pl-0">
-          <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
-            alt="ALKIMI Logo"
-            className="h-12 mb-1"
-            style={{ filter: 'invert(1)' }}
-          />
-        </div>
-      </div>
-
+    <div className="flex-1 overflow-y-auto hide-scrollbar flex flex-col bg-slate-50">
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 min-h-0 hide-scrollbar">
         {messages.length === 0 ? (
