@@ -30,19 +30,7 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="h-screen flex flex-col bg-white overflow-hidden">
-      {/* Header */}
-      <div className="border-b border-slate-200 bg-white flex-shrink-0">
-        
-
-
-
-
-
-
-
-      </div>
-
+    <div className="flex-1 overflow-y-auto hide-scrollbar">
       <div className="flex flex-col items-center justify-center min-h-full max-w-4xl mx-auto px-6 py-8">
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
@@ -111,6 +99,5 @@ export default function Dashboard() {
           }
         </div>
     </div>
-    </div>);
-
+  );
 }
