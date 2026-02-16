@@ -52,8 +52,8 @@ import Analytics from './pages/Analytics';
 import Calculator from './pages/Calculator';
 import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
-import ProjectDetail from './pages/ProjectDetail';
 import InviteUsers from './pages/InviteUsers';
+import ProjectDetail from './pages/ProjectDetail';
 import __Layout from './Layout.jsx';
 
 
@@ -63,8 +63,8 @@ export const PAGES = {
     "Calculator": Calculator,
     "Dashboard": Dashboard,
     "Inventory": Inventory,
-    "ProjectDetail": ProjectDetail,
     "InviteUsers": InviteUsers,
+    "ProjectDetail": ProjectDetail,
 }
 
 export const pagesConfig = {
