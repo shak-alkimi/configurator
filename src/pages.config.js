@@ -47,7 +47,6 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import AgentChat from './pages/AgentChat';
 import Analytics from './pages/Analytics';
 import Calculator from './pages/Calculator';
 import Dashboard from './pages/Dashboard';
@@ -58,7 +57,6 @@ import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "AgentChat": AgentChat,
     "Analytics": Analytics,
     "Calculator": Calculator,
     "Dashboard": Dashboard,
