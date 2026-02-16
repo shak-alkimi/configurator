@@ -25,11 +25,33 @@ export default function Calculator() {
   });
   const [isNewProject, setIsNewProject] = useState(true);
   const [detailsExpanded, setDetailsExpanded] = useState(true);
+  const [userOrg, setUserOrg] = useState(null);
+
   const queryClient = useQueryClient();
 
-  // Template page - no projects displayed until organization is assigned
-  const projects = [];
-  const projectsLoading = false;
+  // Fetch current user and organization
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await base44.auth.me();
+      if (user?.organization_id) {
+        setUserOrg(user.organization_id);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  // Fetch projects filtered by user's organization
+  const { data: projects = [], isLoading: projectsLoading } = useQuery({
+    queryKey: ['projects', userOrg],
+    queryFn: async () => {
+      if (userOrg) {
+        return await base44.entities.Project.filter({ organization_id: userOrg }, '-updated_date');
+      }
+      // If no org assigned, fetch projects created by this user
+      const user = await base44.auth.me();
+      return await base44.entities.Project.filter({ created_by: user.email }, '-updated_date');
+    },
+  });
 
   // Fetch tape runs for selected project
   const { data: tapeRuns = [] } = useQuery({
@@ -125,19 +147,18 @@ export default function Calculator() {
       return;
     }
 
-    if (!userOrg) {
-      toast.error('You must be assigned to an organization to create projects');
-      return;
-    }
-
     // Calculate total price from tape runs
     const totalPrice = calculateTotalPrice(tapeRuns);
 
     const dataToSave = {
       ...projectData,
-      organization_id: userOrg,
       total_price: totalPrice
     };
+
+    // Only add organization_id if user has one
+    if (userOrg) {
+      dataToSave.organization_id = userOrg;
+    }
 
     await saveProjectMutation.mutateAsync(dataToSave);
   };
@@ -149,16 +170,11 @@ export default function Calculator() {
         toast.error('Please save project details first');
         return;
       }
-
-      if (!userOrg) {
-        toast.error('You must be assigned to an organization to create projects');
-        return;
-      }
       
-      const dataToSave = { 
-        ...projectData,
-        organization_id: userOrg
-      };
+      const dataToSave = { ...projectData };
+      if (userOrg) {
+        dataToSave.organization_id = userOrg;
+      }
       
       const result = await saveProjectMutation.mutateAsync(dataToSave);
       setSelectedProjectId(result.id);
