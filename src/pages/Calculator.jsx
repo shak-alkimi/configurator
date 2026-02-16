@@ -314,8 +314,8 @@ export default function Calculator() {
               onSelect={handleSelectProject}
               onNew={handleNewProject}
               isLoading={projectsLoading} />
-          </Card>
-        )}
+            )}
+        </Card>
       </div>
 
       {/* Main Content */}
