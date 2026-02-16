@@ -110,7 +110,7 @@ export default function InviteUsers() {
                     placeholder="user@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 bg-white"
                     required
                   />
                 </div>
@@ -124,6 +124,7 @@ export default function InviteUsers() {
                   placeholder="Enter organization name"
                   value={organizationName}
                   onChange={(e) => setOrganizationName(e.target.value)}
+                  className="bg-white"
                   required
                 />
               </div>
