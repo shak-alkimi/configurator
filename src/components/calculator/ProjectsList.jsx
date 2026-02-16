@@ -45,7 +45,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
             No projects yet.<br />Create your first project.
           </div>
         ) : (
-          projects.map((project) => (
+          filteredProjects.map((project) => (
             <Card
               key={project.id}
               className={`cursor-pointer transition-all hover:shadow-md ${
