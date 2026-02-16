@@ -14,6 +14,7 @@ import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
 
 export default function Calculator() {
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [projectData, setProjectData] = useState({
     project_name: '',
     customer_name: '',
@@ -193,32 +194,66 @@ export default function Calculator() {
   };
 
   return (
-    <div className="h-screen flex bg-slate-50 gap-4 p-4">
+    <div className="h-screen flex bg-white">
       {/* Sidebar - Projects List */}
-      <div className="w-80">
+      <div className="w-80 p-4 flex flex-col">
         <Card className="h-full flex flex-col">
-          <CardHeader>
-            <CardTitle className="text-xl">Tape Light Calculator</CardTitle>
-            <p className="text-xs text-slate-500 mt-1">Project Quotes & Estimates</p>
+          <CardHeader className="pb-3">
+            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/363b1fdb0_Screenshot2026-02-16175106.png" alt="Alkimi Logo" className="h-10 w-auto -ml-6" />
           </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto">
+          <CardContent className="flex-1 p-0 overflow-y-auto">
             <ProjectsList
-              projects={projects}
+              projects={projects.filter(p => 
+                p.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                p.customer_name.toLowerCase().includes(searchQuery.toLowerCase())
+              )}
               selectedId={selectedProjectId}
               onSelect={handleSelectProject}
               onNew={handleNewProject}
               isLoading={projectsLoading}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
             />
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="space-y-6">
-          <div className="grid grid-cols-3 gap-6">
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="mx-auto space-y-6">
+          {/* Header Actions */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">
+                {isNewProject ? 'New Project' : projectData.project_name}
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                {isNewProject ? 'Create a new tape light quote' : projectData.customer_name}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              {!isNewProject && (
+                <>
+                  <Button variant="outline" size="sm" onClick={handleExportQuote}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleDeleteProject}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </>
+              )}
+              <Button size="sm" onClick={handleSaveProject}>
+                <Save className="h-4 w-4 mr-2" />
+                Save Project
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-6">
             {/* Left Column - Project Details */}
-            <div className="col-span-2 space-y-6">
+            <div className="col-span-3 space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Project Details</CardTitle>
@@ -247,8 +282,8 @@ export default function Calculator() {
             </div>
 
             {/* Right Column - Materials & Quote */}
-            <div className="col-span-1">
-              <div className="sticky top-0">
+            <div className="w-80 px-4 ml-auto -mr-4">
+              <div className="sticky top-6">
                 <MaterialsCalculator runs={tapeRuns} />
               </div>
             </div>
