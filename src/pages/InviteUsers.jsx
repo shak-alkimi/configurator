@@ -92,8 +92,8 @@ export default function InviteUsers() {
       <div className="flex-1 overflow-y-auto hide-scrollbar">
         <div className="max-w-2xl mx-auto p-6">
           <Card className="bg-slate-50">
-          <CardHeader>
-            <CardTitle>
+          <CardHeader className="pb-4">
+            <CardTitle className="pl-0">
               Invite New User
             </CardTitle>
           </CardHeader>
