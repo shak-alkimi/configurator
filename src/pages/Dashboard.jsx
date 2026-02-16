@@ -36,7 +36,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {/* Calculator Card */}
           <Link to={createPageUrl('Calculator')}>
-            <Card className="h-full bg-slate-50 border-slate-200 hover:border-slate-300 transition-all cursor-pointer hover:shadow-lg">
+            <Card className="h-full bg-white border-slate-200 hover:border-slate-300 transition-all cursor-pointer hover:shadow-lg">
               <CardContent className="p-8 flex flex-col items-center justify-center text-center h-full gap-4">
                 <Calculator className="h-12 w-12 text-black" />
                 <div>
@@ -52,7 +52,7 @@ export default function Dashboard() {
 
           {/* Projects Card */}
           <Link to={createPageUrl('Calculator')}>
-            <Card className="h-full bg-slate-50 border-slate-200 hover:border-slate-300 transition-all cursor-pointer hover:shadow-lg">
+            <Card className="h-full bg-white border-slate-200 hover:border-slate-300 transition-all cursor-pointer hover:shadow-lg">
               <CardContent className="p-8 flex flex-col items-center justify-center text-center h-full gap-4">
                 <FileText className="h-12 w-12 text-black" />
                 <div>
