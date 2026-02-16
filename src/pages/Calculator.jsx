@@ -305,16 +305,14 @@ export default function Calculator() {
           {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
         {!sidebarCollapsed && (
-        <Card className="flex-1 flex flex-col overflow-y-auto">
-
-
-          <ProjectsList
-            projects={projects}
-            selectedId={selectedProjectId}
-            onSelect={handleSelectProject}
-            onNew={handleNewProject}
-            isLoading={projectsLoading} />
-        </Card>
+          <Card className="flex-1 flex flex-col overflow-y-auto">
+            <ProjectsList
+              projects={projects}
+              selectedId={selectedProjectId}
+              onSelect={handleSelectProject}
+              onNew={handleNewProject}
+              isLoading={projectsLoading} />
+          </Card>
         )}
       </div>
 
