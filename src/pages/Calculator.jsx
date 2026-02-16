@@ -305,8 +305,8 @@ export default function Calculator() {
             onSelect={handleSelectProject}
             onNew={handleNewProject}
             isLoading={projectsLoading} />
-            </Card>
-            </div>
+        </Card>
+      </div>
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto hide-scrollbar">
