@@ -373,7 +373,7 @@ export default function Calculator() {
             </div>
 
             {/* Right Column - Materials & Quote */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 min-w-0">
               <div className="sticky top-6">
                 <MaterialsCalculator runs={tapeRuns} />
               </div>
