@@ -204,11 +204,16 @@ export default function Calculator() {
           </CardHeader>
           <CardContent className="flex-1 p-0 overflow-y-auto">
             <ProjectsList
-              projects={projects}
+              projects={projects.filter(p => 
+                p.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                p.customer_name.toLowerCase().includes(searchQuery.toLowerCase())
+              )}
               selectedId={selectedProjectId}
               onSelect={handleSelectProject}
               onNew={handleNewProject}
               isLoading={projectsLoading}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
             />
           </CardContent>
         </Card>
