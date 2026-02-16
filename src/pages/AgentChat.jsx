@@ -15,15 +15,22 @@ export default function AgentChat() {
   // Initialize conversation
   useEffect(() => {
     const initializeChat = async () => {
-      const conversation = await base44.agents.createConversation({
-        agent_name: 'customer_support',
-        metadata: {
-          name: 'Customer Chat',
-          description: 'Customer support chat session'
-        }
-      });
-      setConversationId(conversation.id);
-      setMessages(conversation.messages || []);
+      try {
+        const user = await base44.auth.me();
+        if (!user) return;
+
+        const conversation = await base44.agents.createConversation({
+          agent_name: 'customer_support',
+          metadata: {
+            name: 'Customer Chat',
+            description: 'Customer support chat session'
+          }
+        });
+        setConversationId(conversation.id);
+        setMessages(conversation.messages || []);
+      } catch (error) {
+        console.error('Failed to initialize chat:', error);
+      }
     };
 
     initializeChat();
