@@ -26,21 +26,21 @@ export default function Dashboard() {
   const { data: approvedProjects = [] } = useQuery({
     queryKey: ['approvedProjects', userOrg],
     queryFn: () => userOrg ? base44.entities.Project.filter({ organization_id: userOrg, status: 'approved' }, '-updated_date', 5) : [],
-    enabled: !!userOrg,
+    enabled: !!userOrg
   });
 
   return (
     <div className="h-screen flex flex-col bg-white overflow-hidden">
       {/* Header */}
       <div className="border-b border-slate-200 bg-white flex-shrink-0">
-        <div className="flex items-center py-6 pr-6 pl-0">
-          <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
-            alt="ALKIMI Logo"
-            className="h-12"
-            style={{ filter: 'invert(1)' }}
-          />
-        </div>
+        
+
+
+
+
+
+
+
       </div>
 
       {/* Main Content */}
@@ -82,12 +82,12 @@ export default function Dashboard() {
         </div>
 
         {/* Approved Projects List */}
-        {approvedProjects.length > 0 && (
+        {approvedProjects.length > 0 &&
           <div>
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Approved Projects</h2>
             <div className="grid gap-4">
-              {approvedProjects.map((project) => (
-                <Link key={project.id} to={createPageUrl('ProjectDetail') + '?id=' + project.id}>
+              {approvedProjects.map((project) =>
+              <Link key={project.id} to={createPageUrl('ProjectDetail') + '?id=' + project.id}>
                   <Card className="bg-slate-50 border-slate-200 hover:border-slate-300 transition-all cursor-pointer">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
@@ -107,12 +107,12 @@ export default function Dashboard() {
                     </CardContent>
                   </Card>
                 </Link>
-              ))}
+              )}
             </div>
           </div>
-        )}
+          }
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
