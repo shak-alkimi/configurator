@@ -106,7 +106,7 @@ export default function InviteUsers() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="user@example.com"
+                    placeholder="user@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 bg-white"
@@ -119,7 +119,7 @@ export default function InviteUsers() {
                 <Input
                   id="organization"
                   type="text"
-                  placeholder="Enter organization name"
+                  placeholder="organization"
                   value={organizationName}
                   onChange={(e) => setOrganizationName(e.target.value)}
                   className="bg-white"
