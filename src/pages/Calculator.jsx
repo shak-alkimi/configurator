@@ -365,10 +365,7 @@ export default function Calculator() {
             <div className="lg:col-span-3 space-y-6">
               <Card>
                 <CardHeader className="cursor-pointer" onClick={() => setDetailsExpanded(!detailsExpanded)}>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Project Details</CardTitle>
-                    <ChevronDown className={`h-5 w-5 transition-transform ${detailsExpanded ? 'rotate-0' : '-rotate-90'}`} />
-                  </div>
+                  <CardTitle>Project Details</CardTitle>
                 </CardHeader>
                 {detailsExpanded && (
                   <CardContent>
