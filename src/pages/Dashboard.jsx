@@ -45,7 +45,7 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto hide-scrollbar">
-        <div className="max-w-6xl mx-auto px-6 py-12">
+        <div className="flex flex-col items-center justify-center min-h-full max-w-6xl mx-auto px-6">
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {/* Calculator Card */}
