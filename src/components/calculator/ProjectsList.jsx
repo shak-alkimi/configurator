@@ -1,14 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Plus, FileText } from "lucide-react";
 import { format } from "date-fns";
 
 export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading }) {
-  const [searchTerm, setSearchTerm] = useState("");
-
   const statusColors = {
     draft: "bg-slate-100 text-slate-700",
     quoted: "bg-blue-100 text-blue-700",
@@ -16,24 +13,13 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
     completed: "bg-purple-100 text-purple-700"
   };
 
-  const filteredProjects = projects.filter(project =>
-    project.project_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 border-b space-y-3">
+      <div className="p-4 border-b">
         <Button onClick={onNew} className="w-full" size="sm">
           <Plus className="h-4 w-4 mr-2" />
           New Project
         </Button>
-        <Input
-          placeholder="Search projects..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="h-9"
-        />
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
@@ -45,7 +31,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
             No projects yet.<br />Create your first project.
           </div>
         ) : (
-          filteredProjects.map((project) => (
+          projects.map((project) => (
             <Card
               key={project.id}
               className={`cursor-pointer transition-all hover:shadow-md ${
@@ -53,7 +39,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
               }`}
               onClick={() => onSelect(project.id)}
             >
-              <CardContent className="p-6">
+              <CardContent className="p-3">
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="font-semibold text-sm">{project.project_name}</h3>
                   <Badge className={`${statusColors[project.status]} text-xs`}>

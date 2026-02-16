@@ -193,29 +193,57 @@ export default function Calculator() {
   };
 
   return (
-    <div className="h-screen flex bg-slate-50 gap-4 p-4">
+    <div className="h-screen flex bg-slate-50">
       {/* Sidebar - Projects List */}
-      <div className="w-80">
-        <Card className="h-full flex flex-col">
-          <CardHeader>
-            <CardTitle className="text-xl">Tape Light Calculator</CardTitle>
+      <div className="w-80 border-r bg-white">
+        <div className="h-full flex flex-col">
+          <div className="p-4 border-b">
+            <h1 className="text-xl font-bold text-slate-900">Tape Light Calculator</h1>
             <p className="text-xs text-slate-500 mt-1">Project Quotes & Estimates</p>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto">
-            <ProjectsList
-              projects={projects}
-              selectedId={selectedProjectId}
-              onSelect={handleSelectProject}
-              onNew={handleNewProject}
-              isLoading={projectsLoading}
-            />
-          </CardContent>
-        </Card>
+          </div>
+          <ProjectsList
+            projects={projects}
+            selectedId={selectedProjectId}
+            onSelect={handleSelectProject}
+            onNew={handleNewProject}
+            isLoading={projectsLoading}
+          />
+        </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="space-y-6">
+        <div className="max-w-7xl mx-auto p-6 space-y-6">
+          {/* Header Actions */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">
+                {isNewProject ? 'New Project' : projectData.project_name}
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                {isNewProject ? 'Create a new tape light quote' : 'Edit project details and runs'}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              {!isNewProject && (
+                <>
+                  <Button variant="outline" size="sm" onClick={handleExportQuote}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleDeleteProject}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </>
+              )}
+              <Button size="sm" onClick={handleSaveProject}>
+                <Save className="h-4 w-4 mr-2" />
+                Save Project
+              </Button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-3 gap-6">
             {/* Left Column - Project Details */}
             <div className="col-span-2 space-y-6">
@@ -248,7 +276,7 @@ export default function Calculator() {
 
             {/* Right Column - Materials & Quote */}
             <div className="col-span-1">
-              <div className="sticky top-0">
+              <div className="sticky top-6">
                 <MaterialsCalculator runs={tapeRuns} />
               </div>
             </div>
