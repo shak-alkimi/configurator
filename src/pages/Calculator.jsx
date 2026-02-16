@@ -282,7 +282,7 @@ export default function Calculator() {
             </div>
 
             {/* Right Column - Materials & Quote */}
-            <div>
+            <div className="w-80">
               <div className="sticky top-6">
                 <MaterialsCalculator runs={tapeRuns} />
               </div>
