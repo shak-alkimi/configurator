@@ -24,13 +24,13 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
     const inches = parseFloat(newRun.length_inches) || 0;
     const totalFeet = feet + (inches / 12);
     
-    if (totalFeet > 0) {
+    if (totalFeet > 0 && newRun.run_name.trim()) {
       onAdd({ ...newRun, length_feet: totalFeet });
       setNewRun({
         run_name: '',
         length_feet: '',
         length_inches: '',
-        tape_type: '3000k',
+        tape_type: '2700k',
         channel_type: 'surface_mount',
         optic: 'frosted',
         output: '2w',
