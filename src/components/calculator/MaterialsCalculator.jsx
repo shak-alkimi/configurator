@@ -206,7 +206,7 @@ export default function MaterialsCalculator({ runs }) {
           </div>
           <Separator />
           <div className="flex justify-between text-lg font-semibold">
-            <span className="text-white">Total Project Cost</span>
+            <span className="text-white">Total</span>
             <span className="text-white">${calculations.totalCost.toFixed(2)}</span>
           </div>
         </CardContent>
