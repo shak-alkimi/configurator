@@ -295,26 +295,14 @@ export default function Calculator() {
   return (
     <div className="flex-1 overflow-y-auto hide-scrollbar flex bg-slate-50">
       {/* Sidebar - Projects List */}
-      <div className={`flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-96'} ${sidebarCollapsed ? 'p-2' : 'p-6'}`}>
+      <div className="w-96 p-6 flex flex-col">
         <Card className="flex-1 flex flex-col overflow-y-auto">
-          <div className="p-4 border-b flex justify-end">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="h-8 w-8"
-            >
-              {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-            </Button>
-          </div>
-          {!sidebarCollapsed && (
-            <ProjectsList
-              projects={projects}
-              selectedId={selectedProjectId}
-              onSelect={handleSelectProject}
-              onNew={handleNewProject}
-              isLoading={projectsLoading} />
-          )}
+          <ProjectsList
+            projects={projects}
+            selectedId={selectedProjectId}
+            onSelect={handleSelectProject}
+            onNew={handleNewProject}
+            isLoading={projectsLoading} />
         </Card>
       </div>
 
