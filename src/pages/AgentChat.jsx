@@ -86,16 +86,16 @@ export default function AgentChat() {
               </div>
             </div>
           ))
-        )}
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-white border border-slate-200 rounded-lg px-4 py-2">
-              <Loader2 className="h-4 w-4 animate-spin text-slate-600" />
+          )}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-white border border-slate-200 rounded-lg px-4 py-2">
+                <Loader2 className="h-4 w-4 animate-spin text-slate-600" />
+              </div>
             </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
 
         {/* Input */}
         <div className="border-t bg-white p-2 sm:p-3 flex-shrink-0">
