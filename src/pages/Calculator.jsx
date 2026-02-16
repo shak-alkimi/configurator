@@ -199,8 +199,8 @@ export default function Calculator() {
       <div className="w-80 p-4 flex flex-col">
         <Card className="h-full flex flex-col">
           <CardHeader className="pb-3">
-            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/66b09c5a2_Screenshot2026-02-16173234.png" alt="Alkimi Logo" className="h-10 w-auto" />
-            <p className="text-xs text-slate-500 mt-2">Project Quotes & Estimates</p>
+            <CardTitle className="text-xl">Tape Light Calculator</CardTitle>
+            <p className="text-xs text-slate-500 mt-1">Project Quotes & Estimates</p>
           </CardHeader>
           <CardContent className="flex-1 p-0 overflow-y-auto">
             <ProjectsList
