@@ -101,7 +101,6 @@ export default function InviteUsers() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                   <Input
@@ -117,7 +116,6 @@ export default function InviteUsers() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="organization">Organization Name</Label>
                 <Input
                   id="organization"
                   type="text"
