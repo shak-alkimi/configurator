@@ -7,6 +7,13 @@ export default function Layout({ children, currentPageName }) {
         * {
           font-family: 'Ingram Mono', monospace !important;
         }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
       `}</style>
       {children}
     </div>

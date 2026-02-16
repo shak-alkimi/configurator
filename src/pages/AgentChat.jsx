@@ -75,7 +75,7 @@ export default function AgentChat() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 min-h-0">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 min-h-0 hide-scrollbar">
         {messages.length === 0 ? (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
