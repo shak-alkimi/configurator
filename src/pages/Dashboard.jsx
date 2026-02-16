@@ -30,9 +30,9 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="h-screen flex flex-col bg-white overflow-hidden">
       {/* Header */}
-      <div className="border-b border-slate-200 bg-white">
+      <div className="border-b border-slate-200 bg-white flex-shrink-0">
         <div className="flex items-center py-6 pr-6 pl-0">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
@@ -44,7 +44,8 @@ export default function Dashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 py-12 hide-scrollbar">
+      <div className="flex-1 overflow-y-auto hide-scrollbar">
+        <div className="max-w-6xl mx-auto px-6 py-12">
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {/* Calculator Card */}
