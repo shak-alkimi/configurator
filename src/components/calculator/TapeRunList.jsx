@@ -30,7 +30,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
         run_name: '',
         length_feet: '',
         length_inches: '',
-        tape_type: '2700k',
+        tape_type: 'standard_white',
         channel_type: 'surface_mount',
         optic: 'frosted',
         output: '2w',
@@ -154,11 +154,11 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="2700k">2700K</SelectItem>
-                  <SelectItem value="3000k">3000K</SelectItem>
-                  <SelectItem value="3500k">3500K</SelectItem>
-                  <SelectItem value="warm_dim">Warm Dim (2200K-3000K)</SelectItem>
-                  <SelectItem value="tunable_white">Tunable White (2200K-3500K)</SelectItem>
+                  <SelectItem value="standard_white">Standard White</SelectItem>
+                  <SelectItem value="standard_warm">Standard Warm</SelectItem>
+                  <SelectItem value="rgb">RGB</SelectItem>
+                  <SelectItem value="rgbw">RGBW</SelectItem>
+                  <SelectItem value="high_output">High Output</SelectItem>
                 </SelectContent>
               </Select>
             </div>
