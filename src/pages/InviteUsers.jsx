@@ -91,7 +91,7 @@ export default function InviteUsers() {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto hide-scrollbar">
         <div className="max-w-2xl mx-auto p-6">
-          <Card>
+          <Card className="bg-slate-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <UserPlus className="h-5 w-5" />
