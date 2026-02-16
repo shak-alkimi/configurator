@@ -2,10 +2,11 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Plus, FileText } from "lucide-react";
 import { format } from "date-fns";
 
-export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading }) {
+export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading, searchQuery, onSearchChange }) {
   const statusColors = {
     draft: "bg-slate-100 text-slate-700",
     quoted: "bg-blue-100 text-blue-700",
