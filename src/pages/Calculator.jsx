@@ -215,7 +215,7 @@ export default function Calculator() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto space-y-6">
+        <div className="space-y-6">
           <div className="grid grid-cols-3 gap-6">
             {/* Left Column - Project Details */}
             <div className="col-span-2 space-y-6">
