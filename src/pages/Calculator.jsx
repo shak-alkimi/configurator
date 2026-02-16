@@ -14,6 +14,7 @@ import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
 
 export default function Calculator() {
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [projectData, setProjectData] = useState({
     project_name: '',
     customer_name: '',
