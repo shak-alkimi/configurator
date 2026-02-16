@@ -311,18 +311,9 @@ export default function Calculator() {
       <div className="flex-1 overflow-y-auto hide-scrollbar">
         <div className="max-w-6xl mx-auto p-6 space-y-6">
           {/* Header Actions */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-3">
-              <h2 className="text-2xl font-bold text-slate-900">
-                {isNewProject ? 'New Project' : projectData.project_name}
-              </h2>
-              <p className="text-sm text-slate-500 mt-1">
-                {isNewProject ? 'Create a new tape light quote' : projectData.customer_name}
-              </p>
-            </div>
-            <div className="lg:col-span-1 flex flex-col gap-2 self-start">
+          <div className="flex justify-end gap-2 mb-6">
               {!isNewProject &&
-              <div className="grid grid-cols-3 gap-2 w-full">
+              <div className="grid grid-cols-3 gap-2 w-fit">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm" className="h-8 justify-center text-xs">
@@ -345,7 +336,6 @@ export default function Calculator() {
                   </Button>
                 </div>
               }
-              </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
