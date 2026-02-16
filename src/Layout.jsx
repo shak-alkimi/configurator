@@ -54,10 +54,10 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center h-16 pr-4 sm:pr-6 lg:pr-8">
             {/* Logo */}
-            <Link to={createPageUrl('Dashboard')} className="flex items-center -ml-4 sm:-ml-6 lg:-ml-8">
+            <Link to={createPageUrl('Dashboard')} className="flex items-center">
               <img 
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
                 alt="ALKIMI Logo"
