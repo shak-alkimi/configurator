@@ -16,11 +16,17 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 border-b">
+      <div className="p-4 space-y-3 border-b">
         <Button onClick={onNew} className="w-full" size="sm">
           <Plus className="h-4 w-4 mr-2" />
           New Project
         </Button>
+        <Input
+          placeholder="Search projects..."
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="h-9 text-sm"
+        />
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
