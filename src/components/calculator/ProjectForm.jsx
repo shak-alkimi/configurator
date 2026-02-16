@@ -9,7 +9,7 @@ export default function ProjectForm({ project, onChange }) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="project_name">Project Name</Label>
+          <Label htmlFor="project_name">Project Name *</Label>
           <Input
             id="project_name"
             value={project.project_name || ''}
@@ -30,7 +30,7 @@ export default function ProjectForm({ project, onChange }) {
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="quoted">Quoted</SelectItem>
               <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="lost">Lost</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -38,7 +38,7 @@ export default function ProjectForm({ project, onChange }) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="customer_name">Customer Name</Label>
+          <Label htmlFor="customer_name">Customer Name *</Label>
           <Input
             id="customer_name"
             value={project.customer_name || ''}
@@ -58,7 +58,15 @@ export default function ProjectForm({ project, onChange }) {
         </div>
       </div>
 
-
+      <div className="space-y-2">
+        <Label htmlFor="customer_phone">Customer Phone</Label>
+        <Input
+          id="customer_phone"
+          value={project.customer_phone || ''}
+          onChange={(e) => onChange({ ...project, customer_phone: e.target.value })}
+          placeholder="(555) 123-4567"
+        />
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="notes">Project Notes</Label>
@@ -66,7 +74,7 @@ export default function ProjectForm({ project, onChange }) {
           id="notes"
           value={project.notes || ''}
           onChange={(e) => onChange({ ...project, notes: e.target.value })}
-          placeholder="..."
+          placeholder="Additional details about the project..."
           rows={3}
         />
       </div>

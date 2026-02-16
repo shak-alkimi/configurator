@@ -4,9 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Save, Download, Trash2, ChevronDown, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import { Save, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 import ProjectsList from "../components/calculator/ProjectsList";
 import ProjectForm from "../components/calculator/ProjectForm";
@@ -24,46 +23,20 @@ export default function Calculator() {
     status: 'draft'
   });
   const [isNewProject, setIsNewProject] = useState(true);
-  const [detailsExpanded, setDetailsExpanded] = useState(true);
-  const [userOrg, setUserOrg] = useState(null);
-
 
   const queryClient = useQueryClient();
 
-  // Fetch current user and organization
-  useEffect(() => {
-    const fetchUser = async () => {
-      const user = await base44.auth.me();
-      if (user?.organization_id) {
-        setUserOrg(user.organization_id);
-      }
-    };
-    fetchUser();
-  }, []);
-
-  // Fetch projects filtered by user's organization
+  // Fetch all projects
   const { data: projects = [], isLoading: projectsLoading } = useQuery({
-    queryKey: ['projects', userOrg],
-    queryFn: async () => {
-      if (userOrg) {
-        return await base44.entities.Project.filter({ organization_id: userOrg }, '-updated_date');
-      }
-      // If no org assigned, return empty array
-      return [];
-    }
+    queryKey: ['projects'],
+    queryFn: () => base44.entities.Project.list('-updated_date'),
   });
 
   // Fetch tape runs for selected project
   const { data: tapeRuns = [] } = useQuery({
     queryKey: ['tapeRuns', selectedProjectId],
     queryFn: () => selectedProjectId ? base44.entities.TapeRun.filter({ project_id: selectedProjectId }) : [],
-    enabled: !!selectedProjectId
-  });
-
-  // Fetch pricing catalog
-  const { data: productCatalog = [] } = useQuery({
-    queryKey: ['productCatalog'],
-    queryFn: () => base44.entities.ProductCatalog.list()
+    enabled: !!selectedProjectId,
   });
 
   // Create/Update project mutation
@@ -76,16 +49,13 @@ export default function Calculator() {
       }
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['projects', userOrg] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
       if (isNewProject) {
         setSelectedProjectId(result.id);
         setIsNewProject(false);
       }
       toast.success('Project saved successfully');
     },
-    onError: (error) => {
-      toast.error(`Failed to save project: ${error.message}`);
-    }
   });
 
   // Create tape run mutation
@@ -95,9 +65,6 @@ export default function Calculator() {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
       toast.success('Tape run added');
     },
-    onError: (error) => {
-      toast.error(`Failed to add tape run: ${error.message}`);
-    }
   });
 
   // Delete tape run mutation
@@ -106,7 +73,7 @@ export default function Calculator() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
       toast.success('Tape run deleted');
-    }
+    },
   });
 
   // Delete project mutation
@@ -116,13 +83,13 @@ export default function Calculator() {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       handleNewProject();
       toast.success('Project deleted');
-    }
+    },
   });
 
   // Load selected project
   useEffect(() => {
     if (selectedProjectId && !isNewProject) {
-      const project = projects.find((p) => p.id === selectedProjectId);
+      const project = projects.find(p => p.id === selectedProjectId);
       if (project) {
         setProjectData(project);
       }
@@ -156,17 +123,10 @@ export default function Calculator() {
     // Calculate total price from tape runs
     const totalPrice = calculateTotalPrice(tapeRuns);
 
-    const dataToSave = {
+    await saveProjectMutation.mutateAsync({
       ...projectData,
       total_price: totalPrice
-    };
-
-    // Only add organization_id if user has one
-    if (userOrg) {
-      dataToSave.organization_id = userOrg;
-    }
-
-    await saveProjectMutation.mutateAsync(dataToSave);
+    });
   };
 
   const handleAddTapeRun = async (runData) => {
@@ -176,16 +136,10 @@ export default function Calculator() {
         toast.error('Please save project details first');
         return;
       }
-
-      const dataToSave = { ...projectData };
-      if (userOrg) {
-        dataToSave.organization_id = userOrg;
-      }
-
-      const result = await saveProjectMutation.mutateAsync(dataToSave);
+      const result = await saveProjectMutation.mutateAsync(projectData);
       setSelectedProjectId(result.id);
       setIsNewProject(false);
-
+      
       // Now add the tape run
       await createTapeRunMutation.mutateAsync({
         ...runData,
@@ -200,96 +154,36 @@ export default function Calculator() {
   };
 
   const calculateTotalPrice = (runs) => {
+    const TAPE_SPECS = {
+      standard_white: { price_per_foot: 12 },
+      standard_warm: { price_per_foot: 12 },
+      rgb: { price_per_foot: 18 },
+      rgbw: { price_per_foot: 24 },
+      high_output: { price_per_foot: 28 }
+    };
+
+    const CHANNEL_SPECS = {
+      surface_mount: { price_per_foot: 8 },
+      recessed: { price_per_foot: 12 },
+      corner: { price_per_foot: 10 },
+      none: { price_per_foot: 0 }
+    };
+
     let total = 0;
-
-    runs.forEach((run) => {
-      const tapePrice = productCatalog.find((p) => p.product_type === 'tape' && p.variant === run.tape_type)?.price_per_unit || 0;
-      const channelPrice = productCatalog.find((p) => p.product_type === 'channel' && p.variant === run.channel_type)?.price_per_unit || 0;
-
-      total += run.length_feet * tapePrice;
-      total += run.length_feet * channelPrice;
+    runs.forEach(run => {
+      total += run.length_feet * TAPE_SPECS[run.tape_type].price_per_foot;
+      total += run.length_feet * CHANNEL_SPECS[run.channel_type].price_per_foot;
     });
 
-    // Add drivers and hardware
-    const driverPrice = productCatalog.find((p) => p.product_type === 'driver' && p.variant === '60w')?.price_per_unit || 85;
-    const hardwarePrice = productCatalog.find((p) => p.product_type === 'hardware')?.price_per_unit || 15;
-
-    total += driverPrice;
-    total += hardwarePrice;
+    // Add drivers and hardware (simplified)
+    total += 85; // Base driver cost
+    total += 15; // Hardware cost
 
     return total;
   };
 
-  const handleExportQuoteCSV = () => {
-    try {
-      const headers = ['Item', 'Quantity', 'Unit Price', 'Total'];
-      const rows = [];
-
-      // Tape light totals
-      tapeRuns.forEach((run) => {
-        const tapePrice = productCatalog.find((p) => p.product_type === 'tape' && p.variant === run.tape_type)?.price_per_unit || 0;
-        rows.push([`${run.tape_type} - ${run.run_name}`, run.length_feet, tapePrice.toFixed(2), (run.length_feet * tapePrice).toFixed(2)]);
-      });
-
-      // Build CSV
-      const csv = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n');
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${projectData.project_name || 'quote'}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-      toast.success('Quote exported as CSV');
-    } catch (error) {
-      toast.error('Failed to export CSV');
-    }
-  };
-
-  const handleExportQuotePDF = async () => {
-    try {
-      const response = await base44.functions.invoke('exportQuotePDF', {
-        projectData,
-        runs: tapeRuns
-      });
-
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${projectData.project_name || 'quote'}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-      toast.success('Quote exported as PDF');
-    } catch (error) {
-      toast.error('Failed to export quote');
-    }
-  };
-
-  const handleExportSubmittal = async () => {
-    try {
-      const response = await base44.functions.invoke('exportSubmittalPackage', {
-        projectData,
-        runs: tapeRuns
-      });
-
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${projectData.project_name || 'submittal'} - Submittal Package.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-      toast.success('Submittal package exported as PDF');
-    } catch (error) {
-      toast.error('Failed to export submittal package');
-    }
+  const handleExportQuote = () => {
+    toast.info('Export feature coming soon');
   };
 
   const handleDeleteProject = () => {
@@ -299,88 +193,90 @@ export default function Calculator() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto hide-scrollbar flex bg-white">
+    <div className="h-screen flex bg-slate-50">
       {/* Sidebar - Projects List */}
-      <div className="w-96 px-6 pb-6 flex flex-col pt-2">
-        <Card className="flex-1 flex flex-col overflow-y-auto">
+      <div className="w-80 border-r bg-white">
+        <div className="h-full flex flex-col">
+          <div className="p-4 border-b">
+            <h1 className="text-xl font-bold text-slate-900">Tape Light Calculator</h1>
+            <p className="text-xs text-slate-500 mt-1">Project Quotes & Estimates</p>
+          </div>
           <ProjectsList
             projects={projects}
             selectedId={selectedProjectId}
             onSelect={handleSelectProject}
             onNew={handleNewProject}
-            isLoading={projectsLoading} />
-        </Card>
+            isLoading={projectsLoading}
+          />
+        </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto hide-scrollbar">
-        <div className="max-w-6xl w-full pl-0 pr-6 pt-0 pb-6 -mt-4 space-y-6">
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-7xl mx-auto p-6 space-y-6">
           {/* Header Actions */}
-          <div className="flex justify-end gap-2">
-              {!isNewProject &&
-              <div className="grid grid-cols-3 gap-2 w-fit">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="h-8 justify-center text-xs">
-                          <Download className="h-3 w-3 mr-1" />
-                          Export
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={handleExportQuoteCSV}>CSV</DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleExportQuotePDF}>PDF</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  <Button variant="outline" size="sm" onClick={handleExportSubmittal} className="h-8 justify-center text-xs">
-                    <FileText className="h-3 w-3 mr-1" />
-                    Specs
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">
+                {isNewProject ? 'New Project' : projectData.project_name}
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                {isNewProject ? 'Create a new tape light quote' : 'Edit project details and runs'}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              {!isNewProject && (
+                <>
+                  <Button variant="outline" size="sm" onClick={handleExportQuote}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleDeleteProject} className="h-8 justify-center text-xs">
-                    <Trash2 className="h-3 w-3 mr-1" />
+                  <Button variant="outline" size="sm" onClick={handleDeleteProject}>
+                    <Trash2 className="h-4 w-4 mr-2" />
                     Delete
                   </Button>
-                </div>
-              }
+                </>
+              )}
+              <Button size="sm" onClick={handleSaveProject}>
+                <Save className="h-4 w-4 mr-2" />
+                Save Project
+              </Button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
+          <div className="grid grid-cols-3 gap-6">
             {/* Left Column - Project Details */}
-            <div className="lg:col-span-6 space-y-6">
+            <div className="col-span-2 space-y-6">
               <Card>
-                <CardHeader className="cursor-pointer" onClick={() => setDetailsExpanded(!detailsExpanded)}>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Project Details</CardTitle>
-                    <ChevronDown className={`h-5 w-5 transition-transform ${detailsExpanded ? 'rotate-0' : '-rotate-90'}`} />
-                  </div>
+                <CardHeader>
+                  <CardTitle>Project Details</CardTitle>
                 </CardHeader>
-                {detailsExpanded &&
                 <CardContent>
-                    <ProjectForm
+                  <ProjectForm
                     project={projectData}
-                    onChange={setProjectData} />
-
-                  </CardContent>
-                }
+                    onChange={setProjectData}
+                  />
+                </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle>ALKILINE</CardTitle>
+                  <CardTitle>Tape Light Layout</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <TapeRunList
                     runs={tapeRuns}
                     onAdd={handleAddTapeRun}
                     onUpdate={() => {}}
-                    onDelete={(id) => deleteTapeRunMutation.mutate(id)} />
-
+                    onDelete={(id) => deleteTapeRunMutation.mutate(id)}
+                  />
                 </CardContent>
               </Card>
             </div>
 
             {/* Right Column - Materials & Quote */}
-            <div className="lg:col-span-1 min-w-0">
-              <div className="sticky top-2 w-96">
+            <div className="col-span-1">
+              <div className="sticky top-6">
                 <MaterialsCalculator runs={tapeRuns} />
               </div>
             </div>
