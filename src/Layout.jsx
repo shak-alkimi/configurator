@@ -2,12 +2,6 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
-        
-        * {
-          font-family: 'Space Mono', monospace !important;
-        }
-        
         :root {
           --primary: 149 11 16;
         }
