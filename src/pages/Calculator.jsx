@@ -222,7 +222,16 @@ export default function Calculator() {
       <div className="flex-1 overflow-y-auto p-4">
         <div className="mx-auto space-y-6">
           {/* Header Actions */}
-          <div className="flex justify-end gap-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">
+                {isNewProject ? 'New Project' : projectData.project_name}
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                {isNewProject ? 'Create a new tape light quote' : projectData.customer_name}
+              </p>
+            </div>
+            <div className="flex gap-2">
               {!isNewProject && (
                 <>
                   <Button variant="outline" size="sm" onClick={handleExportQuote}>
@@ -239,6 +248,7 @@ export default function Calculator() {
                 <Save className="h-4 w-4 mr-2" />
                 Save Project
               </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-4 gap-6">
