@@ -97,30 +97,31 @@ export default function AgentChat() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="border-t bg-white p-2 sm:p-3 flex-shrink-0">
-        <div className="flex justify-center">
-          <div className="flex gap-1 sm:gap-2 w-full max-w-2xl">
-            <Input
-             value={inputValue}
-             onChange={(e) => setInputValue(e.target.value)}
-             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-             placeholder="..."
-             disabled={isLoading || !conversationId}
-             className="w-full h-7 sm:h-8"
-            />
-          <Button
-            size="sm"
-            onClick={handleSendMessage}
-            disabled={isLoading || !conversationId || !inputValue.trim()}
-            style={{ backgroundColor: '#e9ff64', color: '#000' }}
-            className="gap-2 text-xs h-7 sm:h-8 hover:opacity-90 w-7 sm:w-8 flex-shrink-0"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
+        {/* Input */}
+        <div className="border-t bg-white p-2 sm:p-3 flex-shrink-0">
+          <div className="flex justify-center">
+            <div className="flex gap-1 sm:gap-2 w-full max-w-2xl">
+              <Input
+               value={inputValue}
+               onChange={(e) => setInputValue(e.target.value)}
+               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+               placeholder="..."
+               disabled={isLoading || !conversationId}
+               className="w-full h-7 sm:h-8"
+              />
+            <Button
+              size="sm"
+              onClick={handleSendMessage}
+              disabled={isLoading || !conversationId || !inputValue.trim()}
+              style={{ backgroundColor: '#e9ff64', color: '#000' }}
+              className="gap-2 text-xs h-7 sm:h-8 hover:opacity-90 w-7 sm:w-8 flex-shrink-0"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
