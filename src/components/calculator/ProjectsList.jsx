@@ -1,17 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Plus, FileText } from "lucide-react";
 import { format } from "date-fns";
 
 export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading }) {
+  const [searchTerm, setSearchTerm] = useState("");
+
   const statusColors = {
     draft: "bg-slate-100 text-slate-700",
     quoted: "bg-blue-100 text-blue-700",
     approved: "bg-green-100 text-green-700",
     completed: "bg-purple-100 text-purple-700"
   };
+
+  const filteredProjects = projects.filter(project =>
+    project.project_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    project.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="h-full flex flex-col">
