@@ -119,8 +119,8 @@ export default function InviteUsers() {
               </Button>
             </form>
           </CardContent>
-        </Card>
-        </div>
-    </div>
+          </Card>
+          </div>
+          </div>
   );
 }
