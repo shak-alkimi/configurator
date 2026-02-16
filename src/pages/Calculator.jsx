@@ -195,20 +195,22 @@ export default function Calculator() {
   return (
     <div className="h-screen flex bg-slate-50">
       {/* Sidebar - Projects List */}
-      <div className="w-80 border-r bg-white">
-        <div className="h-full flex flex-col">
-          <div className="p-4 border-b">
-            <h1 className="text-xl font-bold text-slate-900">Tape Light Calculator</h1>
+      <div className="w-80 p-4 flex flex-col">
+        <Card className="h-full flex flex-col">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-xl">Tape Light Calculator</CardTitle>
             <p className="text-xs text-slate-500 mt-1">Project Quotes & Estimates</p>
-          </div>
-          <ProjectsList
-            projects={projects}
-            selectedId={selectedProjectId}
-            onSelect={handleSelectProject}
-            onNew={handleNewProject}
-            isLoading={projectsLoading}
-          />
-        </div>
+          </CardHeader>
+          <CardContent className="flex-1 p-0 overflow-y-auto">
+            <ProjectsList
+              projects={projects}
+              selectedId={selectedProjectId}
+              onSelect={handleSelectProject}
+              onNew={handleNewProject}
+              isLoading={projectsLoading}
+            />
+          </CardContent>
+        </Card>
       </div>
 
       {/* Main Content */}
