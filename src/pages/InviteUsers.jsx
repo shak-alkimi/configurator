@@ -93,8 +93,7 @@ export default function InviteUsers() {
         <div className="max-w-2xl mx-auto p-6">
           <Card className="bg-slate-50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5" />
+            <CardTitle>
               Invite New User
             </CardTitle>
           </CardHeader>
