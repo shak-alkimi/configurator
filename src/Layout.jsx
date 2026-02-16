@@ -57,7 +57,7 @@ export default function Layout({ children, currentPageName }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <Link to={createPageUrl('Dashboard')} className="flex items-center -ml-4 sm:-ml-6 lg:-ml-8">
+            <Link to={createPageUrl('Dashboard')} className="flex items-center -ml-4 sm:-ml-6 lg:-ml-8 pl-2">
               <img 
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
                 alt="ALKIMI Logo"
