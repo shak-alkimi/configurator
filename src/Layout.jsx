@@ -131,52 +131,7 @@ export default function Layout({ children, currentPageName }) {
 
 
 
-      {/* Mobile Navigation */}
-        {mobileMenuOpen &&
-        <div className="md:hidden border-t border-slate-200 bg-white">
-            <div className="px-4 py-3 space-y-1">
-              {navigation.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentPageName === item.page;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium ${
-                  isActive ?
-                  'bg-slate-100 text-slate-900' :
-                  'text-slate-600 hover:bg-slate-50'}`
-                  }
-                  onClick={() => setMobileMenuOpen(false)}>
 
-                    <Icon className="h-5 w-5" />
-                    {item.name}
-                  </Link>);
-
-            })}
-              {user &&
-            <>
-                  <div className="pt-3 mt-3 border-t border-slate-200">
-                    <div className="px-3 py-2 text-sm text-slate-500">
-                      {user.full_name || user.email}
-                      {user.role === 'admin' &&
-                  <span className="ml-2 text-xs bg-slate-100 px-2 py-0.5 rounded">Admin</span>
-                  }
-                    </div>
-                    <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-50">
-
-                      <LogOut className="h-5 w-5" />
-                      Logout
-                    </button>
-                  </div>
-                </>
-            }
-            </div>
-          </div>
-        }
-      </header>
 
       {/* Main Content */}
       <main className="min-h-[calc(100vh-4rem)]">
