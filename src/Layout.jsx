@@ -56,7 +56,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Header */}
       <header className="bg-white border-b border-slate-200">
-        <div className="h-16 flex items-center px-6">
+        <div className="h-16 flex items-center pl-0 pr-6">
           <Link to={createPageUrl('Dashboard')} className="flex items-center">
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
