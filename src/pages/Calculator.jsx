@@ -315,6 +315,7 @@ export default function Calculator() {
             onNew={handleNewProject}
             isLoading={projectsLoading} />
         </Card>
+        )}
       </div>
 
       {/* Main Content */}
