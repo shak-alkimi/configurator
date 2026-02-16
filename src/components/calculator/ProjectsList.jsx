@@ -61,53 +61,73 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
          </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
-        {isLoading ? (
-          <div className="text-center py-8 text-slate-400 text-sm">Loading...</div>
-        ) : projects.length === 0 ? (
-          <div className="text-center py-8 text-slate-400 text-sm">
-            <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
-          </div>
-        ) : filteredProjects.length === 0 ? (
-          <div className="text-center py-8 text-slate-400 text-sm">
-            No projects match your search.
-          </div>
-        ) : (
-          filteredProjects.map((project) => (
-            <Card
-             key={project.id}
-             className={`cursor-pointer transition-all hover:shadow-md relative ${
-               selectedId === project.id ? 'ring-2 ring-slate-900 shadow-md' : ''
-             }`}
-             onClick={() => onSelect(project.id)}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="projects">
+          {(provided, snapshot) => (
+            <div 
+              className="flex-1 overflow-y-auto p-4 space-y-2"
+              {...provided.droppableProps}
+              ref={provided.innerRef}
             >
-              <CardContent className="p-3 h-32 flex flex-col justify-center">
-              <div>
-                <div className="flex gap-2 items-start">
-                   <div className="flex-1 pr-2">
-                     <h3 className="font-semibold text-sm break-words">{project.project_name}</h3>
-                   </div>
-                   <Badge className={`${statusColors[project.status]} text-xs flex-shrink-0`}>
-                     {project.status.replace('_', ' ')}
-                   </Badge>
-                 </div>
-               </div>
-               {project.status === 'approved' && (
-                 <Link 
-                   to={createPageUrl('ProjectDetail') + '?id=' + project.id}
-                   onClick={(e) => e.stopPropagation()}
-                   className="absolute bottom-3 right-3"
-                 >
-                   <Button variant="ghost" size="icon" className="h-6 w-6">
-                     <ExternalLink className="h-3 w-3" />
-                   </Button>
-                 </Link>
-               )}
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+              {isLoading ? (
+                <div className="text-center py-8 text-slate-400 text-sm">Loading...</div>
+              ) : localProjects.length === 0 ? (
+                <div className="text-center py-8 text-slate-400 text-sm">
+                  <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                </div>
+              ) : filteredProjects.length === 0 ? (
+                <div className="text-center py-8 text-slate-400 text-sm">
+                  No projects match your search.
+                </div>
+              ) : (
+                filteredProjects.map((project, index) => (
+                  <Draggable key={project.id} draggableId={project.id} index={index}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                      >
+                        <Card
+                          className={`cursor-pointer transition-all hover:shadow-md relative ${
+                            selectedId === project.id ? 'ring-2 ring-slate-900 shadow-md' : ''
+                          } ${snapshot.isDragging ? 'opacity-50 shadow-lg' : ''}`}
+                          onClick={() => onSelect(project.id)}
+                        >
+                          <CardContent className="p-3 h-32 flex flex-col justify-center">
+                            <div>
+                              <div className="flex gap-2 items-start">
+                                <div className="flex-1 pr-2">
+                                  <h3 className="font-semibold text-sm break-words">{project.project_name}</h3>
+                                </div>
+                                <Badge className={`${statusColors[project.status]} text-xs flex-shrink-0`}>
+                                  {project.status.replace('_', ' ')}
+                                </Badge>
+                              </div>
+                            </div>
+                            {project.status === 'approved' && (
+                              <Link 
+                                to={createPageUrl('ProjectDetail') + '?id=' + project.id}
+                                onClick={(e) => e.stopPropagation()}
+                                className="absolute bottom-3 right-3"
+                              >
+                                <Button variant="ghost" size="icon" className="h-6 w-6">
+                                  <ExternalLink className="h-3 w-3" />
+                                </Button>
+                              </Link>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </div>
+                    )}
+                  </Draggable>
+                ))
+              )}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     </div>
   );
 }
