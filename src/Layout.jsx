@@ -8,12 +8,12 @@ export default function Layout({ children, currentPageName }) {
         
         button[class*="default"],
         .bg-primary {
-          background-color: #950B10 !important;
-          color: white !important;
+          background-color: #e9ff64 !important;
+          color: black !important;
         }
         
         button[class*="default"]:hover {
-          background-color: #7a0809 !important;
+          background-color: #d4e64d !important;
         }
       `}</style>
       {children}
