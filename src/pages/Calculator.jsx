@@ -216,36 +216,6 @@ export default function Calculator() {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto space-y-6">
-          {/* Header Actions */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">
-                {isNewProject ? 'New Project' : projectData.project_name}
-              </h2>
-              <p className="text-sm text-slate-500 mt-1">
-                {isNewProject ? 'Create a new tape light quote' : 'Edit project details and runs'}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              {!isNewProject && (
-                <>
-                  <Button variant="outline" size="sm" onClick={handleExportQuote}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Export
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={handleDeleteProject}>
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
-                </>
-              )}
-              <Button size="sm" onClick={handleSaveProject}>
-                <Save className="h-4 w-4 mr-2" />
-                Save Project
-              </Button>
-            </div>
-          </div>
-
           <div className="grid grid-cols-3 gap-6">
             {/* Left Column - Project Details */}
             <div className="col-span-2 space-y-6">
