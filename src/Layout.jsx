@@ -53,7 +53,7 @@ export default function Layout({ children, currentPageName }) {
       `}</style>
 
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 flex-shrink-0">
+      <header className="bg-white flex-shrink-0">
         <div className="flex items-center py-6 pr-6 pl-0">
           <Link to={createPageUrl('Dashboard')} className="flex items-center">
             <img 
