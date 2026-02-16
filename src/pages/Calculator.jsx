@@ -229,7 +229,7 @@ export default function Calculator() {
                 {isNewProject ? 'New Project' : projectData.project_name}
               </h2>
               <p className="text-sm text-slate-500 mt-1">
-                {isNewProject ? 'Create a new tape light quote' : 'Edit project details and runs'}
+                {isNewProject ? 'Create a new tape light quote' : projectData.customer_name}
               </p>
             </div>
             <div className="flex gap-2">
