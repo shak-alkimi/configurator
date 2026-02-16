@@ -53,79 +53,85 @@ export default function Layout({ children, currentPageName }) {
       `}</style>
 
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto">
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      <header className="bg-white border-b border-slate-200 flex-shrink-0">
+        <div className="flex items-center py-6 pr-6 pl-0">
+          <Link to={createPageUrl('Dashboard')} className="flex items-center">
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
+              alt="ALKIMI Logo"
+              className="h-12"
+              style={{ filter: 'invert(1)' }}
+            />
+          </Link>
         </div>
+      </header>
 
-        {/* Mobile Navigation */}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      {/* Mobile Navigation */}
         {mobileMenuOpen &&
         <div className="md:hidden border-t border-slate-200 bg-white">
             <div className="px-4 py-3 space-y-1">
