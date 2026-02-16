@@ -55,7 +55,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-center items-center h-16 pr-4 sm:pr-6 lg:pr-8">
+          <div className="flex justify-between items-center h-16 pr-4 sm:pr-6 lg:pr-8">
             {/* Logo */}
             <Link to={createPageUrl('Dashboard')} className="flex items-center -ml-64">
               <img 
