@@ -43,8 +43,14 @@ export default function Calculator() {
   // Fetch projects filtered by user's organization
   const { data: projects = [], isLoading: projectsLoading } = useQuery({
     queryKey: ['projects', userOrg],
-    queryFn: () => userOrg ? base44.entities.Project.filter({ organization_id: userOrg }, '-updated_date') : [],
-    enabled: !!userOrg,
+    queryFn: async () => {
+      if (userOrg) {
+        return await base44.entities.Project.filter({ organization_id: userOrg }, '-updated_date');
+      }
+      // If no org assigned, fetch projects created by this user
+      const user = await base44.auth.me();
+      return await base44.entities.Project.filter({ created_by: user.email }, '-updated_date');
+    },
   });
 
   // Fetch tape runs for selected project
@@ -141,19 +147,20 @@ export default function Calculator() {
       return;
     }
 
-    if (!userOrg) {
-      toast.error('Unable to save project - organization not loaded');
-      return;
-    }
-
     // Calculate total price from tape runs
     const totalPrice = calculateTotalPrice(tapeRuns);
 
-    await saveProjectMutation.mutateAsync({
+    const dataToSave = {
       ...projectData,
-      organization_id: userOrg,
       total_price: totalPrice
-    });
+    };
+
+    // Only add organization_id if user has one
+    if (userOrg) {
+      dataToSave.organization_id = userOrg;
+    }
+
+    await saveProjectMutation.mutateAsync(dataToSave);
   };
 
   const handleAddTapeRun = async (runData) => {
@@ -163,11 +170,13 @@ export default function Calculator() {
         toast.error('Please save project details first');
         return;
       }
-      if (!userOrg) {
-        toast.error('Unable to save project - organization not loaded');
-        return;
+      
+      const dataToSave = { ...projectData };
+      if (userOrg) {
+        dataToSave.organization_id = userOrg;
       }
-      const result = await saveProjectMutation.mutateAsync({ ...projectData, organization_id: userOrg });
+      
+      const result = await saveProjectMutation.mutateAsync(dataToSave);
       setSelectedProjectId(result.id);
       setIsNewProject(false);
       
