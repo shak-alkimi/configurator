@@ -54,7 +54,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Header */}
       <header className="bg-white flex-shrink-0">
-        <div className="flex items-center py-6 pr-6 pl-0">
+        <div className="flex items-center justify-between py-6 pr-6 pl-0">
           <Link to={createPageUrl('Dashboard')} className="flex items-center">
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/f2bc037c5_Screenshot2026-02-14160229.png" 
@@ -63,6 +63,28 @@ export default function Layout({ children, currentPageName }) {
               style={{ filter: 'invert(1)' }}
             />
           </Link>
+          <DropdownMenu open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              {navigation.map((item) => (
+                <DropdownMenuItem key={item.page} asChild>
+                  <Link to={item.href} className="flex items-center gap-2 w-full">
+                    <item.icon className="h-4 w-4" />
+                    {item.name}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
