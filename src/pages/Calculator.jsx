@@ -147,18 +147,19 @@ export default function Calculator() {
       return;
     }
 
+    if (!userOrg) {
+      toast.error('You must be assigned to an organization to create projects');
+      return;
+    }
+
     // Calculate total price from tape runs
     const totalPrice = calculateTotalPrice(tapeRuns);
 
     const dataToSave = {
       ...projectData,
+      organization_id: userOrg,
       total_price: totalPrice
     };
-
-    // Only add organization_id if user has one
-    if (userOrg) {
-      dataToSave.organization_id = userOrg;
-    }
 
     await saveProjectMutation.mutateAsync(dataToSave);
   };
@@ -170,11 +171,16 @@ export default function Calculator() {
         toast.error('Please save project details first');
         return;
       }
-      
-      const dataToSave = { ...projectData };
-      if (userOrg) {
-        dataToSave.organization_id = userOrg;
+
+      if (!userOrg) {
+        toast.error('You must be assigned to an organization to create projects');
+        return;
       }
+      
+      const dataToSave = { 
+        ...projectData,
+        organization_id: userOrg
+      };
       
       const result = await saveProjectMutation.mutateAsync(dataToSave);
       setSelectedProjectId(result.id);
