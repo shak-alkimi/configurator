@@ -308,7 +308,7 @@ export default function Calculator() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto hide-scrollbar">
-        <div className="max-w-6xl mx-auto p-6 space-y-6">
+        <div className="max-w-6xl mx-auto pl-0 pr-6 pt-6 pb-6 space-y-6">
           {/* Header Actions */}
           <div className="flex justify-end gap-2">
               {!isNewProject &&
