@@ -67,7 +67,7 @@ export default function Layout({ children, currentPageName }) {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex space-x-1">
+            <nav className="hidden md:flex space-x-1 justify-center">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPageName === item.page;
