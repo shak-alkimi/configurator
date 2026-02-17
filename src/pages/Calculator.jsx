@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Save, Download, Trash2 } from "lucide-react";
+import { Save, Download, Trash2, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 import ProjectsList from "../components/calculator/ProjectsList";
@@ -187,6 +187,10 @@ export default function Calculator() {
     toast.info('Export feature coming soon');
   };
 
+  const handleSubmittal = () => {
+    toast.info('Submittal feature coming soon');
+  };
+
   const handleDeleteProject = () => {
     if (selectedProjectId && confirm('Are you sure you want to delete this project?')) {
       deleteProjectMutation.mutate(selectedProjectId);
@@ -237,6 +241,10 @@ export default function Calculator() {
                   <Button variant="outline" size="sm" onClick={handleExportQuote}>
                     <Download className="h-4 w-4 mr-2" />
                     Export
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleSubmittal}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Submittal
                   </Button>
                   <Button variant="outline" size="sm" onClick={handleDeleteProject}>
                     <Trash2 className="h-4 w-4 mr-2" />
