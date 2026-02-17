@@ -156,31 +156,61 @@ export default function Calculator() {
 
   const calculateTotalPrice = (runs) => {
     const TAPE_SPECS = {
-      standard_white: { price_per_foot: 12 },
-      standard_warm: { price_per_foot: 12 },
-      rgb: { price_per_foot: 18 },
-      rgbw: { price_per_foot: 24 },
-      high_output: { price_per_foot: 28 }
+      standard_white: { watts_per_foot: 4.4, price_per_foot: 12 },
+      standard_warm: { watts_per_foot: 4.4, price_per_foot: 12 },
+      rgb: { watts_per_foot: 7.2, price_per_foot: 18 },
+      rgbw: { watts_per_foot: 9.6, price_per_foot: 24 },
+      high_output: { watts_per_foot: 18, price_per_foot: 28 }
     };
 
     const CHANNEL_SPECS = {
-      surface_mount: { price_per_foot: 8 },
-      recessed: { price_per_foot: 12 },
-      corner: { price_per_foot: 10 },
-      none: { price_per_foot: 0 }
+      surface_mount: { price_per_foot: 8, clips_per_foot: 2 },
+      recessed: { price_per_foot: 12, clips_per_foot: 2 },
+      corner: { price_per_foot: 10, clips_per_foot: 2 },
+      none: { price_per_foot: 0, clips_per_foot: 0 }
     };
 
-    let total = 0;
+    const DRIVER_SPECS = [
+      { max_watts: 60, price: 45 },
+      { max_watts: 96, price: 65 },
+      { max_watts: 150, price: 85 },
+      { max_watts: 320, price: 125 }
+    ];
+
+    // Calculate tape cost and total watts
+    let tapeCost = 0;
+    let totalWatts = 0;
     runs.forEach(run => {
-      total += run.length_feet * TAPE_SPECS[run.tape_type].price_per_foot;
-      total += run.length_feet * CHANNEL_SPECS[run.channel_type].price_per_foot;
+      const specs = TAPE_SPECS[run.tape_type];
+      tapeCost += run.length_feet * specs.price_per_foot;
+      totalWatts += run.length_feet * specs.watts_per_foot;
     });
 
-    // Add drivers and hardware (simplified)
-    total += 85; // Base driver cost
-    total += 15; // Hardware cost
+    // Calculate channel cost
+    let channelCost = 0;
+    runs.forEach(run => {
+      const specs = CHANNEL_SPECS[run.channel_type];
+      channelCost += run.length_feet * specs.price_per_foot;
+    });
 
-    return total;
+    // Calculate required drivers
+    let driverCost = 0;
+    let remainingWatts = totalWatts;
+    while (remainingWatts > 0) {
+      const driver = DRIVER_SPECS.find(d => d.max_watts >= remainingWatts) || DRIVER_SPECS[DRIVER_SPECS.length - 1];
+      driverCost += driver.price;
+      remainingWatts -= driver.max_watts;
+    }
+
+    // Calculate mounting hardware (clips)
+    const totalClips = runs.reduce((sum, run) => {
+      const specs = CHANNEL_SPECS[run.channel_type];
+      return sum + (run.length_feet * specs.clips_per_foot);
+    }, 0);
+    const clipSets = Math.ceil(totalClips / 50);
+    const clipCost = clipSets * 15;
+
+    return tapeCost + channelCost + driverCost + clipCost;
   };
 
   const handleExportQuote = () => {
