@@ -18,8 +18,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
     <div className="h-full flex flex-col">
       <div className="p-4 space-y-3">
         <Button onClick={onNew} className="w-full" size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          New
+          <Plus className="h-4 w-4" />
         </Button>
         <Input
           placeholder="Search projects..."
