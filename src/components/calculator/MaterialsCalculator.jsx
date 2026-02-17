@@ -177,6 +177,19 @@ export default function MaterialsCalculator({ runs }) {
               </div>
             </div>
           </div>
+
+          <Separator />
+
+          {/* Termination */}
+          <div>
+            <h4 className="text-sm font-semibold text-slate-700 mb-2">Termination</h4>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600">Terminal Blocks</span>
+                <span className="font-medium">{runs.length} units</span>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
