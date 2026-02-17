@@ -224,7 +224,7 @@ export default function Calculator() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto space-y-6 pl-0 pr-6 py-6">
+        <div className="mx-auto space-y-6 -ml-6 pr-6 py-6">
           {/* Header Actions */}
           <div className="flex items-center justify-between">
             <div>
