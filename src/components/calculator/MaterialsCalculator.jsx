@@ -183,7 +183,7 @@ export default function MaterialsCalculator({ runs }) {
       {/* Pricing Summary */}
       <Card className="border-black bg-black">
         <CardHeader>
-          <CardTitle className="text-lg text-white">Quote Summary</CardTitle>
+          <CardTitle className="text-lg text-white">Summary</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex justify-between text-sm">
