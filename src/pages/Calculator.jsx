@@ -187,8 +187,8 @@ export default function Calculator() {
     toast.info('Export feature coming soon');
   };
 
-  const handleSubmittal = () => {
-    toast.info('Submittal feature coming soon');
+  const handleSpecs = () => {
+    toast.info('Specs feature coming soon');
   };
 
   const handleDeleteProject = () => {
@@ -242,9 +242,9 @@ export default function Calculator() {
                     <Download className="h-4 w-4 mr-2" />
                     Export
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleSubmittal}>
+                  <Button variant="outline" size="sm" onClick={handleSpecs}>
                     <FileText className="h-4 w-4 mr-2" />
-                    Submittal
+                    Specs
                   </Button>
                   <Button variant="outline" size="sm" onClick={handleDeleteProject}>
                     <Trash2 className="h-4 w-4 mr-2" />
