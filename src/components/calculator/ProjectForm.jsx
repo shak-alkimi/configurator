@@ -67,17 +67,6 @@ export default function ProjectForm({ project, onChange }) {
           placeholder="(555) 123-4567"
         />
       </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="notes">Project Notes</Label>
-        <Textarea
-          id="notes"
-          value={project.notes || ''}
-          onChange={(e) => onChange({ ...project, notes: e.target.value })}
-          placeholder="Additional details about the project..."
-          rows={3}
-        />
-      </div>
     </div>
   );
 }
