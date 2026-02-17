@@ -98,7 +98,7 @@ export default function MaterialsCalculator({ runs }) {
     return (
       <Card>
         <CardContent className="py-12 text-center text-slate-400">
-          add runs to breakdown
+          Add runs for breakdown
         </CardContent>
       </Card>
     );
