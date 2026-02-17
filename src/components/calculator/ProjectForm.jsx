@@ -43,7 +43,6 @@ export default function ProjectForm({ project, onChange }) {
             id="customer_name"
             value={project.customer_name || ''}
             onChange={(e) => onChange({ ...project, customer_name: e.target.value })}
-            placeholder="John Smith"
           />
         </div>
         <div className="space-y-2">
