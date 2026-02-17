@@ -255,7 +255,7 @@ export default function Calculator() {
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-4 gap-0">
             {/* Left Column - Project Details */}
             <div className="col-span-3 space-y-6">
               <Card>
