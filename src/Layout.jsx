@@ -15,6 +15,30 @@ export default function Layout({ children, currentPageName }) {
         button[class*="default"]:hover {
           background-color: #d4e64d !important;
         }
+
+        /* Hide scrollbars while maintaining scrollability */
+        ::-webkit-scrollbar {
+          width: 0;
+          height: 0;
+        }
+        
+        ::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+          background: transparent;
+        }
+        
+        /* Firefox */
+        * {
+          scrollbar-width: none;
+        }
+        
+        /* IE and Edge */
+        * {
+          -ms-overflow-style: none;
+        }
       `}</style>
       {children}
     </div>
