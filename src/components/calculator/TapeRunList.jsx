@@ -51,7 +51,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
         <CardContent className="pt-4">
           <div className="grid grid-cols-12 gap-3 items-end">
             <div className="col-span-3 space-y-1.5">
-              <Label className="text-xs">Run Name</Label>
+              <Label className="text-xs">Type</Label>
               <Input
                 value={newRun.run_name}
                 onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })}
