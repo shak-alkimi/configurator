@@ -259,9 +259,6 @@ export default function Calculator() {
             {/* Left Column - Project Details */}
             <div className="col-span-3 space-y-6">
               <Card>
-                <CardHeader>
-                  <CardTitle>Project Details</CardTitle>
-                </CardHeader>
                 <CardContent>
                   <ProjectForm
                     project={projectData}
