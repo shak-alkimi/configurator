@@ -196,7 +196,7 @@ export default function Calculator() {
   return (
     <div className="h-screen flex gap-6 bg-white">
       {/* Sidebar - Projects List */}
-      <div className="w-80 p-4 flex flex-col">
+      <div className="w-80 px-6 py-4 flex flex-col">
         <Card className="h-full flex flex-col">
           <CardHeader className="pb-3">
             <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/363b1fdb0_Screenshot2026-02-16175106.png" alt="Alkimi Logo" className="h-10 w-auto -ml-6" />
