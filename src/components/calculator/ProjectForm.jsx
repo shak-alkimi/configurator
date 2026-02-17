@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export default function ProjectForm({ project, onChange }) {
   return (
     <div className="space-y-4">
+      <div></div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="project_name">Project Name *</Label>
