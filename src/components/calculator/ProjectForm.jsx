@@ -52,7 +52,6 @@ export default function ProjectForm({ project, onChange }) {
             type="email"
             value={project.customer_email || ''}
             onChange={(e) => onChange({ ...project, customer_email: e.target.value })}
-            placeholder="john@example.com"
           />
         </div>
       </div>
