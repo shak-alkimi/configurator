@@ -117,7 +117,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
       {/* Existing Runs */}
       <div className="space-y-2">
         {runs.map((run) => (
-          <Card key={run.id} className="border-slate-200">
+          <Card key={run.id} className="border-slate-200" style={{ backgroundColor: '#EEEEEE' }}>
             <CardContent className="py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 flex-1">
