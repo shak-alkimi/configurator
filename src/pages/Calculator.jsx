@@ -268,9 +268,6 @@ export default function Calculator() {
               </Card>
 
               <Card>
-                <CardHeader>
-                  <CardTitle>Tape Light Layout</CardTitle>
-                </CardHeader>
                 <CardContent>
                   <TapeRunList
                     runs={tapeRuns}
