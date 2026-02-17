@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Plus, FileText } from "lucide-react";
+import { Plus, FileText, Search } from "lucide-react";
 import { format } from "date-fns";
 
 export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading, searchQuery, onSearchChange }) {
@@ -20,12 +20,14 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
         <Button onClick={onNew} className="w-full" size="sm">
           <Plus className="h-4 w-4" />
         </Button>
-        <Input
-          placeholder="Search projects..."
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="h-9 text-sm"
-        />
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="h-9 text-sm pl-9"
+          />
+        </div>
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
