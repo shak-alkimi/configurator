@@ -30,7 +30,7 @@ export default function Calculator() {
   // Fetch all projects
   const { data: projects = [], isLoading: projectsLoading } = useQuery({
     queryKey: ['projects'],
-    queryFn: () => base44.entities.Project.list('-updated_date'),
+    queryFn: () => base44.entities.Project.list('-updated_date', undefined, undefined, undefined, 'dev'),
   });
 
   // Fetch tape runs for selected project
