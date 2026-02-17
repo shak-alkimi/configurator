@@ -150,11 +150,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
         ))}
       </div>
 
-      {runs.length === 0 && (
-        <div className="text-center py-8 text-slate-400 text-sm">
-          No tape runs added yet. Add your first run above.
-        </div>
-      )}
+
     </div>
   );
 }
