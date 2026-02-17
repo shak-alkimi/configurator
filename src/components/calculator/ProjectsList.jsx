@@ -19,7 +19,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
       <div className="p-4 space-y-3">
         <Button onClick={onNew} className="w-full" size="sm">
           <Plus className="h-4 w-4 mr-2" />
-          New Project
+          New
         </Button>
         <Input
           placeholder="Search projects..."
