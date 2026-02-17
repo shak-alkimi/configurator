@@ -112,7 +112,7 @@ export default function MaterialsCalculator({ runs }) {
     <div className="space-y-6">
       <Card className="bg-[#EEEEEE]">
          <CardHeader>
-           <CardTitle className="text-lg">Materials Required</CardTitle>
+           <CardTitle className="text-lg">Materials</CardTitle>
          </CardHeader>
          <CardContent className="space-y-4">
           {/* Tape Light */}
