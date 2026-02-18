@@ -36,7 +36,11 @@ export default function Calculator() {
   // Fetch tape runs for selected project
   const { data: tapeRuns = [] } = useQuery({
     queryKey: ['tapeRuns', selectedProjectId],
-    queryFn: () => selectedProjectId ? base44.entities.TapeRun.filter({ project_id: selectedProjectId }) : [],
+    queryFn: async () => {
+      if (!selectedProjectId) return [];
+      const runs = await base44.entities.TapeRun.filter({ project_id: selectedProjectId });
+      return runs.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+    },
     enabled: !!selectedProjectId,
   });
 
@@ -140,6 +144,7 @@ export default function Calculator() {
   };
 
   const handleAddTapeRun = async (runData) => {
+    const nextOrder = tapeRuns.length;
     if (!selectedProjectId && isNewProject) {
       // Save project first
       if (!projectData.project_name || !projectData.customer_name) {
@@ -153,12 +158,14 @@ export default function Calculator() {
       // Now add the tape run
       await createTapeRunMutation.mutateAsync({
         ...runData,
-        project_id: result.id
+        project_id: result.id,
+        order: nextOrder
       });
     } else {
       await createTapeRunMutation.mutateAsync({
         ...runData,
-        project_id: selectedProjectId
+        project_id: selectedProjectId,
+        order: nextOrder
       });
     }
   };
