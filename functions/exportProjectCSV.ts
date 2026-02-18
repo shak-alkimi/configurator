@@ -18,8 +18,7 @@ Deno.serve(async (req) => {
         const env = data_env || 'prod';
 
         // Fetch project and tape runs
-        const projects = await base44.entities.Project.filter({ id: project_id }, undefined, undefined, undefined, env);
-        const project = projects[0];
+        const project = await base44.entities.Project.get(project_id, env);
 
         if (!project) {
             return Response.json({ error: 'Project not found' }, { status: 404 });
