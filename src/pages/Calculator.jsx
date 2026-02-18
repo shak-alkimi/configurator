@@ -77,6 +77,15 @@ export default function Calculator() {
     },
   });
 
+  // Reorder tape runs mutation
+  const handleReorderRuns = async (reorderedRuns) => {
+    // Update each run with new order
+    for (let i = 0; i < reorderedRuns.length; i++) {
+      await base44.entities.TapeRun.update(reorderedRuns[i].id, { order: i });
+    }
+    queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
+  };
+
   // Delete project mutation
   const deleteProjectMutation = useMutation({
     mutationFn: (projectId) => base44.entities.Project.delete(projectId),
@@ -274,6 +283,7 @@ export default function Calculator() {
                     onAdd={handleAddTapeRun}
                     onUpdate={() => {}}
                     onDelete={(id) => deleteTapeRunMutation.mutate(id)}
+                    onReorder={handleReorderRuns}
                   />
                 </CardContent>
               </Card>
