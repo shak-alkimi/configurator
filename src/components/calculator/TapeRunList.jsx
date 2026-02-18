@@ -72,7 +72,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
               />
             </div>
             <div className="col-span-1 space-y-1.5">
-              <Label className="text-xs">Feet *</Label>
+              <Label className="text-xs">Feet</Label>
               <Input
                 type="number"
                 min="0"
