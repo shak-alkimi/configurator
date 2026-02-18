@@ -38,7 +38,7 @@ export default function Calculator() {
     queryKey: ['tapeRuns', selectedProjectId],
     queryFn: async () => {
       if (!selectedProjectId) return [];
-      const runs = await base44.entities.TapeRun.filter({ project_id: selectedProjectId });
+      const runs = await base44.entities.TapeRun.filter({ project_id: selectedProjectId }, undefined, undefined, undefined, 'dev');
       return runs.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
     },
     enabled: !!selectedProjectId,
@@ -48,9 +48,9 @@ export default function Calculator() {
   const saveProjectMutation = useMutation({
     mutationFn: async (data) => {
       if (isNewProject) {
-        return await base44.entities.Project.create(data);
+        return await base44.entities.Project.create(data, 'dev');
       } else {
-        return await base44.entities.Project.update(selectedProjectId, data);
+        return await base44.entities.Project.update(selectedProjectId, data, 'dev');
       }
     },
     onSuccess: (result) => {
@@ -65,7 +65,7 @@ export default function Calculator() {
 
   // Create tape run mutation
   const createTapeRunMutation = useMutation({
-    mutationFn: (runData) => base44.entities.TapeRun.create(runData),
+    mutationFn: (runData) => base44.entities.TapeRun.create(runData, 'dev'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
       toast.success('Tape run added');
@@ -74,7 +74,7 @@ export default function Calculator() {
 
   // Delete tape run mutation
   const deleteTapeRunMutation = useMutation({
-    mutationFn: (runId) => base44.entities.TapeRun.delete(runId),
+    mutationFn: (runId) => base44.entities.TapeRun.delete(runId, 'dev'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
       toast.success('Tape run deleted');
@@ -111,7 +111,7 @@ export default function Calculator() {
 
   // Delete project mutation
   const deleteProjectMutation = useMutation({
-    mutationFn: (projectId) => base44.entities.Project.delete(projectId),
+    mutationFn: (projectId) => base44.entities.Project.delete(projectId, 'dev'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       handleNewProject();
