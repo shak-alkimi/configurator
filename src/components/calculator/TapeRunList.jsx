@@ -9,18 +9,30 @@ import { Plus, Trash2, Ruler } from "lucide-react";
 export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
   const [newRun, setNewRun] = useState({
     run_name: '',
-    length_feet: '',
+    feet: '',
+    inches: '',
     tape_type: '2400k',
     channel_type: 'corner',
     notes: ''
   });
 
   const handleAdd = () => {
-    if (newRun.length_feet) {
-      onAdd({ ...newRun, length_feet: parseFloat(newRun.length_feet) });
+    const feet = parseFloat(newRun.feet) || 0;
+    const inches = parseFloat(newRun.inches) || 0;
+    const totalFeet = feet + (inches / 12);
+    
+    if (totalFeet > 0) {
+      onAdd({ 
+        run_name: newRun.run_name,
+        length_feet: totalFeet,
+        tape_type: newRun.tape_type,
+        channel_type: newRun.channel_type,
+        notes: newRun.notes
+      });
       setNewRun({
         run_name: '',
-        length_feet: '',
+        feet: '',
+        inches: '',
         tape_type: '2400k',
         channel_type: 'corner',
         notes: ''
@@ -59,14 +71,27 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 className="h-9"
               />
             </div>
-            <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs">Length (ft) *</Label>
+            <div className="col-span-1 space-y-1.5">
+              <Label className="text-xs">Feet *</Label>
               <Input
                 type="number"
-                step="0.1"
-                value={newRun.length_feet}
-                onChange={(e) => setNewRun({ ...newRun, length_feet: e.target.value })}
+                min="0"
+                value={newRun.feet}
+                onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })}
                 placeholder="10"
+                className="h-9"
+              />
+            </div>
+            <div className="col-span-1 space-y-1.5">
+              <Label className="text-xs">Inches</Label>
+              <Input
+                type="number"
+                min="0"
+                max="11"
+                step="0.5"
+                value={newRun.inches}
+                onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })}
+                placeholder="6"
                 className="h-9"
               />
             </div>
@@ -124,7 +149,9 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                    <div className="flex-1 grid grid-cols-4 gap-4">
                     <div>
                       <div className="text-sm font-medium">{run.run_name || 'Unnamed Run'}</div>
-                      <div className="text-xs text-slate-500">{run.length_feet} ft</div>
+                      <div className="text-xs text-slate-500">
+                        {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
+                      </div>
                     </div>
                     <div>
                       <div className="text-xs text-slate-500">Tape Type</div>
