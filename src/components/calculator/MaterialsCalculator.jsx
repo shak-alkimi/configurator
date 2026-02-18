@@ -32,10 +32,13 @@ export default function MaterialsCalculator({ runs }) {
     
     runs.forEach(run => {
       const type = run.tape_type;
+      const specs = TAPE_SPECS[type];
+      
+      if (!specs) return;
+      
       if (!tapeByType[type]) {
         tapeByType[type] = { feet: 0, watts: 0, cost: 0 };
       }
-      const specs = TAPE_SPECS[type];
       tapeByType[type].feet += run.length_feet;
       tapeByType[type].watts += run.length_feet * specs.watts_per_foot;
       tapeByType[type].cost += run.length_feet * specs.price_per_foot;
@@ -46,11 +49,12 @@ export default function MaterialsCalculator({ runs }) {
     const channelByType = {};
     runs.forEach(run => {
       const type = run.channel_type;
-      if (type !== 'none') {
+      const specs = CHANNEL_SPECS[type];
+      
+      if (type !== 'none' && specs) {
         if (!channelByType[type]) {
           channelByType[type] = { feet: 0, cost: 0 };
         }
-        const specs = CHANNEL_SPECS[type];
         channelByType[type].feet += run.length_feet;
         channelByType[type].cost += run.length_feet * specs.price_per_foot;
       }
@@ -68,6 +72,7 @@ export default function MaterialsCalculator({ runs }) {
     // Calculate mounting hardware (clips)
     const totalClips = runs.reduce((sum, run) => {
       const specs = CHANNEL_SPECS[run.channel_type];
+      if (!specs) return sum;
       return sum + (run.length_feet * specs.clips_per_foot);
     }, 0);
     const clipSets = Math.ceil(totalClips / 50); // Assume clips come in sets of 50

@@ -64,8 +64,13 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
   };
 
   const calculateRunCost = (run) => {
-    const tapeCost = run.length_feet * TAPE_SPECS[run.tape_type].price_per_foot;
-    const channelCost = run.length_feet * CHANNEL_SPECS[run.channel_type].price_per_foot;
+    const tapeSpec = TAPE_SPECS[run.tape_type];
+    const channelSpec = CHANNEL_SPECS[run.channel_type];
+    
+    if (!tapeSpec || !channelSpec) return 0;
+    
+    const tapeCost = run.length_feet * tapeSpec.price_per_foot;
+    const channelCost = run.length_feet * channelSpec.price_per_foot;
     return tapeCost + channelCost;
   };
 
