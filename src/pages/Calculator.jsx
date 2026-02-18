@@ -92,7 +92,8 @@ export default function Calculator() {
     onMutate: async (newReorderedRuns) => {
       await queryClient.cancelQueries({ queryKey: ['tapeRuns', selectedProjectId] });
       const previousTapeRuns = queryClient.getQueryData(['tapeRuns', selectedProjectId]);
-      queryClient.setQueryData(['tapeRuns', selectedProjectId], newReorderedRuns);
+      const runsWithUpdatedOrder = newReorderedRuns.map((run, index) => ({ ...run, order: index }));
+      queryClient.setQueryData(['tapeRuns', selectedProjectId], runsWithUpdatedOrder);
       return { previousTapeRuns };
     },
     onError: (err, newReorderedRuns, context) => {
