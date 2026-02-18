@@ -6,21 +6,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2, Ruler } from "lucide-react";
 
-const TAPE_SPECS = {
-  "2400k": { price_per_foot: 12 },
-  "2700k": { price_per_foot: 12 },
-  "3000k": { price_per_foot: 12 },
-  warm_dim: { price_per_foot: 18 },
-  tunable_white: { price_per_foot: 24 }
-};
-
-const CHANNEL_SPECS = {
-  corner: { price_per_foot: 10 },
-  recessed: { price_per_foot: 12 },
-  surface: { price_per_foot: 8 },
-  none: { price_per_foot: 0 }
-};
-
 export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
   const [newRun, setNewRun] = useState({
     run_name: '',
@@ -30,19 +15,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
     channel_type: 'corner',
     notes: ''
   });
-
-  const calculateRunCost = () => {
-    const feet = parseFloat(newRun.feet) || 0;
-    const inches = parseFloat(newRun.inches) || 0;
-    const totalFeet = feet + (inches / 12);
-    
-    if (totalFeet === 0) return 0;
-    
-    const tapeCost = totalFeet * TAPE_SPECS[newRun.tape_type].price_per_foot;
-    const channelCost = totalFeet * CHANNEL_SPECS[newRun.channel_type].price_per_foot;
-    
-    return tapeCost + channelCost;
-  };
 
   const handleAdd = () => {
     const feet = parseFloat(newRun.feet) || 0;
@@ -89,8 +61,8 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
       {/* Add New Run */}
       <Card className="border-dashed">
         <CardContent className="pt-4">
-          <div className="grid grid-cols-12 gap-3 items-end relative">
-            <div className="col-span-2 space-y-1.5">
+          <div className="grid grid-cols-12 gap-3 items-end">
+            <div className="col-span-3 space-y-1.5">
               <Label className="text-xs">Type</Label>
               <Input
                 value={newRun.run_name}
@@ -141,7 +113,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-2 space-y-1.5">
+            <div className="col-span-3 space-y-1.5">
               <Label className="text-xs">Housing</Label>
               <Select
                 value={newRun.channel_type}
@@ -157,12 +129,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                   <SelectItem value="none">None</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs">Cost</Label>
-              <div className="h-9 flex items-center justify-end px-3 rounded-md bg-slate-50 text-sm font-medium">
-                ${calculateRunCost().toFixed(2)}
-              </div>
             </div>
             <div className="col-span-1">
               <Button onClick={handleAdd} size="sm" className="h-9 w-full">
