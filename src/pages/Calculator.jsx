@@ -205,7 +205,7 @@ export default function Calculator() {
           <CardHeader className="pb-3">
             <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/363b1fdb0_Screenshot2026-02-16175106.png" alt="Alkimi Logo" className="h-10 w-auto -ml-6" />
           </CardHeader>
-          <CardContent className="flex-1 p-0 overflow-y-auto">
+          <CardContent className="flex-1 px-6 pb-6 pt-0 overflow-y-auto">
             <ProjectsList
               projects={projects.filter(p => 
                 p.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
