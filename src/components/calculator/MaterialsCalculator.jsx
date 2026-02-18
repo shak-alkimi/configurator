@@ -130,11 +130,11 @@ export default function MaterialsCalculator({ runs }) {
 
           <Separator />
 
-          {/* Channels */}
+          {/* Housing */}
           {Object.keys(calculations.channelByType).length > 0 && (
             <>
               <div>
-                <h4 className="text-sm font-semibold text-slate-700 mb-2">Channels</h4>
+                <h4 className="text-sm font-semibold text-slate-700 mb-2">Housing</h4>
                 <div className="space-y-2">
                   {Object.entries(calculations.channelByType).map(([type, data]) => (
                     <div key={type} className="flex justify-between text-sm">
@@ -205,7 +205,7 @@ export default function MaterialsCalculator({ runs }) {
           </div>
           {calculations.channelCost > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-gray-300">Channels</span>
+              <span className="text-gray-300">Housing</span>
               <span className="font-medium text-white">${calculations.channelCost.toFixed(2)}</span>
             </div>
           )}
