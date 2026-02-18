@@ -224,7 +224,7 @@ export default function Calculator() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
+        <div className="mx-auto space-y-4 md:space-y-6 p-4 md:py-6 md:pr-6 md:pl-0">
           {/* Header Actions */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
@@ -280,7 +280,7 @@ export default function Calculator() {
             </div>
 
             {/* Right Column - Materials & Quote */}
-            <div className="lg:col-span-1 lg:pl-7">
+            <div className="lg:col-span-1">
               <div className="lg:sticky lg:top-6">
                 <MaterialsCalculator runs={tapeRuns} />
               </div>
