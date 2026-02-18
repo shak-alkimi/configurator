@@ -330,13 +330,13 @@ export default function Calculator() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuItem onClick={handleExportPDF}>
-                        <FileDown className="h-4 w-4 mr-2" />
-                        Export as PDF
-                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleExportCSV}>
                         <FileDown className="h-4 w-4 mr-2" />
                         Export as CSV
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportPDF}>
+                        <FileDown className="h-4 w-4 mr-2" />
+                        Export as PDF
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
