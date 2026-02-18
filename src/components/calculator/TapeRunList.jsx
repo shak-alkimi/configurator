@@ -6,6 +6,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2, Ruler } from "lucide-react";
 
+const TAPE_SPECS = {
+  "2400k": { price_per_foot: 12 },
+  "2700k": { price_per_foot: 12 },
+  "3000k": { price_per_foot: 12 },
+  warm_dim: { price_per_foot: 18 },
+  tunable_white: { price_per_foot: 24 }
+};
+
+const CHANNEL_SPECS = {
+  corner: { price_per_foot: 10 },
+  recessed: { price_per_foot: 12 },
+  surface: { price_per_foot: 8 },
+  none: { price_per_foot: 0 }
+};
+
 export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
   const [newRun, setNewRun] = useState({
     run_name: '',
@@ -46,6 +61,12 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
 
   const formatChannelType = (type) => {
     return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const calculateRunCost = (run) => {
+    const tapeCost = run.length_feet * TAPE_SPECS[run.tape_type].price_per_foot;
+    const channelCost = run.length_feet * CHANNEL_SPECS[run.channel_type].price_per_foot;
+    return tapeCost + channelCost;
   };
 
   return (
@@ -161,9 +182,13 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                       <div className="text-xs text-slate-500">Housing</div>
                       <div className="text-sm">{formatChannelType(run.channel_type)}</div>
                     </div>
-                  </div>
-                </div>
-                <Button
+                    <div className="text-right">
+                      <div className="text-xs text-slate-500">Cost</div>
+                      <div className="text-sm font-semibold">${calculateRunCost(run).toFixed(2)}</div>
+                    </div>
+                    </div>
+                    </div>
+                    <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => onDelete(run.id)}
