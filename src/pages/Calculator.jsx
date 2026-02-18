@@ -82,12 +82,30 @@ export default function Calculator() {
   });
 
   // Reorder tape runs mutation
-  const handleReorderRuns = async (reorderedRuns) => {
-    // Update each run with new order
-    for (let i = 0; i < reorderedRuns.length; i++) {
-      await base44.entities.TapeRun.update(reorderedRuns[i].id, { order: i });
-    }
-    queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
+  const reorderTapeRunsMutation = useMutation({
+    mutationFn: async (reorderedRuns) => {
+      const updates = reorderedRuns.map((run, index) =>
+        base44.entities.TapeRun.update(run.id, { order: index }, undefined, undefined, 'dev')
+      );
+      await Promise.all(updates);
+    },
+    onMutate: async (newReorderedRuns) => {
+      await queryClient.cancelQueries({ queryKey: ['tapeRuns', selectedProjectId] });
+      const previousTapeRuns = queryClient.getQueryData(['tapeRuns', selectedProjectId]);
+      queryClient.setQueryData(['tapeRuns', selectedProjectId], newReorderedRuns);
+      return { previousTapeRuns };
+    },
+    onError: (err, newReorderedRuns, context) => {
+      queryClient.setQueryData(['tapeRuns', selectedProjectId], context.previousTapeRuns);
+      toast.error('Failed to reorder');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
+    },
+  });
+
+  const handleReorderRuns = (reorderedRuns) => {
+    reorderTapeRunsMutation.mutate(reorderedRuns);
   };
 
   // Delete project mutation
