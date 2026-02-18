@@ -4,8 +4,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Save, Download, Trash2, FileText } from "lucide-react";
+import { Save, Download, Trash2, FileText, FileDown } from "lucide-react";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import ProjectsList from "../components/calculator/ProjectsList";
 import ProjectForm from "../components/calculator/ProjectForm";
@@ -218,8 +224,52 @@ export default function Calculator() {
     return total;
   };
 
-  const handleExportQuote = () => {
-    toast.info('Export feature coming soon');
+  const handleExportPDF = async () => {
+    if (!selectedProjectId) return;
+    
+    try {
+      const response = await base44.functions.invoke('exportProjectPDF', {
+        project_id: selectedProjectId,
+        data_env: 'dev'
+      });
+      
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${projectData.project_name}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      toast.success('PDF exported');
+    } catch (error) {
+      toast.error('Export failed');
+    }
+  };
+
+  const handleExportCSV = async () => {
+    if (!selectedProjectId) return;
+    
+    try {
+      const response = await base44.functions.invoke('exportProjectCSV', {
+        project_id: selectedProjectId,
+        data_env: 'dev'
+      });
+      
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${projectData.project_name}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      toast.success('CSV exported');
+    } catch (error) {
+      toast.error('Export failed');
+    }
   };
 
   const handleSpecs = () => {
@@ -273,9 +323,23 @@ export default function Calculator() {
             <div className="flex gap-2 flex-wrap">
               {!isNewProject && (
                 <>
-                  <Button variant="outline" size="icon" className="hidden sm:flex">
-                    <Download className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon" className="hidden sm:flex">
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={handleExportPDF}>
+                        <FileDown className="h-4 w-4 mr-2" />
+                        Export as PDF
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportCSV}>
+                        <FileDown className="h-4 w-4 mr-2" />
+                        Export as CSV
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button variant="outline" size="icon" onClick={handleSpecs} className="hidden sm:flex">
                     <FileText className="h-4 w-4" />
                   </Button>
