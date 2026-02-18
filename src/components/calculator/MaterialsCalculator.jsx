@@ -11,9 +11,9 @@ const TAPE_SPECS = {
 };
 
 const CHANNEL_SPECS = {
-  surface_mount: { price_per_foot: 8, clips_per_foot: 2 },
-  recessed: { price_per_foot: 12, clips_per_foot: 2 },
   corner: { price_per_foot: 10, clips_per_foot: 2 },
+  recessed: { price_per_foot: 12, clips_per_foot: 2 },
+  surface: { price_per_foot: 8, clips_per_foot: 2 },
   none: { price_per_foot: 0, clips_per_foot: 0 }
 };
 

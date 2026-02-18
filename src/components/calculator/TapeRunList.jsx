@@ -11,7 +11,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
     run_name: '',
     length_feet: '',
     tape_type: '2400k',
-    channel_type: 'surface_mount',
+    channel_type: 'corner',
     notes: ''
   });
 
@@ -22,7 +22,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
         run_name: '',
         length_feet: '',
         tape_type: '2400k',
-        channel_type: 'surface_mount',
+        channel_type: 'corner',
         notes: ''
       });
     }
@@ -98,9 +98,9 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="surface_mount">Surface Mount</SelectItem>
-                  <SelectItem value="recessed">Recessed</SelectItem>
                   <SelectItem value="corner">Corner</SelectItem>
+                  <SelectItem value="recessed">Recessed</SelectItem>
+                  <SelectItem value="surface">Surface</SelectItem>
                   <SelectItem value="none">None</SelectItem>
                 </SelectContent>
               </Select>
