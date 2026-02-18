@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Trash2, Ruler } from "lucide-react";
+import { Plus, Trash2, Ruler, GripVertical } from "lucide-react";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 const TAPE_SPECS = {
   "2400k": { price_per_foot: 12 },
@@ -21,7 +22,7 @@ const CHANNEL_SPECS = {
   none: { price_per_foot: 0 }
 };
 
-export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
+export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder }) {
   const [newRun, setNewRun] = useState({
     run_name: '',
     feet: '',
@@ -72,6 +73,17 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
     const tapeCost = run.length_feet * tapeSpec.price_per_foot;
     const channelCost = run.length_feet * channelSpec.price_per_foot;
     return tapeCost + channelCost;
+  };
+
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+    if (result.source.index === result.destination.index) return;
+    
+    const reorderedRuns = Array.from(runs);
+    const [movedRun] = reorderedRuns.splice(result.source.index, 1);
+    reorderedRuns.splice(result.destination.index, 0, movedRun);
+    
+    onReorder(reorderedRuns);
   };
 
   return (
@@ -166,46 +178,75 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
       </Card>
 
       {/* Existing Runs */}
-      <div className="space-y-2">
-        {runs.map((run) => (
-          <Card key={run.id} className="border-slate-200" style={{ backgroundColor: '#EEEEEE' }}>
-            <CardContent className="py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 flex-1">
-                   <div className="flex-1 grid grid-cols-4 gap-4">
-                    <div>
-                      <div className="text-sm font-medium">{run.run_name || 'Unnamed Run'}</div>
-                      <div className="text-xs text-slate-500">
-                        {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-slate-500">Tape Type</div>
-                      <div className="text-sm">{formatTapeType(run.tape_type)}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-slate-500">Housing</div>
-                      <div className="text-sm">{formatChannelType(run.channel_type)}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs text-slate-500">Cost</div>
-                      <div className="text-sm font-semibold">${calculateRunCost(run).toFixed(2)}</div>
-                    </div>
-                    </div>
-                    </div>
-                    <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onDelete(run.id)}
-                  className="h-8 w-8 text-slate-400 hover:text-red-600"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="runs">
+          {(provided) => (
+            <div 
+              className="space-y-2"
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+            >
+              {runs.map((run, index) => (
+                <Draggable key={run.id} draggableId={run.id} index={index}>
+                  {(provided, snapshot) => (
+                    <Card 
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      className="border-slate-200" 
+                      style={{ 
+                        backgroundColor: '#EEEEEE',
+                        ...provided.draggableProps.style 
+                      }}
+                    >
+                      <CardContent className="py-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 flex-1">
+                            <div 
+                              {...provided.dragHandleProps}
+                              className="cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600"
+                            >
+                              <GripVertical className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1 grid grid-cols-4 gap-4">
+                              <div>
+                                <div className="text-sm font-medium">{run.run_name || 'Unnamed Run'}</div>
+                                <div className="text-xs text-slate-500">
+                                  {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-slate-500">Tape Type</div>
+                                <div className="text-sm">{formatTapeType(run.tape_type)}</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-slate-500">Housing</div>
+                                <div className="text-sm">{formatChannelType(run.channel_type)}</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-xs text-slate-500">Cost</div>
+                                <div className="text-sm font-semibold">${calculateRunCost(run).toFixed(2)}</div>
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onDelete(run.id)}
+                            className="h-8 w-8 text-slate-400 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
 
 
     </div>
