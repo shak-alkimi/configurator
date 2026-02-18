@@ -10,7 +10,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete }) {
   const [newRun, setNewRun] = useState({
     run_name: '',
     length_feet: '',
-    tape_type: 'standard_warm',
+    tape_type: '3000k',
     channel_type: 'surface_mount',
     notes: ''
   });

@@ -3,11 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
 const TAPE_SPECS = {
-  standard_white: { watts_per_foot: 4.4, price_per_foot: 12 },
-  standard_warm: { watts_per_foot: 4.4, price_per_foot: 12 },
-  rgb: { watts_per_foot: 7.2, price_per_foot: 18 },
-  rgbw: { watts_per_foot: 9.6, price_per_foot: 24 },
-  high_output: { watts_per_foot: 18, price_per_foot: 28 }
+  "2400k": { watts_per_foot: 4.4, price_per_foot: 12 },
+  "2700k": { watts_per_foot: 4.4, price_per_foot: 12 },
+  "3000k": { watts_per_foot: 4.4, price_per_foot: 12 },
+  warm_dim: { watts_per_foot: 7.2, price_per_foot: 18 },
+  tunable_white: { watts_per_foot: 9.6, price_per_foot: 24 }
 };
 
 const CHANNEL_SPECS = {
