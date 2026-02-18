@@ -200,7 +200,7 @@ export default function Calculator() {
   return (
     <div className="h-screen flex gap-0 bg-white">
       {/* Sidebar - Projects List */}
-      <div className="w-80 px-6 py-4 flex flex-col">
+      <div className="hidden md:flex md:w-64 lg:w-80 px-4 lg:px-6 py-4 flex-col">
         <Card className="h-full flex flex-col">
           <CardHeader className="pb-3">
             <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/363b1fdb0_Screenshot2026-02-16175106.png" alt="Alkimi Logo" className="h-10 w-auto -ml-6" />
@@ -224,9 +224,9 @@ export default function Calculator() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto space-y-6 p-6">
+        <div className="mx-auto space-y-4 md:space-y-6 p-4 md:p-6">
           {/* Header Actions */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-2xl font-bold text-slate-900">
                 {isNewProject ? 'New Project' : projectData.project_name}
@@ -235,13 +235,13 @@ export default function Calculator() {
                 {isNewProject ? 'Create a new tape light quote' : projectData.customer_name}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {!isNewProject && (
                 <>
-                  <Button variant="outline" size="icon">
+                  <Button variant="outline" size="icon" className="hidden sm:flex">
                     <Download className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="icon" onClick={handleSpecs}>
+                  <Button variant="outline" size="icon" onClick={handleSpecs} className="hidden sm:flex">
                     <FileText className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="icon" onClick={handleDeleteProject}>
@@ -255,9 +255,9 @@ export default function Calculator() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
             {/* Left Column - Project Details */}
-            <div className="col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 md:space-y-6">
               <Card>
                 <CardContent>
                   <ProjectForm
@@ -280,8 +280,8 @@ export default function Calculator() {
             </div>
 
             {/* Right Column - Materials & Quote */}
-            <div className="col-span-1 pl-7">
-              <div className="sticky top-6">
+            <div className="lg:col-span-1 lg:pl-7">
+              <div className="lg:sticky lg:top-6">
                 <MaterialsCalculator runs={tapeRuns} />
               </div>
             </div>
