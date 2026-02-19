@@ -159,10 +159,11 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                   const inches = parseFloat(newRun.inches) || 0;
                   const totalFeet = feet + (inches / 12);
                   const watts = totalFeet * (TAPE_SPECS[newRun.tape_type]?.watts_per_foot || 0);
-                  return watts > 0 ? `${watts.toFixed(1)}W` : '';
+                  const lumens = totalFeet * 400;
+                  return watts > 0 ? `${watts.toFixed(1)}W (${lumens.toFixed(0)}lm)` : '';
                 })()}
                 readOnly
-                placeholder="0W"
+                placeholder="0W (0lm)"
                 className="h-9"
               />
             </div>
@@ -235,7 +236,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                               </div>
                               <div>
                                 <div className="text-xs text-slate-500">Output</div>
-                                <div className="text-sm">{((TAPE_SPECS[run.tape_type]?.watts_per_foot || 0) * run.length_feet).toFixed(1)}W</div>
+                                <div className="text-sm">{((TAPE_SPECS[run.tape_type]?.watts_per_foot || 0) * run.length_feet).toFixed(1)}W ({(run.length_feet * 400).toFixed(0)}lm)</div>
                               </div>
                               <div>
                                 <div className="text-xs text-slate-500">Housing</div>
