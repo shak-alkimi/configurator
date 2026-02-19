@@ -227,12 +227,20 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                 </div>
                               </div>
                               <div>
-                                <div className="text-xs text-slate-500">CCT</div>
+                                <div className="text-xs text-slate-500">Type</div>
                                 <div className="text-sm">{formatTapeType(run.tape_type)}</div>
                               </div>
                               <div>
                                 <div className="text-xs text-slate-500">Output</div>
-                                <div className="text-sm">{((TAPE_SPECS[run.tape_type]?.watts_per_foot || 0) * run.length_feet).toFixed(1)}W ({(run.length_feet * 400).toFixed(0)}lm)</div>
+                                <div className="text-sm">
+                                  {(() => {
+                                    const specs = TAPE_SPECS[run.tape_type];
+                                    if (!specs) return '—';
+                                    const watts = specs.watts_per_foot * run.length_feet;
+                                    const lumens = specs.lumens_per_foot * run.length_feet;
+                                    return `${watts.toFixed(1)}W (${lumens.toFixed(0)}lm)`;
+                                  })()}
+                                </div>
                               </div>
                               <div>
                                 <div className="text-xs text-slate-500">Housing</div>
