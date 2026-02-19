@@ -214,7 +214,7 @@ export default function MaterialsCalculator({ runs }) {
             </div>
           )}
           <div className="flex justify-between text-sm">
-            <span className="text-gray-300">Power Drivers</span>
+            <span className="text-gray-300">Drivers</span>
             <span className="font-medium text-white">${calculations.driverCost.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm">
