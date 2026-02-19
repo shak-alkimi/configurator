@@ -134,7 +134,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
               />
             </div>
             <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs">Tape Type</Label>
+              <Label className="text-xs">CCT</Label>
               <Select
                 value={newRun.tape_type}
                 onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })}
@@ -230,7 +230,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                 </div>
                               </div>
                               <div>
-                                <div className="text-xs text-slate-500">Tape Type</div>
+                                <div className="text-xs text-slate-500">CCT</div>
                                 <div className="text-sm">{formatTapeType(run.tape_type)}</div>
                               </div>
                               <div>
