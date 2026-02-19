@@ -146,24 +146,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
               </Select>
             </div>
             <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs">Total Output</Label>
-              <Input
-                value={(() => {
-                  const feet = parseFloat(newRun.feet) || 0;
-                  const inches = parseFloat(newRun.inches) || 0;
-                  const totalFeet = feet + (inches / 12);
-                  const specs = TAPE_SPECS[newRun.tape_type];
-                  if (!specs || totalFeet === 0) return '';
-                  const watts = totalFeet * specs.watts_per_foot;
-                  const lumens = totalFeet * specs.lumens_per_foot;
-                  return `${watts.toFixed(1)}W (${lumens.toFixed(0)}lm)`;
-                })()}
-                readOnly
-                placeholder="0W (0lm)"
-                className="h-9"
-              />
-            </div>
-            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">Housing</Label>
               <Select
                 value={newRun.channel_type}
