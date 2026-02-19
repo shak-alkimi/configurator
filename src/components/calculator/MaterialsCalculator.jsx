@@ -18,10 +18,7 @@ const CHANNEL_SPECS = {
 };
 
 const DRIVER_SPECS = [
-  { max_watts: 60, price: 45, name: "60W Driver" },
-  { max_watts: 96, price: 65, name: "96W Driver" },
-  { max_watts: 150, price: 85, name: "150W Driver" },
-  { max_watts: 320, price: 125, name: "320W Driver" }
+  { max_watts: 96, price: 65, name: "96W Driver" }
 ];
 
 export default function MaterialsCalculator({ runs }) {
@@ -60,13 +57,13 @@ export default function MaterialsCalculator({ runs }) {
       }
     });
 
-    // Calculate required drivers
+    // Calculate required drivers (96W each, loaded to 80% capacity)
     const requiredDrivers = [];
     let remainingWatts = totalWatts;
     while (remainingWatts > 0) {
-      const driver = DRIVER_SPECS.find(d => d.max_watts >= remainingWatts) || DRIVER_SPECS[DRIVER_SPECS.length - 1];
+      const driver = DRIVER_SPECS[0];
       requiredDrivers.push(driver);
-      remainingWatts -= driver.max_watts;
+      remainingWatts -= driver.max_watts * 0.8;
     }
 
     // Calculate mounting hardware (clips)
