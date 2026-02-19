@@ -177,7 +177,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="corner">Corner</SelectItem>
-                  <SelectItem value="recessed">Recessed</SelectItem>
+                  <SelectItem value="recessed">Recessed Flange</SelectItem>
                   <SelectItem value="surface">Surface</SelectItem>
                   <SelectItem value="none">None</SelectItem>
                 </SelectContent>
