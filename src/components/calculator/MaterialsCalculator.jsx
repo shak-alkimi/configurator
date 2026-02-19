@@ -200,8 +200,13 @@ export default function MaterialsCalculator({ runs }) {
 
       {/* Pricing Summary */}
       <Card className="border-black bg-black">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-start justify-between">
           <CardTitle className="text-lg text-white">Summary</CardTitle>
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/c1dc47ece_Screenshot2026-02-14155939.png" 
+            alt="Logo" 
+            className="h-8 w-auto"
+          />
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex justify-between text-sm">
