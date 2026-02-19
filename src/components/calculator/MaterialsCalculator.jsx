@@ -151,12 +151,8 @@ export default function MaterialsCalculator({ runs }) {
           <div>
             <h4 className="text-sm font-semibold text-slate-700 mb-2">Drivers</h4>
             <div className="space-y-2">
-              <div className="flex justify-between text-sm text-slate-500">
-                <span>Total Power Required:</span>
-                <span>{calculations.totalWatts.toFixed(1)}W</span>
-              </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-600">96W Driver</span>
+                <span className="text-slate-600">96w Driver</span>
                 <span className="font-medium">{calculations.requiredDrivers.length}</span>
               </div>
             </div>
