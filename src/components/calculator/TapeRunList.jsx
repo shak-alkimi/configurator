@@ -8,11 +8,8 @@ import { Plus, Trash2, Ruler, GripVertical } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 const TAPE_SPECS = {
-  "2400k": { price_per_foot: 12, watts_per_foot: 4.4 },
-  "2700k": { price_per_foot: 12, watts_per_foot: 4.4 },
-  "3000k": { price_per_foot: 12, watts_per_foot: 4.4 },
-  warm_dim: { price_per_foot: 18, watts_per_foot: 7.2 },
-  tunable_white: { price_per_foot: 24, watts_per_foot: 9.6 }
+  "2w": { price_per_foot: 10, watts_per_foot: 2.0, lumens_per_foot: 200 },
+  "4w": { price_per_foot: 12, watts_per_foot: 4.0, lumens_per_foot: 400 }
 };
 
 const CHANNEL_SPECS = {
@@ -27,7 +24,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     run_name: '',
     feet: '',
     inches: '',
-    tape_type: '2400k',
+    tape_type: '4w',
     channel_type: 'corner',
     notes: ''
   });
@@ -49,7 +46,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
         run_name: '',
         feet: '',
         inches: '',
-        tape_type: '2400k',
+        tape_type: '4w',
         channel_type: 'corner',
         notes: ''
       });
@@ -134,7 +131,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
               />
             </div>
             <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs">CCT</Label>
+              <Label className="text-xs">Output</Label>
               <Select
                 value={newRun.tape_type}
                 onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })}
@@ -143,24 +140,23 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="2400k">2400K</SelectItem>
-                  <SelectItem value="2700k">2700K</SelectItem>
-                  <SelectItem value="3000k">3000K</SelectItem>
-                  <SelectItem value="warm_dim">Warm Dim (2200K - 3000K)</SelectItem>
-                  <SelectItem value="tunable_white">Tunable White (2200K - 3500K)</SelectItem>
+                  <SelectItem value="2w">2W/ft (200lm/ft)</SelectItem>
+                  <SelectItem value="4w">4W/ft (400lm/ft)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs">Output</Label>
+              <Label className="text-xs">Total Output</Label>
               <Input
                 value={(() => {
                   const feet = parseFloat(newRun.feet) || 0;
                   const inches = parseFloat(newRun.inches) || 0;
                   const totalFeet = feet + (inches / 12);
-                  const watts = totalFeet * (TAPE_SPECS[newRun.tape_type]?.watts_per_foot || 0);
-                  const lumens = totalFeet * 400;
-                  return watts > 0 ? `${watts.toFixed(1)}W (${lumens.toFixed(0)}lm)` : '';
+                  const specs = TAPE_SPECS[newRun.tape_type];
+                  if (!specs || totalFeet === 0) return '';
+                  const watts = totalFeet * specs.watts_per_foot;
+                  const lumens = totalFeet * specs.lumens_per_foot;
+                  return `${watts.toFixed(1)}W (${lumens.toFixed(0)}lm)`;
                 })()}
                 readOnly
                 placeholder="0W (0lm)"
