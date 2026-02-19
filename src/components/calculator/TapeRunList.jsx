@@ -8,11 +8,11 @@ import { Plus, Trash2, Ruler, GripVertical } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 const TAPE_SPECS = {
-  "2400k": { price_per_foot: 12 },
-  "2700k": { price_per_foot: 12 },
-  "3000k": { price_per_foot: 12 },
-  warm_dim: { price_per_foot: 18 },
-  tunable_white: { price_per_foot: 24 }
+  "2400k": { price_per_foot: 12, watts_per_foot: 4.4 },
+  "2700k": { price_per_foot: 12, watts_per_foot: 4.4 },
+  "3000k": { price_per_foot: 12, watts_per_foot: 4.4 },
+  warm_dim: { price_per_foot: 18, watts_per_foot: 7.2 },
+  tunable_white: { price_per_foot: 24, watts_per_foot: 9.6 }
 };
 
 const CHANNEL_SPECS = {
@@ -133,7 +133,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 className="h-9"
               />
             </div>
-            <div className="col-span-3 space-y-1.5">
+            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">Tape Type</Label>
               <Select
                 value={newRun.tape_type}
@@ -150,6 +150,21 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                   <SelectItem value="tunable_white">Tunable White (2200K - 3500K)</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="col-span-2 space-y-1.5">
+              <Label className="text-xs">Output</Label>
+              <Input
+                value={(() => {
+                  const feet = parseFloat(newRun.feet) || 0;
+                  const inches = parseFloat(newRun.inches) || 0;
+                  const totalFeet = feet + (inches / 12);
+                  const watts = totalFeet * (TAPE_SPECS[newRun.tape_type]?.watts_per_foot || 0);
+                  return watts > 0 ? `${watts.toFixed(1)}W` : '';
+                })()}
+                readOnly
+                placeholder="0W"
+                className="h-9 bg-slate-50"
+              />
             </div>
             <div className="col-span-3 space-y-1.5">
               <Label className="text-xs">Housing</Label>
@@ -207,7 +222,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                             >
                               <GripVertical className="h-5 w-5" />
                             </div>
-                            <div className="flex-1 grid grid-cols-4 gap-4">
+                            <div className="flex-1 grid grid-cols-5 gap-4">
                               <div>
                                 <div className="text-sm font-medium">{run.run_name || 'Unnamed Run'}</div>
                                 <div className="text-xs text-slate-500">
@@ -217,6 +232,10 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                               <div>
                                 <div className="text-xs text-slate-500">Tape Type</div>
                                 <div className="text-sm">{formatTapeType(run.tape_type)}</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-slate-500">Output</div>
+                                <div className="text-sm">{((TAPE_SPECS[run.tape_type]?.watts_per_foot || 0) * run.length_feet).toFixed(1)}W</div>
                               </div>
                               <div>
                                 <div className="text-xs text-slate-500">Housing</div>
