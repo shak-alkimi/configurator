@@ -163,7 +163,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 })()}
                 readOnly
                 placeholder="0W"
-                className="h-9 bg-slate-50"
+                className="h-9"
               />
             </div>
             <div className="col-span-3 space-y-1.5">
