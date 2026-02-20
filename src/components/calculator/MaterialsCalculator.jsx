@@ -117,6 +117,7 @@ export default function MaterialsCalculator({ runs }) {
   }
 
   const formatType = (type) => {
+    if (type === 'recessed') return 'Recessed Flange';
     return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
