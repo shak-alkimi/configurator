@@ -16,13 +16,14 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Project ID required' }, { status: 400 });
         }
 
-        const project = await base44.asServiceRole.entities.get('Project', project_id, data_env);
+        const projects = await base44.asServiceRole.entities.Project.list(undefined, undefined, undefined, undefined, data_env);
+        const project = projects.find(p => p.id === project_id);
 
         if (!project) {
             return Response.json({ error: 'Project not found' }, { status: 404 });
         }
 
-        const tapeRuns = await base44.asServiceRole.entities.filter('TapeRun', { project_id }, undefined, undefined, data_env);
+        const tapeRuns = await base44.asServiceRole.entities.TapeRun.filter({ project_id }, undefined, undefined, undefined, data_env);
 
         const doc = new jsPDF();
 
