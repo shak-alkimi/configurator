@@ -208,7 +208,7 @@ export default function MaterialsCalculator({ runs }) {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Mounting Clips</span>
-                <span className="font-medium">{calculations.clipSets} sets ({calculations.totalClips} clips)</span>
+                <span className="font-medium">{calculations.clipSets} {calculations.clipSets === 1 ? 'set' : 'sets'} ({calculations.totalClips} clips)</span>
               </div>
             </div>
           </div>
