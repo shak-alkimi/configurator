@@ -237,17 +237,18 @@ export default function Calculator() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${projectData.project_name}.pdf`;
+        a.download = `${projectData.project_name || 'project'}.pdf`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         a.remove();
         toast.success('PDF exported');
       } else {
-        toast.error('Export failed');
+        const error = response.data?.error || 'Export failed';
+        toast.error(error);
       }
     } catch (error) {
-      toast.error('Export failed');
+      toast.error(error.message || 'Export failed');
     }
   };
 
@@ -265,17 +266,18 @@ export default function Calculator() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${projectData.project_name}.csv`;
+        a.download = `${projectData.project_name || 'project'}.csv`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         a.remove();
         toast.success('CSV exported');
       } else {
-        toast.error('Export failed');
+        const error = response.data?.error || 'Export failed';
+        toast.error(error);
       }
     } catch (error) {
-      toast.error('Export failed');
+      toast.error(error.message || 'Export failed');
     }
   };
 
