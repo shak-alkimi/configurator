@@ -202,14 +202,14 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                             </div>
                             <div className="flex-1 grid grid-cols-5 gap-4">
                               <div>
+                                <div className="text-xs text-slate-500">Type</div>
                                 <div className="text-sm font-medium">{run.run_name || 'Unnamed Run'}</div>
-                                <div className="text-xs text-slate-500">
-                                  {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
-                                </div>
                               </div>
                               <div>
-                                <div className="text-xs text-slate-500">Type</div>
-                                <div className="text-sm">{formatTapeType(run.tape_type)}</div>
+                                <div className="text-xs text-slate-500">Length</div>
+                                <div className="text-sm">
+                                  {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
+                                </div>
                               </div>
                               <div>
                                 <div className="text-xs text-slate-500">Output</div>
