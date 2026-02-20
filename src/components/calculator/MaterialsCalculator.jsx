@@ -129,8 +129,8 @@ export default function MaterialsCalculator({ runs }) {
   };
 
   const formatCCT = (cct) => {
-    if (cct === 'Warm Dim (22-30k)') return 'WD';
-    if (cct === 'Tunable White (18-40k)') return 'TW';
+    if (cct === 'Warm Dim (22-30k)') return 'WD (22-30k)';
+    if (cct === 'Tunable White (18-40k)') return 'TW (18-40k)';
     return cct;
   };
 
