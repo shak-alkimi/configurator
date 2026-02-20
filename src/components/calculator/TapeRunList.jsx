@@ -24,7 +24,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     run_name: '',
     feet: '',
     inches: '',
-    tape_type: '4w',
+    tape_type: '2w',
     channel_type: 'corner',
     notes: ''
   });
@@ -46,7 +46,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
         run_name: '',
         feet: '',
         inches: '',
-        tape_type: '4w',
+        tape_type: '2w',
         channel_type: 'corner',
         notes: ''
       });
