@@ -236,7 +236,7 @@ export default function Calculator() {
         data_env: 'dev'
       });
       
-      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const blob = new Blob([new Uint8Array(response.data)], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -262,13 +262,15 @@ export default function Calculator() {
         data_env: 'dev'
       });
       
-      const blob = new Blob([response.data], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
+      const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
-      link.href = url;
-      link.download = `${projectData.project_name || 'project'}.csv`;
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${projectData.project_name || 'project'}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
       link.click();
-      URL.revokeObjectURL(url);
+      document.body.removeChild(link);
       toast.success('CSV downloaded');
     } catch (error) {
       console.error('Export error:', error);
