@@ -171,12 +171,17 @@ export default function MaterialsCalculator({ runs }) {
               <div>
                 <h4 className="text-sm font-semibold text-slate-700 mb-2">Housing</h4>
                 <div className="space-y-2">
-                  {Object.entries(calculations.channelByType).map(([type, data]) => (
-                    <div key={type} className="flex justify-between text-sm">
-                      <span className="text-slate-600">{formatType(type)}</span>
-                      <span className="font-medium">{data.feet}' ({data.sections} sections)</span>
-                    </div>
-                  ))}
+                  {Object.entries(calculations.channelByType)
+                    .sort(([typeA], [typeB]) => {
+                      const order = ['corner', 'recessed', 'surface', 'none'];
+                      return order.indexOf(typeA) - order.indexOf(typeB);
+                    })
+                    .map(([type, data]) => (
+                      <div key={type} className="flex justify-between text-sm">
+                        <span className="text-slate-600">{formatType(type)}</span>
+                        <span className="font-medium">{data.feet}' ({data.sections} sections)</span>
+                      </div>
+                    ))}
                 </div>
               </div>
               <Separator />
