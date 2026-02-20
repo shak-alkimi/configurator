@@ -25,6 +25,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     feet: '',
     inches: '',
     tape_type: '2w',
+    cct: '',
     channel_type: 'corner',
     notes: ''
   });
@@ -39,6 +40,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
         run_name: newRun.run_name,
         length_feet: totalFeet,
         tape_type: newRun.tape_type,
+        cct: newRun.cct,
         channel_type: newRun.channel_type,
         notes: newRun.notes
       });
@@ -47,6 +49,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
         feet: '',
         inches: '',
         tape_type: '2w',
+        cct: '',
         channel_type: 'corner',
         notes: ''
       });
@@ -130,6 +133,25 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
               />
             </div>
             <div className="col-span-2 space-y-1.5">
+              <Label className="text-xs">CCT</Label>
+              <Select
+                value={newRun.cct}
+                onValueChange={(value) => setNewRun({ ...newRun, cct: value })}
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Select CCT" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2400k">2400k</SelectItem>
+                  <SelectItem value="2700k">2700k</SelectItem>
+                  <SelectItem value="3000k">3000k</SelectItem>
+                  <SelectItem value="3500k">3500k</SelectItem>
+                  <SelectItem value="Warm Dim (22-30k)">Warm Dim (22-30k)</SelectItem>
+                  <SelectItem value="Tunable White (18-40k)">Tunable White (18-40k)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">Output</Label>
               <Select
                 value={newRun.tape_type}
@@ -200,7 +222,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                             >
                               <GripVertical className="h-5 w-5" />
                             </div>
-                            <div className="flex-1 grid grid-cols-5 gap-4">
+                            <div className="flex-1 grid grid-cols-6 gap-4">
                               <div>
                                 <div className="text-xs text-slate-500">Type</div>
                                 <div className="text-sm font-medium">{run.run_name || 'Unnamed Run'}</div>
@@ -210,6 +232,10 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                 <div className="text-sm">
                                   {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
                                 </div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-slate-500">CCT</div>
+                                <div className="text-sm">{run.cct || '—'}</div>
                               </div>
                               <div>
                                 <div className="text-xs text-slate-500">Output</div>
