@@ -78,6 +78,12 @@ export default function MaterialsCalculator({ runs }) {
     const clipSets = Math.ceil(totalClips / 12); // Clips come in sets of 12
     const clipCost = clipSets * 15; // $15 per set
 
+    // Calculate tape to tape connectors - one needed every 16'4" (one per spool join)
+    const tapeToTapeConnectors = runs.reduce((sum, run) => {
+      const spoolsNeeded = Math.ceil(run.length_feet / SPOOL_LENGTH_FEET);
+      return sum + Math.max(0, spoolsNeeded - 1); // connectors needed to join spools
+    }, 0);
+
     // Calculate subtotal (before shipping)
     const tapeCost = Object.values(tapeByTypeCCT).reduce((sum, t) => sum + t.cost, 0);
     const channelCost = Object.values(channelByType).reduce((sum, c) => sum + c.cost, 0);
@@ -102,7 +108,8 @@ export default function MaterialsCalculator({ runs }) {
       channelCost,
       driverCost,
       shippingCost,
-      totalCost
+      totalCost,
+      tapeToTapeConnectors
     };
   }, [runs]);
 
@@ -221,7 +228,7 @@ export default function MaterialsCalculator({ runs }) {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Tape to Tape</span>
-                <span className="font-medium">{runs.length} {runs.length === 1 ? 'unit' : 'units'}</span>
+                <span className="font-medium">{calculations.tapeToTapeConnectors} {calculations.tapeToTapeConnectors === 1 ? 'unit' : 'units'}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Tape to Wire</span>
