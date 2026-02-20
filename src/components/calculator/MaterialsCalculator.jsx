@@ -237,18 +237,6 @@ export default function MaterialsCalculator({ runs }) {
             </div>
           </div>
 
-          <Separator />
-
-          {/* Shipping */}
-          <div>
-            <h4 className="text-sm font-semibold text-slate-700 mb-2">Shipping</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Shipping (10% of total)</span>
-                <span className="font-medium">${calculations.shippingCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              </div>
-            </div>
-          </div>
         </CardContent>
       </Card>
 
