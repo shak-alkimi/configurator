@@ -124,7 +124,7 @@ export default function MaterialsCalculator({ runs }) {
             <div className="space-y-2">
               {Object.entries(calculations.tapeByTypeCCT).map(([key, data]) => (
                 <div key={key} className="flex justify-between text-sm">
-                  <span className="text-slate-600">{formatType(data.type)} - {data.cct}</span>
+                  <span className="text-slate-600">{formatType(data.type)} at {data.cct}</span>
                   <span className="font-medium">{Math.floor(data.feet)}' {Math.round((data.feet % 1) * 12)}"</span>
                 </div>
               ))}
