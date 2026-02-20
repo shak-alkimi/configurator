@@ -129,7 +129,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 min="0"
                 value={newRun.feet}
                 onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })}
-                placeholder="10"
                 className="h-9"
               />
             </div>
@@ -142,7 +141,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 step="0.5"
                 value={newRun.inches}
                 onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })}
-                placeholder="6"
                 className="h-9"
               />
             </div>
