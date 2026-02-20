@@ -75,7 +75,7 @@ export default function MaterialsCalculator({ runs }) {
     const totalClips = Object.values(channelByType).reduce((sum, channel) => {
       return sum + (channel.sections * 4); // 4 clips per 4' section
     }, 0);
-    const clipSets = Math.ceil(totalClips / 50); // Assume clips come in sets of 50
+    const clipSets = Math.ceil(totalClips / 12); // Clips come in sets of 12
     const clipCost = clipSets * 15; // $15 per set
 
     // Calculate subtotal (before shipping)
