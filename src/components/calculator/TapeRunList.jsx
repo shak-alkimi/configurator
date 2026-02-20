@@ -24,9 +24,9 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     run_name: '',
     feet: '',
     inches: '',
-    tape_type: '2w',
+    tape_type: '',
     cct: '',
-    channel_type: 'corner',
+    channel_type: '',
     notes: ''
   });
 
@@ -36,12 +36,8 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     const totalFeet = feet + (inches / 12);
     
     // Validation: all required fields must be filled
-    if (!newRun.cct) {
-      return; // Do not add if CCT is not selected
-    }
-    
-    if (totalFeet <= 0) {
-      return; // Do not add if no length
+    if (!newRun.cct || !newRun.tape_type || !newRun.channel_type || totalFeet <= 0) {
+      return;
     }
     
     onAdd({ 
@@ -56,9 +52,9 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
       run_name: '',
       feet: '',
       inches: '',
-      tape_type: '2w',
+      tape_type: '',
       cct: '',
-      channel_type: 'corner',
+      channel_type: '',
       notes: ''
     });
   };
@@ -98,7 +94,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     const feet = parseFloat(newRun.feet) || 0;
     const inches = parseFloat(newRun.inches) || 0;
     const totalFeet = feet + (inches / 12);
-    return totalFeet > 0 && newRun.cct;
+    return totalFeet > 0 && newRun.cct && newRun.tape_type && newRun.channel_type;
   };
 
   return (
@@ -151,7 +147,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
               />
             </div>
             <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs">CCT <span className="text-red-500">*</span></Label>
+              <Label className="text-xs">CCT</Label>
               <Select
                 value={newRun.cct}
                 onValueChange={(value) => setNewRun({ ...newRun, cct: value })}
@@ -176,7 +172,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })}
               >
                 <SelectTrigger className="h-9">
-                  <SelectValue />
+                  <SelectValue placeholder="Select Output" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
@@ -191,7 +187,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })}
               >
                 <SelectTrigger className="h-9">
-                  <SelectValue />
+                  <SelectValue placeholder="Select Housing" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="corner">Corner</SelectItem>
