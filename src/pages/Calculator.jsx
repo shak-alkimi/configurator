@@ -197,15 +197,12 @@ export default function Calculator() {
 
   const calculateTotalPrice = (runs) => {
     const TAPE_SPECS = {
-      standard_white: { price_per_foot: 12 },
-      standard_warm: { price_per_foot: 12 },
-      rgb: { price_per_foot: 18 },
-      rgbw: { price_per_foot: 24 },
-      high_output: { price_per_foot: 28 }
+      "2w": { price_per_foot: 10 },
+      "4w": { price_per_foot: 12 }
     };
 
     const CHANNEL_SPECS = {
-      surface_mount: { price_per_foot: 8 },
+      surface: { price_per_foot: 8 },
       recessed: { price_per_foot: 12 },
       corner: { price_per_foot: 10 },
       none: { price_per_foot: 0 }
@@ -213,8 +210,10 @@ export default function Calculator() {
 
     let total = 0;
     runs.forEach(run => {
-      total += run.length_feet * TAPE_SPECS[run.tape_type].price_per_foot;
-      total += run.length_feet * CHANNEL_SPECS[run.channel_type].price_per_foot;
+      const tapeSpec = TAPE_SPECS[run.tape_type];
+      const channelSpec = CHANNEL_SPECS[run.channel_type];
+      if (tapeSpec) total += run.length_feet * tapeSpec.price_per_foot;
+      if (channelSpec) total += run.length_feet * channelSpec.price_per_foot;
     });
 
     // Add drivers and hardware (simplified)
