@@ -182,7 +182,11 @@ export default function MaterialsCalculator({ runs }) {
             <h4 className="text-sm font-semibold text-slate-700 mb-2">Connectors</h4>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Terminal Blocks</span>
+                <span className="text-slate-600">Tape to Tape</span>
+                <span className="font-medium">{runs.length} units</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600">Tape to Wire</span>
                 <span className="font-medium">{runs.length} units</span>
               </div>
             </div>
