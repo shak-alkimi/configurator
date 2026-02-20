@@ -19,6 +19,8 @@ const DRIVER_SPECS = [
 ];
 
 export default function MaterialsCalculator({ runs }) {
+  const SPOOL_LENGTH_FEET = 16 + (4 / 12); // 16'4" per spool
+
   const calculations = React.useMemo(() => {
     // Calculate tape totals by type and CCT
     const tapeByTypeCCT = {};
@@ -149,12 +151,15 @@ export default function MaterialsCalculator({ runs }) {
           <div>
             <h4 className="text-sm font-semibold text-slate-700 mb-2">Tape Light</h4>
             <div className="space-y-2">
-              {sortedTapeEntries.map(([key, data]) => (
-                <div key={key} className="flex justify-between text-sm">
-                  <span className="text-slate-600">{formatType(data.type)} at {data.cct}</span>
-                  <span className="font-medium">{Math.floor(data.feet)}' {Math.round((data.feet % 1) * 12)}"</span>
-                </div>
-              ))}
+              {sortedTapeEntries.map(([key, data]) => {
+                const spoolsRequired = Math.ceil(data.feet / SPOOL_LENGTH_FEET);
+                return (
+                  <div key={key} className="flex justify-between text-sm">
+                    <span className="text-slate-600">{formatType(data.type)} at {data.cct}</span>
+                    <span className="font-medium">{Math.floor(data.feet)}' {Math.round((data.feet % 1) * 12)}" ({spoolsRequired} {spoolsRequired === 1 ? 'spool' : 'spools'})</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
