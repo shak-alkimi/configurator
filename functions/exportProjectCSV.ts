@@ -15,16 +15,13 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Project ID required' }, { status: 400 });
         }
 
-        const env = data_env || 'prod';
-
-        const allProjects = await base44.entities.Project.list(undefined, undefined, undefined, undefined, env);
-        const project = allProjects.find(p => p.id === project_id);
+        const project = await base44.asServiceRole.entities.get('Project', project_id, data_env);
 
         if (!project) {
             return Response.json({ error: 'Project not found' }, { status: 404 });
         }
 
-        const tapeRuns = await base44.entities.TapeRun.filter({ project_id }, undefined, undefined, undefined, env);
+        const tapeRuns = await base44.asServiceRole.entities.filter('TapeRun', { project_id }, undefined, undefined, data_env);
 
         const TAPE_SPECS = {
             "2w": { price_per_foot: 10, watts_per_foot: 2.0, lumens_per_foot: 200 },
