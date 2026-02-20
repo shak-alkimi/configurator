@@ -180,7 +180,7 @@ export default function MaterialsCalculator({ runs }) {
                     .map(([type, data]) => (
                       <div key={type} className="flex justify-between text-sm">
                         <span className="text-slate-600">{formatType(type)}</span>
-                        <span className="font-medium">{data.feet}' ({data.sections} sections)</span>
+                        <span className="font-medium">{data.feet}' ({data.sections} {data.sections === 1 ? 'section' : 'sections'})</span>
                       </div>
                     ))}
                 </div>
@@ -194,7 +194,7 @@ export default function MaterialsCalculator({ runs }) {
             <h4 className="text-sm font-semibold text-slate-700 mb-2">Drivers</h4>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-600">96w Driver</span>
+                <span className="text-slate-600">96w {calculations.requiredDrivers.length === 1 ? 'Driver' : 'Drivers'}</span>
                 <span className="font-medium">{calculations.requiredDrivers.length}</span>
               </div>
             </div>
@@ -208,7 +208,7 @@ export default function MaterialsCalculator({ runs }) {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Mounting Clips</span>
-                <span className="font-medium">{calculations.clipSets} {calculations.clipSets === 1 ? 'set' : 'sets'} ({calculations.totalClips} clips)</span>
+                <span className="font-medium">{calculations.clipSets} {calculations.clipSets === 1 ? 'set' : 'sets'} ({calculations.totalClips} {calculations.totalClips === 1 ? 'clip' : 'clips'})</span>
               </div>
             </div>
           </div>
@@ -221,11 +221,11 @@ export default function MaterialsCalculator({ runs }) {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Tape to Tape</span>
-                <span className="font-medium">{runs.length} units</span>
+                <span className="font-medium">{runs.length} {runs.length === 1 ? 'unit' : 'units'}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Tape to Wire</span>
-                <span className="font-medium">{runs.length} units</span>
+                <span className="font-medium">{runs.length} {runs.length === 1 ? 'unit' : 'units'}</span>
               </div>
             </div>
           </div>
