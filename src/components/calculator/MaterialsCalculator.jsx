@@ -121,7 +121,7 @@ export default function MaterialsCalculator({ runs }) {
               {Object.entries(calculations.tapeByType).map(([type, data]) => (
                 <div key={type} className="flex justify-between text-sm">
                   <span className="text-slate-600">{formatType(type)}</span>
-                  <span className="font-medium">{data.feet.toFixed(1)} ft</span>
+                  <span className="font-medium">{Math.floor(data.feet)}' {Math.round((data.feet % 1) * 12)}"</span>
                 </div>
               ))}
             </div>
@@ -138,7 +138,7 @@ export default function MaterialsCalculator({ runs }) {
                   {Object.entries(calculations.channelByType).map(([type, data]) => (
                     <div key={type} className="flex justify-between text-sm">
                       <span className="text-slate-600">{formatType(type)}</span>
-                      <span className="font-medium">{data.feet.toFixed(1)} ft</span>
+                      <span className="font-medium">{Math.floor(data.feet)}' {Math.round((data.feet % 1) * 12)}"</span>
                     </div>
                   ))}
                 </div>
