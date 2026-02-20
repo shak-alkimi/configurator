@@ -128,6 +128,12 @@ export default function MaterialsCalculator({ runs }) {
     return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
+  const formatCCT = (cct) => {
+    if (cct === 'Warm Dim (22-30k)') return 'WD';
+    if (cct === 'Tunable White (18-40k)') return 'TW';
+    return cct;
+  };
+
   // Define CCT order for sorting
   const cctOrder = {
     "2400k": 1,
@@ -163,7 +169,7 @@ export default function MaterialsCalculator({ runs }) {
                 const spoolsRequired = Math.ceil(data.feet / SPOOL_LENGTH_FEET);
                 return (
                   <div key={key} className="flex justify-between text-sm">
-                    <span className="text-slate-600">{formatType(data.type)} at {data.cct}</span>
+                    <span className="text-slate-600">{formatType(data.type)} at {formatCCT(data.cct)}</span>
                     <span className="font-medium">{Math.floor(data.feet)}' {Math.round((data.feet % 1) * 12)}" ({spoolsRequired} {spoolsRequired === 1 ? 'spool' : 'spools'})</span>
                   </div>
                 );
