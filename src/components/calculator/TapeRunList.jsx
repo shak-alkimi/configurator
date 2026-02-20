@@ -197,10 +197,10 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
 
       {/* Existing Runs */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="runs">
+        <Droppable droppableId="runs" direction="horizontal">
           {(provided) => (
             <div 
-              className="space-y-2"
+              className="flex gap-2 overflow-x-auto pb-2"
               {...provided.droppableProps}
               ref={provided.innerRef}
             >
@@ -210,7 +210,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                     <Card 
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      className="border-slate-200" 
+                      className="border-slate-200 min-w-[600px] flex-shrink-0" 
                       style={{ 
                         backgroundColor: '#EEEEEE',
                         ...provided.draggableProps.style 
