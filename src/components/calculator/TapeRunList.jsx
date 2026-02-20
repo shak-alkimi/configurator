@@ -90,7 +90,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     <div className="space-y-4">
       <div></div>
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-700">ALKILINE</h3>
+        <h3 className="text-sm font-semibold text-slate-700">Runs</h3>
         <span className="text-xs text-slate-500">
           Total: {(() => {
             const totalFeet = runs.reduce((sum, r) => sum + r.length_feet, 0);
@@ -197,10 +197,10 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
 
       {/* Existing Runs */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="runs" direction="horizontal">
+        <Droppable droppableId="runs">
           {(provided) => (
             <div 
-              className="flex gap-2 overflow-x-auto pb-2"
+              className="space-y-2"
               {...provided.droppableProps}
               ref={provided.innerRef}
             >
@@ -210,7 +210,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                     <Card 
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      className="border-slate-200 min-w-[600px] flex-shrink-0" 
+                      className="border-slate-200" 
                       style={{ 
                         backgroundColor: '#EEEEEE',
                         ...provided.draggableProps.style 
