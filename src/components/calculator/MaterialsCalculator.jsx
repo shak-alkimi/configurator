@@ -118,6 +118,26 @@ export default function MaterialsCalculator({ runs }) {
     return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
+  // Define CCT order for sorting
+  const cctOrder = {
+    "2400k": 1,
+    "2700k": 2,
+    "3000k": 3,
+    "3500k": 4,
+    "Warm Dim (22-30k)": 5,
+    "Tunable White (18-40k)": 6
+  };
+
+  // Sort tape light entries by output (2w before 4w) and then by CCT
+  const sortedTapeEntries = Object.entries(calculations.tapeByTypeCCT).sort(([keyA, dataA], [keyB, dataB]) => {
+    // First sort by type (2w before 4w)
+    if (dataA.type !== dataB.type) {
+      return dataA.type.localeCompare(dataB.type);
+    }
+    // Then sort by CCT order
+    return (cctOrder[dataA.cct] || 999) - (cctOrder[dataB.cct] || 999);
+  });
+
   return (
     <div className="space-y-6">
       <Card className="bg-[#EEEEEE]">
@@ -129,7 +149,7 @@ export default function MaterialsCalculator({ runs }) {
           <div>
             <h4 className="text-sm font-semibold text-slate-700 mb-2">Tape Light</h4>
             <div className="space-y-2">
-              {Object.entries(calculations.tapeByTypeCCT).map(([key, data]) => (
+              {sortedTapeEntries.map(([key, data]) => (
                 <div key={key} className="flex justify-between text-sm">
                   <span className="text-slate-600">{formatType(data.type)} at {data.cct}</span>
                   <span className="font-medium">{Math.floor(data.feet)}' {Math.round((data.feet % 1) * 12)}"</span>
