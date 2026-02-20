@@ -227,7 +227,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                               </div>
                               <div className="text-right">
                                 <div className="text-xs text-slate-500">Cost</div>
-                                <div className="text-sm font-semibold">${calculateRunCost(run).toFixed(2)}</div>
+                                <div className="text-sm font-semibold">${calculateRunCost(run).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                               </div>
                             </div>
                           </div>

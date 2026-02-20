@@ -199,26 +199,26 @@ export default function MaterialsCalculator({ runs }) {
         <CardContent className="space-y-3">
           <div className="flex justify-between text-sm">
             <span className="text-gray-300">Tape Light</span>
-            <span className="font-medium text-white">${calculations.tapeCost.toFixed(2)}</span>
+            <span className="font-medium text-white">${calculations.tapeCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
           {calculations.channelCost > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-gray-300">Housing</span>
-              <span className="font-medium text-white">${calculations.channelCost.toFixed(2)}</span>
+              <span className="font-medium text-white">${calculations.channelCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
           )}
           <div className="flex justify-between text-sm">
             <span className="text-gray-300">Drivers</span>
-            <span className="font-medium text-white">${calculations.driverCost.toFixed(2)}</span>
+            <span className="font-medium text-white">${calculations.driverCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-300">Mounting Hardware</span>
-            <span className="font-medium text-white">${calculations.clipCost.toFixed(2)}</span>
+            <span className="font-medium text-white">${calculations.clipCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
           <Separator />
           <div className="flex justify-between text-lg font-semibold">
             <span className="text-white">Total</span>
-            <span className="text-white">${calculations.totalCost.toFixed(2)}</span>
+            <span className="text-white">${calculations.totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
         </CardContent>
       </Card>
