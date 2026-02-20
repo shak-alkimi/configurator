@@ -217,9 +217,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                   {(() => {
                                     const specs = TAPE_SPECS[run.tape_type];
                                     if (!specs) return '—';
-                                    const watts = specs.watts_per_foot * run.length_feet;
-                                    const lumens = specs.lumens_per_foot * run.length_feet;
-                                    return `${watts.toFixed(1)}W (${lumens.toFixed(0)}lm)`;
+                                    return `${specs.watts_per_foot}w/ft (${specs.lumens_per_foot}lm/ft)`;
                                   })()}
                                 </div>
                               </div>
