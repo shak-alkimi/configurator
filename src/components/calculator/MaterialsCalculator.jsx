@@ -8,10 +8,10 @@ const TAPE_SPECS = {
 };
 
 const CHANNEL_SPECS = {
-  corner: { price_per_foot: 10, clips_per_foot: 1 },
-  recessed: { price_per_foot: 12, clips_per_foot: 1 },
-  surface: { price_per_foot: 8, clips_per_foot: 1 },
-  none: { price_per_foot: 0, clips_per_foot: 0 }
+  corner: { price_per_foot: 10, clips_per_4ft: 4 },
+  recessed: { price_per_foot: 12, clips_per_4ft: 4 },
+  surface: { price_per_foot: 8, clips_per_4ft: 4 },
+  none: { price_per_foot: 0, clips_per_4ft: 0 }
 };
 
 const DRIVER_SPECS = [
@@ -63,11 +63,11 @@ export default function MaterialsCalculator({ runs }) {
       remainingWatts -= driver.max_watts * 0.8;
     }
 
-    // Calculate mounting hardware (clips)
+    // Calculate mounting hardware (clips) - 4 clips per 4 feet
     const totalClips = runs.reduce((sum, run) => {
       const specs = CHANNEL_SPECS[run.channel_type];
       if (!specs) return sum;
-      return sum + (run.length_feet * specs.clips_per_foot);
+      return sum + (run.length_feet / 4 * specs.clips_per_4ft);
     }, 0);
     const clipSets = Math.ceil(totalClips / 50); // Assume clips come in sets of 50
     const clipCost = clipSets * 15; // $15 per set
