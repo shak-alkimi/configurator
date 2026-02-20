@@ -92,7 +92,10 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-slate-700">Runs</h3>
         <span className="text-xs text-slate-500">
-          Total: {runs.reduce((sum, r) => sum + r.length_feet, 0).toFixed(1)} ft
+          Total: {(() => {
+            const totalFeet = runs.reduce((sum, r) => sum + r.length_feet, 0);
+            return `${Math.floor(totalFeet)}' ${Math.round((totalFeet % 1) * 12)}"`;
+          })()}
         </span>
       </div>
 
