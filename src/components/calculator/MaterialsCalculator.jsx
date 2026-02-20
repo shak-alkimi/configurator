@@ -20,22 +20,24 @@ const DRIVER_SPECS = [
 
 export default function MaterialsCalculator({ runs }) {
   const calculations = React.useMemo(() => {
-    // Calculate tape totals by type
-    const tapeByType = {};
+    // Calculate tape totals by type and CCT
+    const tapeByTypeCCT = {};
     let totalWatts = 0;
     
     runs.forEach(run => {
       const type = run.tape_type;
+      const cct = run.cct || 'No CCT';
+      const key = `${type}-${cct}`;
       const specs = TAPE_SPECS[type];
       
       if (!specs) return;
       
-      if (!tapeByType[type]) {
-        tapeByType[type] = { feet: 0, watts: 0, cost: 0 };
+      if (!tapeByTypeCCT[key]) {
+        tapeByTypeCCT[key] = { type, cct, feet: 0, watts: 0, cost: 0 };
       }
-      tapeByType[type].feet += run.length_feet;
-      tapeByType[type].watts += run.length_feet * specs.watts_per_foot;
-      tapeByType[type].cost += run.length_feet * specs.price_per_foot;
+      tapeByTypeCCT[key].feet += run.length_feet;
+      tapeByTypeCCT[key].watts += run.length_feet * specs.watts_per_foot;
+      tapeByTypeCCT[key].cost += run.length_feet * specs.price_per_foot;
       totalWatts += run.length_feet * specs.watts_per_foot;
     });
 
@@ -73,13 +75,13 @@ export default function MaterialsCalculator({ runs }) {
     const clipCost = clipSets * 15; // $15 per set
 
     // Calculate totals
-    const tapeCost = Object.values(tapeByType).reduce((sum, t) => sum + t.cost, 0);
+    const tapeCost = Object.values(tapeByTypeCCT).reduce((sum, t) => sum + t.cost, 0);
     const channelCost = Object.values(channelByType).reduce((sum, c) => sum + c.cost, 0);
     const driverCost = requiredDrivers.reduce((sum, d) => sum + d.price, 0);
     const totalCost = tapeCost + channelCost + driverCost + clipCost;
 
     return {
-      tapeByType,
+      tapeByTypeCCT,
       channelByType,
       requiredDrivers,
       totalClips,
@@ -118,9 +120,9 @@ export default function MaterialsCalculator({ runs }) {
           <div>
             <h4 className="text-sm font-semibold text-slate-700 mb-2">Tape Light</h4>
             <div className="space-y-2">
-              {Object.entries(calculations.tapeByType).map(([type, data]) => (
-                <div key={type} className="flex justify-between text-sm">
-                  <span className="text-slate-600">{formatType(type)}</span>
+              {Object.entries(calculations.tapeByTypeCCT).map(([key, data]) => (
+                <div key={key} className="flex justify-between text-sm">
+                  <span className="text-slate-600">{formatType(data.type)} - {data.cct}</span>
                   <span className="font-medium">{Math.floor(data.feet)}' {Math.round((data.feet % 1) * 12)}"</span>
                 </div>
               ))}
