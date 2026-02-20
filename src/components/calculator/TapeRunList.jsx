@@ -234,18 +234,18 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                             >
                               <GripVertical className="h-5 w-5" />
                             </div>
-                            <div className="flex-1 grid grid-cols-6 gap-4">
-                              <div>
+                            <div className="flex-1 grid grid-cols-12 gap-4">
+                              <div className="col-span-2">
                                 <div className="text-xs text-slate-500">Type</div>
                                 <div className="text-sm font-medium">{run.run_name || 'Unnamed Run'}</div>
                               </div>
-                              <div>
+                              <div className="col-span-2">
                                 <div className="text-xs text-slate-500">Length</div>
                                 <div className="text-sm">
                                   {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
                                 </div>
                               </div>
-                              <div>
+                              <div className="col-span-2">
                                 <div className="text-xs text-slate-500">Output</div>
                                 <div className="text-sm">
                                   {(() => {
@@ -255,15 +255,15 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                   })()}
                                 </div>
                               </div>
-                              <div>
+                              <div className="col-span-3">
                                 <div className="text-xs text-slate-500">CCT</div>
                                 <div className="text-sm">{run.cct || '—'}</div>
                               </div>
-                              <div>
+                              <div className="col-span-2">
                                 <div className="text-xs text-slate-500">Housing</div>
                                 <div className="text-sm">{formatChannelType(run.channel_type)}</div>
                               </div>
-                              <div className="text-right">
+                              <div className="col-span-1 text-right">
                                 <div className="text-xs text-slate-500">Cost</div>
                                 <div className="text-sm font-semibold">${calculateRunCost(run).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                               </div>
