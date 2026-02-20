@@ -145,6 +145,21 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
               />
             </div>
             <div className="col-span-2 space-y-1.5">
+              <Label className="text-xs">Output</Label>
+              <Select
+                value={newRun.tape_type}
+                onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })}
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Select Output" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
+                  <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">CCT</Label>
               <Select
                 value={newRun.cct}
@@ -160,21 +175,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                   <SelectItem value="3500k">3500k</SelectItem>
                   <SelectItem value="Warm Dim (22-30k)">Warm Dim (22-30k)</SelectItem>
                   <SelectItem value="Tunable White (18-40k)">Tunable White (18-40k)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs">Output</Label>
-              <Select
-                value={newRun.tape_type}
-                onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })}
-              >
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Select Output" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
-                  <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -246,10 +246,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                 </div>
                               </div>
                               <div>
-                                <div className="text-xs text-slate-500">CCT</div>
-                                <div className="text-sm">{run.cct || '—'}</div>
-                              </div>
-                              <div>
                                 <div className="text-xs text-slate-500">Output</div>
                                 <div className="text-sm">
                                   {(() => {
@@ -258,6 +254,10 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                     return `${specs.watts_per_foot}w/ft (${specs.lumens_per_foot}lm/ft)`;
                                   })()}
                                 </div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-slate-500">CCT</div>
+                                <div className="text-sm">{run.cct || '—'}</div>
                               </div>
                               <div>
                                 <div className="text-xs text-slate-500">Housing</div>
