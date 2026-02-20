@@ -139,8 +139,8 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
                   <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
+                  <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
