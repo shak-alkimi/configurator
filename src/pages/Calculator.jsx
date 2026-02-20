@@ -224,7 +224,10 @@ export default function Calculator() {
   };
 
   const handleExportPDF = async () => {
-    if (!selectedProjectId) return;
+    if (!selectedProjectId) {
+      toast.error('No project selected');
+      return;
+    }
     
     try {
       const response = await base44.functions.invoke('exportProjectPDF', {
@@ -232,28 +235,25 @@ export default function Calculator() {
         data_env: 'dev'
       });
       
-      if (response.status === 200) {
-        const blob = new Blob([response.data], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${projectData.project_name || 'project'}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
-        toast.success('PDF exported');
-      } else {
-        const error = response.data?.error || 'Export failed';
-        toast.error(error);
-      }
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${projectData.project_name || 'project'}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success('PDF downloaded');
     } catch (error) {
-      toast.error(error.message || 'Export failed');
+      console.error('Export error:', error);
+      toast.error(error.message || 'Failed to export PDF');
     }
   };
 
   const handleExportCSV = async () => {
-    if (!selectedProjectId) return;
+    if (!selectedProjectId) {
+      toast.error('No project selected');
+      return;
+    }
     
     try {
       const response = await base44.functions.invoke('exportProjectCSV', {
@@ -261,23 +261,17 @@ export default function Calculator() {
         data_env: 'dev'
       });
       
-      if (response.status === 200) {
-        const blob = new Blob([response.data], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${projectData.project_name || 'project'}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
-        toast.success('CSV exported');
-      } else {
-        const error = response.data?.error || 'Export failed';
-        toast.error(error);
-      }
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${projectData.project_name || 'project'}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success('CSV downloaded');
     } catch (error) {
-      toast.error(error.message || 'Export failed');
+      console.error('Export error:', error);
+      toast.error(error.message || 'Failed to export CSV');
     }
   };
 

@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { jsPDF } from 'npm:jspdf@2.5.2';
+import { jsPDF } from 'npm:jspdf@4.0.0';
 
 Deno.serve(async (req) => {
     try {
@@ -18,7 +18,6 @@ Deno.serve(async (req) => {
 
         const env = data_env || 'prod';
 
-        // Fetch project and tape runs
         const allProjects = await base44.entities.Project.list(undefined, undefined, undefined, undefined, env);
         const project = allProjects.find(p => p.id === project_id);
 
@@ -28,14 +27,11 @@ Deno.serve(async (req) => {
 
         const tapeRuns = await base44.entities.TapeRun.filter({ project_id }, undefined, undefined, undefined, env);
 
-        // Create PDF
         const doc = new jsPDF();
 
-        // Header
         doc.setFontSize(20);
         doc.text('ALKILINE - Configured Runs', 20, 20);
 
-        // Tape Runs
         let y = 40;
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
@@ -60,7 +56,7 @@ Deno.serve(async (req) => {
         };
 
         doc.setFont(undefined, 'normal');
-        tapeRuns.forEach((run, index) => {
+        tapeRuns.forEach((run) => {
             if (y > 270) {
                 doc.addPage();
                 y = 20;
@@ -89,7 +85,6 @@ Deno.serve(async (req) => {
             y += 7;
         });
 
-        // Total
         y += 5;
         doc.setFont(undefined, 'bold');
         const totalFeet = tapeRuns.reduce((sum, r) => sum + r.length_feet, 0);

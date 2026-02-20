@@ -17,7 +17,6 @@ Deno.serve(async (req) => {
 
         const env = data_env || 'prod';
 
-        // Fetch project and tape runs
         const allProjects = await base44.entities.Project.list(undefined, undefined, undefined, undefined, env);
         const project = allProjects.find(p => p.id === project_id);
 
@@ -27,9 +26,6 @@ Deno.serve(async (req) => {
 
         const tapeRuns = await base44.entities.TapeRun.filter({ project_id }, undefined, undefined, undefined, env);
 
-        // Create CSV with configured runs
-        let csv = 'Type,Length (ft),Length (ft\'in"),Output,CCT,Housing,Cost\n';
-        
         const TAPE_SPECS = {
             "2w": { price_per_foot: 10, watts_per_foot: 2.0, lumens_per_foot: 200 },
             "4w": { price_per_foot: 12, watts_per_foot: 4.0, lumens_per_foot: 400 }
@@ -41,6 +37,8 @@ Deno.serve(async (req) => {
             surface: { price_per_foot: 8 },
             none: { price_per_foot: 0 }
         };
+        
+        let csv = 'Type,Length (ft),Length (ft\'in"),Output,CCT,Housing,Cost\n';
         
         tapeRuns.forEach(run => {
             const feet = Math.floor(run.length_feet);
