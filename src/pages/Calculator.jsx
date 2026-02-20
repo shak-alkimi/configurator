@@ -232,16 +232,20 @@ export default function Calculator() {
         data_env: 'dev'
       });
       
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${projectData.project_name}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-      toast.success('PDF exported');
+      if (response.status === 200) {
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${projectData.project_name}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+        toast.success('PDF exported');
+      } else {
+        toast.error('Export failed');
+      }
     } catch (error) {
       toast.error('Export failed');
     }
@@ -256,16 +260,20 @@ export default function Calculator() {
         data_env: 'dev'
       });
       
-      const blob = new Blob([response.data], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${projectData.project_name}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-      toast.success('CSV exported');
+      if (response.status === 200) {
+        const blob = new Blob([response.data], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${projectData.project_name}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+        toast.success('CSV exported');
+      } else {
+        toast.error('Export failed');
+      }
     } catch (error) {
       toast.error('Export failed');
     }
