@@ -27,20 +27,38 @@ Deno.serve(async (req) => {
 
         const tapeRuns = await base44.entities.TapeRun.filter({ project_id }, undefined, undefined, undefined, env);
 
-        // Create CSV
-        let csv = 'Project Information\n';
-        csv += `Project Name,${project.project_name}\n`;
-        csv += `Customer,${project.customer_name}\n`;
-        csv += `Email,${project.customer_email || ''}\n`;
-        csv += `Phone,${project.customer_phone || ''}\n`;
-        csv += `Status,${project.status}\n`;
-        csv += `Total Price,$${project.total_price ? project.total_price.toFixed(2) : '0.00'}\n\n`;
-
-        csv += 'Tape Runs\n';
-        csv += 'Run Name,Length (ft),Tape Type,Housing Type,Notes\n';
+        // Create CSV with configured runs
+        let csv = 'Type,Length (ft),Length (ft\'in"),Output,CCT,Housing,Cost\n';
+        
+        const TAPE_SPECS = {
+            "2w": { price_per_foot: 10, watts_per_foot: 2.0, lumens_per_foot: 200 },
+            "4w": { price_per_foot: 12, watts_per_foot: 4.0, lumens_per_foot: 400 }
+        };
+        
+        const CHANNEL_SPECS = {
+            corner: { price_per_foot: 10 },
+            recessed: { price_per_foot: 12 },
+            surface: { price_per_foot: 8 },
+            none: { price_per_foot: 0 }
+        };
         
         tapeRuns.forEach(run => {
-            csv += `"${run.run_name || ''}",${run.length_feet.toFixed(2)},${run.tape_type},${run.channel_type},"${run.notes || ''}"\n`;
+            const feet = Math.floor(run.length_feet);
+            const inches = Math.round((run.length_feet % 1) * 12);
+            const lengthDisplay = `${feet}' ${inches}"`;
+            
+            const tapeSpec = TAPE_SPECS[run.tape_type];
+            const channelSpec = CHANNEL_SPECS[run.channel_type];
+            const outputDisplay = tapeSpec ? `${tapeSpec.watts_per_foot}w/ft (${tapeSpec.lumens_per_foot}lm/ft)` : run.tape_type;
+            
+            let cost = 0;
+            if (tapeSpec) cost += run.length_feet * tapeSpec.price_per_foot;
+            if (channelSpec) cost += run.length_feet * channelSpec.price_per_foot;
+            
+            const channelDisplay = run.channel_type === 'recessed' ? 'Recessed Flange' : 
+                                   run.channel_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            
+            csv += `"${run.run_name || ''}",${run.length_feet.toFixed(2)},"${lengthDisplay}","${outputDisplay}","${run.cct || ''}","${channelDisplay}",$${cost.toFixed(2)}\n`;
         });
 
         return new Response(csv, {
