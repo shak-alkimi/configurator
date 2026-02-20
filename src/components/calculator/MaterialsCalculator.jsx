@@ -177,9 +177,9 @@ export default function MaterialsCalculator({ runs }) {
 
           <Separator />
 
-          {/* Termination */}
+          {/* Connectors */}
           <div>
-            <h4 className="text-sm font-semibold text-slate-700 mb-2">Termination</h4>
+            <h4 className="text-sm font-semibold text-slate-700 mb-2">Connectors</h4>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Terminal Blocks</span>
