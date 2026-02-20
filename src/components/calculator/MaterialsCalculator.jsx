@@ -76,11 +76,17 @@ export default function MaterialsCalculator({ runs }) {
     const clipSets = Math.ceil(totalClips / 50); // Assume clips come in sets of 50
     const clipCost = clipSets * 15; // $15 per set
 
-    // Calculate totals
+    // Calculate subtotal (before shipping)
     const tapeCost = Object.values(tapeByTypeCCT).reduce((sum, t) => sum + t.cost, 0);
     const channelCost = Object.values(channelByType).reduce((sum, c) => sum + c.cost, 0);
     const driverCost = requiredDrivers.reduce((sum, d) => sum + d.price, 0);
-    const totalCost = tapeCost + channelCost + driverCost + clipCost;
+    const subtotal = tapeCost + channelCost + driverCost + clipCost;
+    
+    // Calculate shipping as 10% of subtotal
+    const shippingCost = subtotal * 0.10;
+    
+    // Calculate total with shipping
+    const totalCost = subtotal + shippingCost;
 
     return {
       tapeByTypeCCT,
@@ -93,6 +99,7 @@ export default function MaterialsCalculator({ runs }) {
       tapeCost,
       channelCost,
       driverCost,
+      shippingCost,
       totalCost
     };
   }, [runs]);
@@ -191,6 +198,19 @@ export default function MaterialsCalculator({ runs }) {
               </div>
             </div>
           </div>
+
+          <Separator />
+
+          {/* Shipping */}
+          <div>
+            <h4 className="text-sm font-semibold text-slate-700 mb-2">Shipping</h4>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600">Shipping (10% of total)</span>
+                <span className="font-medium">${calculations.shippingCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -222,6 +242,10 @@ export default function MaterialsCalculator({ runs }) {
           <div className="flex justify-between text-sm">
             <span className="text-gray-300">Mounting Hardware</span>
             <span className="font-medium text-white">${calculations.clipCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-300">Shipping</span>
+            <span className="font-medium text-white">${calculations.shippingCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
           <Separator />
           <div className="flex justify-between text-lg font-semibold">
