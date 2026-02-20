@@ -41,7 +41,7 @@ export default function MaterialsCalculator({ runs }) {
       totalWatts += run.length_feet * specs.watts_per_foot;
     });
 
-    // Calculate channel totals by type
+    // Calculate channel totals by type (housings come in 4' sections only)
     const channelByType = {};
     runs.forEach(run => {
       const type = run.channel_type;
@@ -49,10 +49,14 @@ export default function MaterialsCalculator({ runs }) {
       
       if (type !== 'none' && specs) {
         if (!channelByType[type]) {
-          channelByType[type] = { feet: 0, cost: 0 };
+          channelByType[type] = { feet: 0, cost: 0, sections: 0 };
         }
-        channelByType[type].feet += run.length_feet;
-        channelByType[type].cost += run.length_feet * specs.price_per_foot;
+        // Round up to nearest 4' increment
+        const sections = Math.ceil(run.length_feet / 4);
+        const actualFeet = sections * 4;
+        channelByType[type].feet += actualFeet;
+        channelByType[type].sections += sections;
+        channelByType[type].cost += actualFeet * specs.price_per_foot;
       }
     });
 
@@ -65,11 +69,9 @@ export default function MaterialsCalculator({ runs }) {
       remainingWatts -= driver.max_watts * 0.8;
     }
 
-    // Calculate mounting hardware (clips) - 4 clips per 4 feet
-    const totalClips = runs.reduce((sum, run) => {
-      const specs = CHANNEL_SPECS[run.channel_type];
-      if (!specs) return sum;
-      return sum + (run.length_feet / 4 * specs.clips_per_4ft);
+    // Calculate mounting hardware (clips) - 4 clips per 4' housing section
+    const totalClips = Object.values(channelByType).reduce((sum, channel) => {
+      return sum + (channel.sections * 4); // 4 clips per 4' section
     }, 0);
     const clipSets = Math.ceil(totalClips / 50); // Assume clips come in sets of 50
     const clipCost = clipSets * 15; // $15 per set
@@ -140,7 +142,7 @@ export default function MaterialsCalculator({ runs }) {
                   {Object.entries(calculations.channelByType).map(([type, data]) => (
                     <div key={type} className="flex justify-between text-sm">
                       <span className="text-slate-600">{formatType(type)}</span>
-                      <span className="font-medium">{Math.floor(data.feet)}' {Math.round((data.feet % 1) * 12)}"</span>
+                      <span className="font-medium">{data.feet}' ({data.sections} sections)</span>
                     </div>
                   ))}
                 </div>
