@@ -35,25 +35,32 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     const inches = parseFloat(newRun.inches) || 0;
     const totalFeet = feet + (inches / 12);
     
-    if (totalFeet > 0) {
-      onAdd({ 
-        run_name: newRun.run_name,
-        length_feet: totalFeet,
-        tape_type: newRun.tape_type,
-        cct: newRun.cct,
-        channel_type: newRun.channel_type,
-        notes: newRun.notes
-      });
-      setNewRun({
-        run_name: '',
-        feet: '',
-        inches: '',
-        tape_type: '2w',
-        cct: '',
-        channel_type: 'corner',
-        notes: ''
-      });
+    // Validation: all required fields must be filled
+    if (!newRun.cct) {
+      return; // Do not add if CCT is not selected
     }
+    
+    if (totalFeet <= 0) {
+      return; // Do not add if no length
+    }
+    
+    onAdd({ 
+      run_name: newRun.run_name,
+      length_feet: totalFeet,
+      tape_type: newRun.tape_type,
+      cct: newRun.cct,
+      channel_type: newRun.channel_type,
+      notes: newRun.notes
+    });
+    setNewRun({
+      run_name: '',
+      feet: '',
+      inches: '',
+      tape_type: '2w',
+      cct: '',
+      channel_type: 'corner',
+      notes: ''
+    });
   };
 
   const formatTapeType = (type) => {
@@ -84,6 +91,14 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     reorderedRuns.splice(result.destination.index, 0, movedRun);
     
     onReorder(reorderedRuns);
+  };
+
+  // Check if form is valid (all required fields filled)
+  const isFormValid = () => {
+    const feet = parseFloat(newRun.feet) || 0;
+    const inches = parseFloat(newRun.inches) || 0;
+    const totalFeet = feet + (inches / 12);
+    return totalFeet > 0 && newRun.cct;
   };
 
   return (
@@ -136,7 +151,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
               />
             </div>
             <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs">CCT</Label>
+              <Label className="text-xs">CCT <span className="text-red-500">*</span></Label>
               <Select
                 value={newRun.cct}
                 onValueChange={(value) => setNewRun({ ...newRun, cct: value })}
@@ -187,7 +202,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
               </Select>
             </div>
             <div className="col-span-1">
-              <Button onClick={handleAdd} size="sm" className="h-9 w-full">
+              <Button onClick={handleAdd} size="sm" className="h-9 w-full" disabled={!isFormValid()}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
