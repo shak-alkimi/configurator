@@ -44,6 +44,8 @@ export default function Calculator() {
   });
   const [isNewProject, setIsNewProject] = useState(true);
   const [formResetKey, setFormResetKey] = useState(0);
+  const [selectedVersion, setSelectedVersion] = useState(null);
+  const [showVersionViewer, setShowVersionViewer] = useState(false);
 
   const queryClient = useQueryClient();
 
