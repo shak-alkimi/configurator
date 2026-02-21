@@ -304,7 +304,7 @@ export default function Calculator() {
                   {isNewProject ? 'New Project' : (projectData.project_name?.length > 50 ? projectData.project_name.substring(0, 50) + '...' : projectData.project_name)}
                 </h2>
                 <p className="text-sm text-slate-500 mt-1">
-                  {isNewProject ? 'Company Name' : projectData.customer_name}
+                  {isNewProject ? 'Create a new tape light quote' : projectData.customer_name}
                 </p>
               </div>
               <div className="flex gap-2 flex-wrap flex-shrink-0">

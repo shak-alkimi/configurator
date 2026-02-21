@@ -118,7 +118,7 @@ export default function ProjectForm({ project, onChange }) {
           </Select>
         </div>
         <div className="col-span-3 space-y-2">
-          <Label htmlFor="customer_name">Company Name</Label>
+          <Label htmlFor="customer_name">Customer Name</Label>
           <Input
             id="customer_name"
             value={project.customer_name || ''}
@@ -126,7 +126,7 @@ export default function ProjectForm({ project, onChange }) {
           />
         </div>
         <div className="col-span-3 space-y-2">
-          <Label htmlFor="customer_email">Email</Label>
+          <Label htmlFor="customer_email">Customer Email</Label>
           <Input
             id="customer_email"
             type="email"
