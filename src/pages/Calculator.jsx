@@ -24,6 +24,8 @@ import ProjectsList from "../components/calculator/ProjectsList";
 import ProjectForm from "../components/calculator/ProjectForm";
 import TapeRunList from "../components/calculator/TapeRunList";
 import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
+import VersionManager from "../components/calculator/VersionManager";
+import VersionViewer from "../components/calculator/VersionViewer";
 
 export default function Calculator() {
   const [selectedProjectId, setSelectedProjectId] = useState(null);
