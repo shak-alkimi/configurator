@@ -278,15 +278,16 @@ export default function Calculator() {
         data_env: 'dev'
       });
       
-      const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
+      const csvData = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `${projectData.project_name || 'project'}.csv`);
-      link.style.visibility = 'hidden';
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${projectData.project_name || 'project'}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
       toast.success('CSV downloaded');
     } catch (error) {
       console.error('Export error:', error);
