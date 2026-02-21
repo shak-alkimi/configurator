@@ -7,18 +7,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export default function ProjectForm({ project, onChange }) {
   return (
     <div className="space-y-4">
-      <div></div>
-      <div className="space-y-2">
-        <Label htmlFor="project_name">Project Name</Label>
-        <Input
-          id="project_name"
-          value={project.project_name || ''}
-          onChange={(e) => onChange({ ...project, project_name: e.target.value })}
-        />
-      </div>
-
       <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-6 space-y-2">
+        <div className="col-span-12 md:col-span-5 space-y-2">
+          <Label htmlFor="project_name">Project Name</Label>
+          <Input
+            id="project_name"
+            value={project.project_name || ''}
+            onChange={(e) => onChange({ ...project, project_name: e.target.value })}
+          />
+        </div>
+        <div className="col-span-12 md:col-span-3 space-y-2">
           <Label htmlFor="street">Street</Label>
           <Input
             id="street"
@@ -26,7 +24,7 @@ export default function ProjectForm({ project, onChange }) {
             onChange={(e) => onChange({ ...project, street: e.target.value })}
           />
         </div>
-        <div className="col-span-3 space-y-2">
+        <div className="col-span-12 md:col-span-2 space-y-2">
           <Label htmlFor="city">City</Label>
           <Input
             id="city"
@@ -34,7 +32,7 @@ export default function ProjectForm({ project, onChange }) {
             onChange={(e) => onChange({ ...project, city: e.target.value })}
           />
         </div>
-        <div className="col-span-3 space-y-2">
+        <div className="col-span-12 md:col-span-2 space-y-2">
           <Label htmlFor="state">State</Label>
           <Select
             value={project.state || ''}
