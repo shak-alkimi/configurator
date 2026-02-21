@@ -18,7 +18,7 @@ const DRIVER_SPECS = [
   { max_watts: 96, price: 65, name: "96W Driver" }
 ];
 
-export default function MaterialsCalculator({ runs }) {
+export default function MaterialsCalculator({ runs, isSubmitted }) {
   const SPOOL_LENGTH_FEET = 16 + (4 / 12); // 16'4" per spool
 
   const calculations = React.useMemo(() => {
@@ -156,7 +156,7 @@ export default function MaterialsCalculator({ runs }) {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-[#eeeeee]">
+      <Card className={isSubmitted ? "bg-[#d4af37]" : "bg-[#eeeeee]"}>
          <CardHeader>
            <CardTitle className="text-lg">Materials</CardTitle>
          </CardHeader>

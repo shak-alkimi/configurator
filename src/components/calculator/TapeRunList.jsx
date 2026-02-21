@@ -19,7 +19,7 @@ const CHANNEL_SPECS = {
   none: { price_per_foot: 0 }
 };
 
-export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder }) {
+export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder, isSubmitted }) {
   const [newRun, setNewRun] = useState({
     run_name: '',
     feet: '',
@@ -217,14 +217,14 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 <Draggable key={run.id} draggableId={run.id} index={index}>
                   {(provided, snapshot) => (
                     <Card 
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      className="border-slate-200" 
-                      style={{ 
-                        backgroundColor: '#eeeeee',
-                        ...provided.draggableProps.style 
-                      }}
-                    >
+                       ref={provided.innerRef}
+                       {...provided.draggableProps}
+                       className="border-slate-200" 
+                       style={{ 
+                         backgroundColor: isSubmitted ? '#d4af37' : '#eeeeee',
+                         ...provided.draggableProps.style 
+                       }}
+                     >
                       <CardContent className="py-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 flex-1">
