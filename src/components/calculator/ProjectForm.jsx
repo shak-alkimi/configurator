@@ -28,7 +28,7 @@ export default function ProjectForm({ project, onChange }) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="quoted">Quoted</SelectItem>
+              <SelectItem value="submitted">Submitted</SelectItem>
               <SelectItem value="approved">Approved</SelectItem>
             </SelectContent>
           </Select>
