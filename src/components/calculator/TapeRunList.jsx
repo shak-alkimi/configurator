@@ -219,11 +219,8 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                     <Card 
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      className="border-slate-200" 
-                      style={{ 
-                        backgroundColor: '#EEEEEE',
-                        ...provided.draggableProps.style 
-                      }}
+                      className="border-slate-200 bg-[#EEEEEE]" 
+                      style={provided.draggableProps.style}
                     >
                       <CardContent className="py-3">
                         <div className="flex items-center justify-between">
