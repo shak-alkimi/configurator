@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Plus, FileText, Search } from "lucide-react";
+import { Plus, FileText, Search, RotateCcw } from "lucide-react";
 import { format } from "date-fns";
 
-export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading, searchQuery, onSearchChange }) {
+export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading, searchQuery, onSearchChange, onUpdateStatus }) {
+  const [hoveredId, setHoveredId] = useState(null);
   const statusColors = {
     draft: "bg-slate-100 text-slate-700",
     submitted: "bg-blue-100 text-blue-700",
@@ -50,9 +51,29 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
               <CardContent className="p-3">
                 <div className="flex items-start gap-2 mb-2">
                   <h3 className="font-semibold text-sm flex-1 min-w-0 break-words line-clamp-2 min-h-[2.5rem]">{project.project_name}</h3>
-                  <Badge className={`${statusColors[project.status]} text-xs flex-shrink-0`}>
-                    {project.status}
-                  </Badge>
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setHoveredId(project.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                  >
+                    <Badge className={`${statusColors[project.status]} text-xs flex-shrink-0 cursor-default`}>
+                      {project.status}
+                    </Badge>
+                    {hoveredId === project.id && project.status === 'submitted' && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="absolute -right-1 -top-8 h-7 px-2 text-xs bg-white border border-slate-200 hover:bg-slate-50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onUpdateStatus(project.id, 'draft');
+                        }}
+                      >
+                        <RotateCcw className="h-3 w-3 mr-1" />
+                        Revert
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <div className="text-xs text-slate-600 space-y-1">
                   <div>{project.customer_name}</div>
