@@ -138,6 +138,68 @@ export default function Calculator() {
     },
   });
 
+  // Create version mutation
+  const createVersionMutation = useMutation({
+    mutationFn: async (notes) => {
+      const nextVersion = (versions.length > 0 ? Math.max(...versions.map(v => v.version_number)) : 0) + 1;
+      const totalPrice = calculateTotalPrice(tapeRuns);
+      return await base44.entities.QuoteVersion.create({
+        project_id: selectedProjectId,
+        version_number: nextVersion,
+        project_snapshot: projectData,
+        tape_runs_snapshot: tapeRuns,
+        total_price: totalPrice,
+        notes: notes || ''
+      }, 'dev');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['versions', selectedProjectId] });
+      toast.success('Version created');
+    },
+  });
+
+  // Revert to version mutation
+  const revertVersionMutation = useMutation({
+    mutationFn: async (versionId) => {
+      const version = versions.find(v => v.id === versionId);
+      if (!version) throw new Error('Version not found');
+      
+      // Delete all current tape runs
+      const currentRuns = tapeRuns;
+      const deletePromises = currentRuns.map(run => base44.entities.TapeRun.delete(run.id, 'dev'));
+      await Promise.all(deletePromises);
+      
+      // Restore project data
+      await base44.entities.Project.update(selectedProjectId, version.project_snapshot, 'dev');
+      
+      // Restore tape runs
+      const restorePromises = version.tape_runs_snapshot.map((run, index) => 
+        base44.entities.TapeRun.create({
+          ...run,
+          order: index,
+          id: undefined,
+          created_date: undefined,
+          updated_date: undefined
+        }, 'dev')
+      );
+      await Promise.all(restorePromises);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
+      toast.success('Reverted to selected version');
+    },
+  });
+
+  // Delete version mutation
+  const deleteVersionMutation = useMutation({
+    mutationFn: (versionId) => base44.entities.QuoteVersion.delete(versionId, 'dev'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['versions', selectedProjectId] });
+      toast.success('Version deleted');
+    },
+  });
+
   const handleReorderRuns = (reorderedRuns) => {
     reorderTapeRunsMutation.mutate(reorderedRuns);
   };
