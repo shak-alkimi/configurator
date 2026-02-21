@@ -358,7 +358,6 @@ export default function Calculator() {
                   <Save className="h-4 w-4" />
                 </Button>
               </div>
-            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
