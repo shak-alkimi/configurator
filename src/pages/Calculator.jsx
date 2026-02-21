@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Save, Download, Trash2, FileText, FileDown } from "lucide-react";
+import { Save, Download, Trash2, FileText, FileDown, Send } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -355,6 +355,9 @@ export default function Calculator() {
                     </Button>
                   </>
                 )}
+                <Button variant="outline" size="icon" onClick={() => toast.info('Submit functionality coming soon')}>
+                  <Send className="h-4 w-4" />
+                </Button>
                 <Button size="icon" onClick={handleSaveProject}>
                   <Save className="h-4 w-4" />
                 </Button>
