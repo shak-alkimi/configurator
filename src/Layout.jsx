@@ -8,12 +8,12 @@ export default function Layout({ children, currentPageName }) {
         
         button[class*="default"],
         .bg-primary {
-          background-color: #d4af37 !important;
-          color: black !important;
+          background-color: #FF0000 !important;
+          color: white !important;
         }
         
         button[class*="default"]:hover {
-          background-color: #c19b2e !important;
+          background-color: #CC0000 !important;
         }
 
         /* Hide scrollbars while maintaining scrollability */
