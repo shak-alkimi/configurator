@@ -250,6 +250,13 @@ export default function Calculator() {
     }
   };
 
+  const handleUpdateStatus = (projectId, newStatus) => {
+    base44.entities.Project.update(projectId, { status: newStatus }, undefined, undefined, 'dev').then(() => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success(`Project reverted to ${newStatus}`);
+    });
+  };
+
   return (
     <TooltipProvider>
       <div className="h-screen flex gap-0 bg-white">
@@ -271,6 +278,7 @@ export default function Calculator() {
               isLoading={projectsLoading}
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
+              onUpdateStatus={handleUpdateStatus}
             />
           </CardContent>
         </Card>
