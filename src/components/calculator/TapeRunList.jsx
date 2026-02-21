@@ -151,7 +151,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })}
               >
                 <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Select Output" />
+                  <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
@@ -166,7 +166,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 onValueChange={(value) => setNewRun({ ...newRun, cct: value })}
               >
                 <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Select CCT" />
+                  <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="2400k">2400k</SelectItem>
@@ -185,7 +185,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })}
               >
                 <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Select Housing" />
+                  <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="corner">Corner</SelectItem>
