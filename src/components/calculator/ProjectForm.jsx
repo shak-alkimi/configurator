@@ -30,7 +30,6 @@ export default function ProjectForm({ project, onChange }) {
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="quoted">Quoted</SelectItem>
               <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
             </SelectContent>
           </Select>
         </div>
