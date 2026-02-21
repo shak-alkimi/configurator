@@ -27,7 +27,9 @@ export default function Calculator() {
     customer_name: '',
     customer_email: '',
     customer_phone: '',
-    address: '',
+    street: '',
+    city: '',
+    state: '',
     sector: '',
     notes: '',
     status: 'draft'
@@ -147,7 +149,9 @@ export default function Calculator() {
       customer_name: '',
       customer_email: '',
       customer_phone: '',
-      address: '',
+      street: '',
+      city: '',
+      state: '',
       sector: '',
       notes: '',
       status: 'draft'
