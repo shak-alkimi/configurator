@@ -538,6 +538,11 @@ export default function Calculator() {
         </div>
       </div>
       </div>
+      <VersionViewer
+        version={selectedVersion}
+        isOpen={showVersionViewer}
+        onClose={() => setShowVersionViewer(false)}
+      />
     </TooltipProvider>
   );
 }
