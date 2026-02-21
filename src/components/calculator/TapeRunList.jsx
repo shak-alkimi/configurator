@@ -246,7 +246,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                             >
                               <GripVertical className="h-5 w-5" />
                             </div>
-                            <div className="flex-1 flex items-center gap-6 text-sm">
+                            <div className="flex-1 flex items-center gap-12 text-sm">
                               <div>
                                 <span className="font-medium">{run.run_name || 'Unnamed'}</span>
                               </div>
