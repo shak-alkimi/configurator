@@ -35,17 +35,16 @@ export default function ProjectForm({ project, onChange }) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="street">Street</Label>
-        <Input
-          id="street"
-          value={project.street || ''}
-          onChange={(e) => onChange({ ...project, street: e.target.value })}
-        />
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-6 space-y-2">
+          <Label htmlFor="street">Street</Label>
+          <Input
+            id="street"
+            value={project.street || ''}
+            onChange={(e) => onChange({ ...project, street: e.target.value })}
+          />
+        </div>
+        <div className="col-span-3 space-y-2">
           <Label htmlFor="city">City</Label>
           <Input
             id="city"
@@ -53,7 +52,7 @@ export default function ProjectForm({ project, onChange }) {
             onChange={(e) => onChange({ ...project, city: e.target.value })}
           />
         </div>
-        <div className="space-y-2">
+        <div className="col-span-3 space-y-2">
           <Label htmlFor="state">State</Label>
           <Select
             value={project.state || ''}
@@ -116,25 +115,26 @@ export default function ProjectForm({ project, onChange }) {
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="sector">Sector</Label>
-          <Select
-            value={project.sector || ''}
-            onValueChange={(value) => onChange({ ...project, sector: value })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Commercial">Commercial</SelectItem>
-              <SelectItem value="Education">Education</SelectItem>
-              <SelectItem value="Healthcare">Healthcare</SelectItem>
-              <SelectItem value="Hospitality">Hospitality</SelectItem>
-              <SelectItem value="Residential">Residential</SelectItem>
-              <SelectItem value="Other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="sector">Sector</Label>
+        <Select
+          value={project.sector || ''}
+          onValueChange={(value) => onChange({ ...project, sector: value })}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Commercial">Commercial</SelectItem>
+            <SelectItem value="Education">Education</SelectItem>
+            <SelectItem value="Healthcare">Healthcare</SelectItem>
+            <SelectItem value="Hospitality">Hospitality</SelectItem>
+            <SelectItem value="Residential">Residential</SelectItem>
+            <SelectItem value="Other">Other</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
