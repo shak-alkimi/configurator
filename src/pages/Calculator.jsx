@@ -376,7 +376,7 @@ export default function Calculator() {
             {/* Right Column - Materials & Quote */}
             <div className="lg:col-span-1">
               <div className="lg:sticky lg:top-6">
-                <MaterialsCalculator runs={tapeRuns} />
+                <MaterialsCalculator runs={tapeRuns} isSubmitted={projectData.status === 'submitted'} />
               </div>
             </div>
           </div>
