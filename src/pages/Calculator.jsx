@@ -384,6 +384,7 @@ export default function Calculator() {
               <Card>
                 <CardContent>
                   <TapeRunList
+                    key={selectedProjectId || 'new'}
                     runs={tapeRuns}
                     onAdd={handleAddTapeRun}
                     onUpdate={() => {}}
