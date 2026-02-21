@@ -246,42 +246,31 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                             >
                               <GripVertical className="h-5 w-5" />
                             </div>
-                            <div className="flex-1 grid grid-cols-12 gap-4">
-                              <div className="col-span-1">
-                                <div className="text-xs text-slate-500">Type</div>
-                                <div className="text-sm font-medium">{run.run_name || 'Unnamed Run'}</div>
+                            <div className="flex-1 flex items-center gap-6 text-sm">
+                              <div>
+                                <span className="font-medium">{run.run_name || 'Unnamed'}</span>
                               </div>
-                              <div className="col-span-2">
-                                <div className="text-xs text-slate-500">Location</div>
-                                <div className="text-sm">{run.location || '—'}</div>
+                              <div>
+                                {run.location ? <span>{run.location}</span> : <span className="text-slate-400">—</span>}
                               </div>
-                              <div className="col-span-2">
-                                <div className="text-xs text-slate-500">Length</div>
-                                <div className="text-sm">
-                                  {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
-                                </div>
+                              <div>
+                                {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
                               </div>
-                              <div className="col-span-2">
-                                <div className="text-xs text-slate-500">Output</div>
-                                <div className="text-sm">
-                                  {(() => {
-                                    const specs = TAPE_SPECS[run.tape_type];
-                                    if (!specs) return '—';
-                                    return `${specs.watts_per_foot}w/ft (${specs.lumens_per_foot}lm/ft)`;
-                                  })()}
-                                </div>
+                              <div>
+                                {(() => {
+                                  const specs = TAPE_SPECS[run.tape_type];
+                                  if (!specs) return '—';
+                                  return `${specs.watts_per_foot}w/ft`;
+                                })()}
                               </div>
-                              <div className="col-span-3">
-                                <div className="text-xs text-slate-500">CCT</div>
-                                <div className="text-sm">{run.cct || '—'}</div>
+                              <div>
+                                {run.cct || '—'}
                               </div>
-                              <div className="col-span-2">
-                                <div className="text-xs text-slate-500">Housing</div>
-                                <div className="text-sm">{formatChannelType(run.channel_type)}</div>
+                              <div>
+                                {formatChannelType(run.channel_type)}
                               </div>
-                              <div className="col-span-1 text-right">
-                                <div className="text-xs text-slate-500">Cost</div>
-                                <div className="text-sm font-semibold">${calculateRunCost(run).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                              <div className="ml-auto font-semibold">
+                                ${calculateRunCost(run).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </div>
                             </div>
                           </div>
