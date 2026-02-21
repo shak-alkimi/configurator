@@ -304,7 +304,7 @@ export default function Calculator() {
                                <FileText className="h-4 w-4" />
                              </Button>
                            </TooltipTrigger>
-                           <TooltipContent>Specifications</TooltipContent>
+                           <TooltipContent>Specs</TooltipContent>
                          </Tooltip>
                          <Tooltip>
                            <TooltipTrigger asChild>
