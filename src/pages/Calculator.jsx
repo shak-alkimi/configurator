@@ -330,7 +330,7 @@ export default function Calculator() {
                            <Save className="h-4 w-4" />
                          </Button>
                        </TooltipTrigger>
-                       <TooltipContent>Save Project</TooltipContent>
+                       <TooltipContent>Save</TooltipContent>
                      </Tooltip>
                   </>
                 )}
