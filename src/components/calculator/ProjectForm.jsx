@@ -14,7 +14,6 @@ export default function ProjectForm({ project, onChange }) {
             id="project_name"
             value={project.project_name || ''}
             onChange={(e) => onChange({ ...project, project_name: e.target.value })}
-            className="truncate"
           />
         </div>
         <div className="col-span-12 md:col-span-3 space-y-2">
