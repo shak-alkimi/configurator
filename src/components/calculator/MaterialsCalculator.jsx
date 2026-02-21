@@ -177,9 +177,7 @@ export default function MaterialsCalculator({ runs }) {
             </div>
           </div>
 
-          <Separator />
-
-          {/* Housing */}
+           {/* Housing */}
           {Object.keys(calculations.channelByType).length > 0 && (
             <>
               <div>
@@ -198,7 +196,6 @@ export default function MaterialsCalculator({ runs }) {
                     ))}
                 </div>
               </div>
-              <Separator />
               </>
               )}
 
@@ -213,8 +210,6 @@ export default function MaterialsCalculator({ runs }) {
             </div>
           </div>
 
-          <Separator />
-
           {/* Mounting Hardware */}
           <div>
             <h4 className="text-sm font-semibold text-slate-700 mb-2">Mounting Hardware</h4>
@@ -225,8 +220,6 @@ export default function MaterialsCalculator({ runs }) {
               </div>
             </div>
           </div>
-
-          <Separator />
 
           {/* Connectors */}
           <div>
