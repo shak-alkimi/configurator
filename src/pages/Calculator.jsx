@@ -66,6 +66,17 @@ export default function Calculator() {
     enabled: !!selectedProjectId,
   });
 
+  // Fetch versions for selected project
+  const { data: versions = [] } = useQuery({
+    queryKey: ['versions', selectedProjectId],
+    queryFn: async () => {
+      if (!selectedProjectId) return [];
+      const vers = await base44.entities.QuoteVersion.filter({ project_id: selectedProjectId }, '-created_date', undefined, undefined, 'dev');
+      return vers;
+    },
+    enabled: !!selectedProjectId,
+  });
+
   // Create/Update project mutation
   const saveProjectMutation = useMutation({
     mutationFn: async (data) => {
