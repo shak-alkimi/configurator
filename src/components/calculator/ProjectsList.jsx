@@ -34,7 +34,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {isLoading ? (
           <div className="text-center py-8 text-slate-400 text-sm">Loading...</div>
-        ) : projects.length > 0 ? (
+        ) : projects.length === 0 ? null : (
           projects.map((project) => (
             <Card
               key={project.id}
