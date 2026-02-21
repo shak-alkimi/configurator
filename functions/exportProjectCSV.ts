@@ -48,13 +48,7 @@ Deno.serve(async (req) => {
     });
 
     // Return CSV as response
-    return new Response(csv, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/csv;charset=utf-8;',
-        'Content-Disposition': `attachment;filename="${escapeFilename(project.project_name || 'project')}.csv"`
-      }
-    });
+    return Response.json({ csv }, { status: 200 });
   } catch (error) {
     console.error('Export error:', error);
     return Response.json({ error: error.message }, { status: 500 });
