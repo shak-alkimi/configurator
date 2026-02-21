@@ -117,8 +117,8 @@ export default function ProjectForm({ project, onChange }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-6 space-y-2">
           <Label htmlFor="sector">Sector</Label>
           <Select
             value={project.sector || ''}
@@ -137,7 +137,7 @@ export default function ProjectForm({ project, onChange }) {
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
+        <div className="col-span-3 space-y-2">
           <Label htmlFor="customer_name">Customer Name</Label>
           <Input
             id="customer_name"
@@ -145,7 +145,7 @@ export default function ProjectForm({ project, onChange }) {
             onChange={(e) => onChange({ ...project, customer_name: e.target.value })}
           />
         </div>
-        <div className="space-y-2">
+        <div className="col-span-3 space-y-2">
           <Label htmlFor="customer_email">Customer Email</Label>
           <Input
             id="customer_email"
