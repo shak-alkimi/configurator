@@ -321,7 +321,7 @@ export default function Calculator() {
             <div className="lg:col-span-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <h2 className="text-2xl font-bold text-slate-900 break-words">
-                  {isNewProject ? 'New Project' : (projectData.project_name?.length > 99 ? projectData.project_name.substring(0, 99) + '...' : projectData.project_name)}
+                  {isNewProject ? 'New Project' : (projectData.project_name?.length > 100 ? projectData.project_name.substring(0, 100) + '...' : projectData.project_name)}
                 </h2>
                 <p className="text-sm text-slate-500 mt-1">
                   {isNewProject ? 'Create a new tape light quote' : projectData.customer_name}
