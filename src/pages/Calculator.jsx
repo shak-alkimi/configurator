@@ -27,6 +27,7 @@ export default function Calculator() {
     customer_name: '',
     customer_email: '',
     customer_phone: '',
+    address: '',
     notes: '',
     status: 'draft'
   });
@@ -145,6 +146,7 @@ export default function Calculator() {
       customer_name: '',
       customer_email: '',
       customer_phone: '',
+      address: '',
       notes: '',
       status: 'draft'
     });

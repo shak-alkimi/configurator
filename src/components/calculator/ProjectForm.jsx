@@ -55,6 +55,15 @@ export default function ProjectForm({ project, onChange }) {
         </div>
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="address">Address</Label>
+        <Input
+          id="address"
+          value={project.address || ''}
+          onChange={(e) => onChange({ ...project, address: e.target.value })}
+        />
+      </div>
+
     </div>
   );
 }
