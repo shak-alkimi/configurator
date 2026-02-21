@@ -31,6 +31,7 @@ export default function Calculator() {
     status: 'draft'
   });
   const [isNewProject, setIsNewProject] = useState(true);
+  const [formResetKey, setFormResetKey] = useState(0);
 
   const queryClient = useQueryClient();
 
@@ -147,6 +148,7 @@ export default function Calculator() {
       notes: '',
       status: 'draft'
     });
+    setFormResetKey(prev => prev + 1);
   };
 
   const handleSelectProject = (projectId) => {
@@ -384,7 +386,7 @@ export default function Calculator() {
               <Card>
                 <CardContent>
                   <TapeRunList
-                    key={selectedProjectId || 'new'}
+                    key={selectedProjectId || `new-${formResetKey}`}
                     runs={tapeRuns}
                     onAdd={handleAddTapeRun}
                     onUpdate={() => {}}
