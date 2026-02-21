@@ -52,7 +52,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
                 <div className="flex items-start gap-2 mb-2">
                   <h3 className="font-semibold text-sm flex-1 min-w-0 break-words line-clamp-2 min-h-[2.5rem]">{project.project_name}</h3>
                   <div
-                    className="relative"
+                    className="relative flex flex-col items-end gap-1"
                     onMouseEnter={() => setHoveredId(project.id)}
                     onMouseLeave={() => setHoveredId(null)}
                   >
@@ -63,7 +63,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="absolute -right-1 -top-8 h-7 px-2 text-xs bg-white border border-slate-200 hover:bg-slate-50"
+                        className="h-7 px-2 text-xs bg-white border border-slate-200 hover:bg-slate-50 whitespace-nowrap"
                         onClick={(e) => {
                           e.stopPropagation();
                           onUpdateStatus(project.id, 'draft');
