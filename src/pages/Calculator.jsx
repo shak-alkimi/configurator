@@ -317,21 +317,13 @@ export default function Calculator() {
                       </>
                     )}
                     <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" onClick={() => {
-                          if (selectedProjectId && !isNewProject) {
-                            saveProjectMutation.mutateAsync({
-                              ...projectData,
-                              status: 'submitted',
-                              total_price: calculateTotalPrice(tapeRuns)
-                            });
-                          }
-                        }}>
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Submit</TooltipContent>
-                    </Tooltip>
+                       <TooltipTrigger asChild>
+                         <Button variant="outline" size="icon" onClick={() => toast.info('Submit functionality coming soon')}>
+                           <Send className="h-4 w-4" />
+                         </Button>
+                       </TooltipTrigger>
+                       <TooltipContent>Submit</TooltipContent>
+                     </Tooltip>
                      <Tooltip>
                        <TooltipTrigger asChild>
                          <Button size="icon" onClick={handleSaveProject}>
@@ -367,7 +359,6 @@ export default function Calculator() {
                     onUpdate={() => {}}
                     onDelete={(id) => deleteTapeRunMutation.mutate(id)}
                     onReorder={handleReorderRuns}
-                    isSubmitted={projectData.status === 'submitted'}
                   />
                 </CardContent>
               </Card>
@@ -376,7 +367,7 @@ export default function Calculator() {
             {/* Right Column - Materials & Quote */}
             <div className="lg:col-span-1">
               <div className="lg:sticky lg:top-6">
-                <MaterialsCalculator runs={tapeRuns} isSubmitted={projectData.status === 'submitted'} />
+                <MaterialsCalculator runs={tapeRuns} />
               </div>
             </div>
           </div>
