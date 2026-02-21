@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Save, Trash2, FileText, Send } from "lucide-react";
+import { Save, Trash2, Send } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -242,9 +242,7 @@ export default function Calculator() {
 
 
 
-  const handleSpecs = () => {
-    toast.info('Specs feature coming soon');
-  };
+
 
   const handleDeleteProject = () => {
     if (selectedProjectId && confirm('Are you sure you want to delete this project?')) {
@@ -297,15 +295,6 @@ export default function Calculator() {
                   <>
                     {!isNewProject && (
                       <>
-
-                         <Tooltip>
-                           <TooltipTrigger asChild>
-                             <Button variant="outline" size="icon" onClick={handleSpecs} className="hidden sm:flex">
-                               <FileText className="h-4 w-4" />
-                             </Button>
-                           </TooltipTrigger>
-                           <TooltipContent>Specs</TooltipContent>
-                         </Tooltip>
                          <Tooltip>
                            <TooltipTrigger asChild>
                              <Button variant="outline" size="icon" onClick={handleDeleteProject}>
