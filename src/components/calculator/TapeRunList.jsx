@@ -178,7 +178,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-3 space-y-1.5">
+            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">Housing</Label>
               <Select
                 value={newRun.channel_type}
@@ -196,7 +196,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
               </Select>
             </div>
             <div className="col-span-1 flex items-end">
-              <Button onClick={handleAdd} size="sm" className="h-9 w-10" disabled={!isFormValid()}>
+              <Button onClick={handleAdd} size="sm" className="h-9 w-full" disabled={!isFormValid()}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
