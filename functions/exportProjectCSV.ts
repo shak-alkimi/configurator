@@ -1,69 +1,75 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
-    try {
-        const base44 = createClientFromRequest(req);
-        const user = await base44.auth.me();
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
 
-        if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const { project_id, data_env } = await req.json();
-
-        if (!project_id) {
-            return Response.json({ error: 'Project ID required' }, { status: 400 });
-        }
-
-        const project = await base44.asServiceRole.entities.Project.get(project_id, data_env);
-
-        if (!project) {
-            return Response.json({ error: 'Project not found' }, { status: 404 });
-        }
-
-        const tapeRuns = await base44.asServiceRole.entities.TapeRun.filter({ project_id }, undefined, undefined, undefined, data_env);
-
-        const TAPE_SPECS = {
-            "2w": { price_per_foot: 10, watts_per_foot: 2.0, lumens_per_foot: 200 },
-            "4w": { price_per_foot: 12, watts_per_foot: 4.0, lumens_per_foot: 400 }
-        };
-        
-        const CHANNEL_SPECS = {
-            corner: { price_per_foot: 10 },
-            recessed: { price_per_foot: 12 },
-            surface: { price_per_foot: 8 },
-            none: { price_per_foot: 0 }
-        };
-        
-        let csv = 'Type,Length (ft),Length (ft\'in"),Output,CCT,Housing,Cost\n';
-        
-        tapeRuns.forEach(run => {
-            const feet = Math.floor(run.length_feet);
-            const inches = Math.round((run.length_feet % 1) * 12);
-            const lengthDisplay = `${feet}' ${inches}"`;
-            
-            const tapeSpec = TAPE_SPECS[run.tape_type];
-            const channelSpec = CHANNEL_SPECS[run.channel_type];
-            const outputDisplay = tapeSpec ? `${tapeSpec.watts_per_foot}w/ft (${tapeSpec.lumens_per_foot}lm/ft)` : run.tape_type;
-            
-            let cost = 0;
-            if (tapeSpec) cost += run.length_feet * tapeSpec.price_per_foot;
-            if (channelSpec) cost += run.length_feet * channelSpec.price_per_foot;
-            
-            const channelDisplay = run.channel_type === 'recessed' ? 'Recessed Flange' : 
-                                   run.channel_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            
-            csv += `"${run.run_name || ''}",${run.length_feet.toFixed(2)},"${lengthDisplay}","${outputDisplay}","${run.cct || ''}","${channelDisplay}",$${cost.toFixed(2)}\n`;
-        });
-
-        return new Response(csv, {
-            status: 200,
-            headers: {
-                'Content-Type': 'text/csv',
-                'Content-Disposition': `attachment; filename="${project.project_name}.csv"`
-            }
-        });
-    } catch (error) {
-        return Response.json({ error: error.message }, { status: 500 });
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const { project_id } = await req.json();
+
+    if (!project_id) {
+      return Response.json({ error: 'Project ID is required' }, { status: 400 });
+    }
+
+    // Fetch project details
+    const project = await base44.entities.Project.get(project_id, 'dev');
+
+    if (!project) {
+      return Response.json({ error: 'Project not found' }, { status: 404 });
+    }
+
+    // Fetch tape runs for this project
+    const tapeRuns = await base44.entities.TapeRun.filter(
+      { project_id: project_id },
+      undefined,
+      undefined,
+      undefined,
+      'dev'
+    );
+
+    // Sort by order
+    const sortedRuns = tapeRuns.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+
+    // Build CSV content
+    let csv = 'PROJECT DETAILS\n';
+    csv += 'Project Name,Customer Name,Customer Email,Customer Phone,Street,City,State,Sector,Status,Notes,Total Price\n';
+    csv += `"${escapeCSV(project.project_name || '')}","${escapeCSV(project.customer_name || '')}","${escapeCSV(project.customer_email || '')}","${escapeCSV(project.customer_phone || '')}","${escapeCSV(project.street || '')}","${escapeCSV(project.city || '')}","${escapeCSV(project.state || '')}","${escapeCSV(project.sector || '')}","${escapeCSV(project.status || 'draft')}","${escapeCSV(project.notes || '')}",${project.total_price || 0}\n`;
+
+    // Add tape runs section
+    csv += '\n\nTAPE RUNS\n';
+    csv += 'Run Name,Length (Feet),Output Type,CCT,Housing Type,Notes\n';
+
+    sortedRuns.forEach(run => {
+      csv += `"${escapeCSV(run.run_name || '')}",${run.length_feet},${escapeCSV(run.tape_type || '')},${escapeCSV(run.cct || '')},${escapeCSV(run.channel_type || '')},${escapeCSV(run.notes || '')}\n`;
+    });
+
+    // Return CSV as response
+    return new Response(csv, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/csv;charset=utf-8;',
+        'Content-Disposition': `attachment;filename="${escapeFilename(project.project_name || 'project')}.csv"`
+      }
+    });
+  } catch (error) {
+    console.error('Export error:', error);
+    return Response.json({ error: error.message }, { status: 500 });
+  }
 });
+
+function escapeCSV(str) {
+  if (typeof str !== 'string') return str;
+  // Escape quotes and wrap in quotes if contains comma, newline, or quote
+  if (str.includes(',') || str.includes('\n') || str.includes('"')) {
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+}
+
+function escapeFilename(str) {
+  return str.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+}
