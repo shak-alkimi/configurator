@@ -49,7 +49,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
             >
               <CardContent className="p-3">
                 <div className="flex items-start gap-2 mb-2">
-                  <h3 className="font-semibold text-sm flex-1 min-w-0 break-words">{project.project_name}</h3>
+                  <h3 className="font-semibold text-sm flex-1 min-w-0 break-words line-clamp-2 min-h-[2.5rem]">{project.project_name}</h3>
                   <Badge className={`${statusColors[project.status]} text-xs flex-shrink-0`}>
                     {project.status}
                   </Badge>
