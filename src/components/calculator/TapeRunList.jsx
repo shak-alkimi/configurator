@@ -219,10 +219,10 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                     <Card 
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      className="border-slate-200"
-                      style={{
-                        ...provided.draggableProps.style,
-                        backgroundColor: snapshot.isDragging ? 'white' : '#EEEEEE',
+                      className="border-slate-200" 
+                      style={{ 
+                        backgroundColor: '#EEEEEE',
+                        ...provided.draggableProps.style 
                       }}
                     >
                       <CardContent className="py-3">
