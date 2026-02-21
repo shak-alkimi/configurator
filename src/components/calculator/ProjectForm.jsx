@@ -35,13 +35,34 @@ export default function ProjectForm({ project, onChange }) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="address">Address</Label>
-        <Input
-          id="address"
-          value={project.address || ''}
-          onChange={(e) => onChange({ ...project, address: e.target.value })}
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="address">Address</Label>
+          <Input
+            id="address"
+            value={project.address || ''}
+            onChange={(e) => onChange({ ...project, address: e.target.value })}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="sector">Sector</Label>
+          <Select
+            value={project.sector || ''}
+            onValueChange={(value) => onChange({ ...project, sector: value })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Commercial">Commercial</SelectItem>
+              <SelectItem value="Education">Education</SelectItem>
+              <SelectItem value="Healthcare">Healthcare</SelectItem>
+              <SelectItem value="Hospitality">Hospitality</SelectItem>
+              <SelectItem value="Residential">Residential</SelectItem>
+              <SelectItem value="Other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

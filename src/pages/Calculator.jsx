@@ -28,6 +28,7 @@ export default function Calculator() {
     customer_email: '',
     customer_phone: '',
     address: '',
+    sector: '',
     notes: '',
     status: 'draft'
   });
@@ -147,6 +148,7 @@ export default function Calculator() {
       customer_email: '',
       customer_phone: '',
       address: '',
+      sector: '',
       notes: '',
       status: 'draft'
     });
