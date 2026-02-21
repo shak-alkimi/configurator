@@ -246,82 +246,6 @@ export default function Calculator() {
     toast.info('Specs feature coming soon');
   };
 
-  const handleGenerateQuote = async () => {
-    if (!selectedProjectId) {
-      toast.error('Please save project first');
-      return;
-    }
-
-    try {
-      const totalPrice = calculateTotalPrice(tapeRuns);
-      const response = await base44.functions.invoke('generateQuotePDF', {
-        project: { ...projectData, id: selectedProjectId },
-        tapeRuns: tapeRuns,
-        materials: {
-          tapeCost: calculateTapeRunsCost(tapeRuns, 'tape'),
-          channelCost: calculateTapeRunsCost(tapeRuns, 'channel'),
-          driverCost: Math.ceil(calculateTotalWatts(tapeRuns) / 76.8) * 65,
-          clipCost: Math.ceil((tapeRuns.reduce((sum, r) => sum + Math.ceil(r.length_feet / 4), 0) * 4) / 12) * 15,
-          shippingCost: totalPrice * 0.10,
-          totalCost: totalPrice
-        },
-        data_env: 'dev'
-      });
-
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${projectData.project_name}_Quote.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-
-      toast.success('Quote generated successfully');
-    } catch (error) {
-      toast.error('Failed to generate quote');
-    }
-  };
-
-  const calculateTapeRunsCost = (runs, type) => {
-    const TAPE_SPECS = {
-      "2w": { price_per_foot: 10 },
-      "4w": { price_per_foot: 12 }
-    };
-    const CHANNEL_SPECS = {
-      surface: { price_per_foot: 8 },
-      recessed: { price_per_foot: 12 },
-      corner: { price_per_foot: 10 },
-      none: { price_per_foot: 0 }
-    };
-
-    let total = 0;
-    runs.forEach(run => {
-      if (type === 'tape') {
-        const spec = TAPE_SPECS[run.tape_type];
-        if (spec) total += run.length_feet * spec.price_per_foot;
-      } else if (type === 'channel') {
-        const spec = CHANNEL_SPECS[run.channel_type];
-        if (spec) total += Math.ceil(run.length_feet / 4) * 4 * spec.price_per_foot;
-      }
-    });
-    return total;
-  };
-
-  const calculateTotalWatts = (runs) => {
-    const TAPE_SPECS = {
-      "2w": { watts_per_foot: 2.0 },
-      "4w": { watts_per_foot: 4.0 }
-    };
-    let total = 0;
-    runs.forEach(run => {
-      const spec = TAPE_SPECS[run.tape_type];
-      if (spec) total += run.length_feet * spec.watts_per_foot;
-    });
-    return total;
-  };
-
   const handleDeleteProject = () => {
     if (selectedProjectId && confirm('Are you sure you want to delete this project?')) {
       deleteProjectMutation.mutate(selectedProjectId);
@@ -373,13 +297,14 @@ export default function Calculator() {
                   <>
                     {!isNewProject && (
                       <>
+
                          <Tooltip>
                            <TooltipTrigger asChild>
-                             <Button variant="outline" size="icon" onClick={handleGenerateQuote} className="hidden sm:flex">
+                             <Button variant="outline" size="icon" onClick={handleSpecs} className="hidden sm:flex">
                                <FileText className="h-4 w-4" />
                              </Button>
                            </TooltipTrigger>
-                           <TooltipContent>Generate Quote</TooltipContent>
+                           <TooltipContent>Specs</TooltipContent>
                          </Tooltip>
                          <Tooltip>
                            <TooltipTrigger asChild>
