@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Save, Download, Trash2, FileText, FileDown, Send } from "lucide-react";
+import { Save, Trash2, FileText, Send } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -240,60 +240,7 @@ export default function Calculator() {
     return total;
   };
 
-  const handleExportPDF = async () => {
-    if (!selectedProjectId) {
-      toast.error('No project selected');
-      return;
-    }
-    
-    try {
-      const response = await base44.functions.invoke('exportProjectPDF', {
-        project_id: selectedProjectId,
-        data_env: 'dev'
-      });
-      
-      const blob = new Blob([new Uint8Array(response.data)], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${projectData.project_name || 'project'}.pdf`;
-      link.click();
-      URL.revokeObjectURL(url);
-      toast.success('PDF downloaded');
-    } catch (error) {
-      console.error('Export error:', error);
-      toast.error(error.message || 'Failed to export PDF');
-    }
-  };
 
-  const handleExportCSV = async () => {
-    if (!selectedProjectId) {
-      toast.error('No project selected');
-      return;
-    }
-    
-    try {
-      const response = await base44.functions.invoke('exportProjectCSV', {
-        project_id: selectedProjectId,
-        data_env: 'dev'
-      });
-      
-      const csvData = response.data.csv;
-      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${projectData.project_name || 'project'}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      toast.success('CSV downloaded');
-    } catch (error) {
-      console.error('Export error:', error);
-      toast.error(error.message || 'Failed to export CSV');
-    }
-  };
 
   const handleSpecs = () => {
     toast.info('Specs feature coming soon');
@@ -350,28 +297,7 @@ export default function Calculator() {
                   <>
                     {!isNewProject && (
                       <>
-                        <Tooltip>
-                           <TooltipTrigger asChild>
-                             <DropdownMenu>
-                               <DropdownMenuTrigger asChild>
-                                 <Button variant="outline" size="icon" className="hidden sm:flex">
-                                   <Download className="h-4 w-4" />
-                                 </Button>
-                               </DropdownMenuTrigger>
-                               <DropdownMenuContent>
-                                 <DropdownMenuItem onClick={handleExportCSV}>
-                                   <FileDown className="h-4 w-4 mr-2" />
-                                   Export as CSV
-                                 </DropdownMenuItem>
-                                 <DropdownMenuItem onClick={handleExportPDF}>
-                                   <FileDown className="h-4 w-4 mr-2" />
-                                   Export as PDF
-                                 </DropdownMenuItem>
-                               </DropdownMenuContent>
-                             </DropdownMenu>
-                           </TooltipTrigger>
-                           <TooltipContent>Export</TooltipContent>
-                         </Tooltip>
+
                          <Tooltip>
                            <TooltipTrigger asChild>
                              <Button variant="outline" size="icon" onClick={handleSpecs} className="hidden sm:flex">
