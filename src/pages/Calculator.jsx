@@ -389,12 +389,22 @@ export default function Calculator() {
                          </Tooltip>
                       </>
                     )}
-                    <Button variant="outline" size="icon" onClick={() => toast.info('Submit functionality coming soon')}>
-                      <Send className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" onClick={handleSaveProject}>
-                      <Save className="h-4 w-4" />
-                    </Button>
+                    <Tooltip>
+                       <TooltipTrigger asChild>
+                         <Button variant="outline" size="icon" onClick={() => toast.info('Submit functionality coming soon')}>
+                           <Send className="h-4 w-4" />
+                         </Button>
+                       </TooltipTrigger>
+                       <TooltipContent>Submit</TooltipContent>
+                     </Tooltip>
+                     <Tooltip>
+                       <TooltipTrigger asChild>
+                         <Button size="icon" onClick={handleSaveProject}>
+                           <Save className="h-4 w-4" />
+                         </Button>
+                       </TooltipTrigger>
+                       <TooltipContent>Save Project</TooltipContent>
+                     </Tooltip>
                   </>
                 )}
               </div>
