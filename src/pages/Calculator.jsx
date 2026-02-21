@@ -328,36 +328,36 @@ export default function Calculator() {
                 </p>
               </div>
               <div className="flex gap-2 flex-wrap flex-shrink-0">
-              {!isNewProject && (
-                <>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="icon" className="hidden sm:flex">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem onClick={handleExportCSV}>
-                        <FileDown className="h-4 w-4 mr-2" />
-                        Export as CSV
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleExportPDF}>
-                        <FileDown className="h-4 w-4 mr-2" />
-                        Export as PDF
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button variant="outline" size="icon" onClick={handleSpecs} className="hidden sm:flex">
-                    <FileText className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" onClick={handleDeleteProject}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </>
-              )}
-              <Button size="icon" onClick={handleSaveProject}>
-                <Save className="h-4 w-4" />
-              </Button>
+                {!isNewProject && (
+                  <>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon" className="hidden sm:flex">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={handleExportCSV}>
+                          <FileDown className="h-4 w-4 mr-2" />
+                          Export as CSV
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExportPDF}>
+                          <FileDown className="h-4 w-4 mr-2" />
+                          Export as PDF
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button variant="outline" size="icon" onClick={handleSpecs} className="hidden sm:flex">
+                      <FileText className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={handleDeleteProject}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+                <Button size="icon" onClick={handleSaveProject}>
+                  <Save className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </div>
