@@ -9,7 +9,7 @@ import { format } from "date-fns";
 export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading, searchQuery, onSearchChange }) {
   const statusColors = {
     draft: "bg-slate-100 text-slate-700",
-    quoted: "bg-blue-100 text-blue-700",
+    submitted: "bg-blue-100 text-blue-700",
     approved: "bg-green-100 text-green-700",
     completed: "bg-purple-100 text-purple-700"
   };
