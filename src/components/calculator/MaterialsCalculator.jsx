@@ -156,7 +156,7 @@ export default function MaterialsCalculator({ runs }) {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-[#d9d9d9]">
+      <Card className="bg-[#919191]">
          <CardHeader>
            <CardTitle className="text-lg">Materials</CardTitle>
          </CardHeader>
