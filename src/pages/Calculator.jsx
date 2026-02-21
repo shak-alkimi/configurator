@@ -278,7 +278,7 @@ export default function Calculator() {
         data_env: 'dev'
       });
       
-      const csvData = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+      const csvData = response.data.csv;
       const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
