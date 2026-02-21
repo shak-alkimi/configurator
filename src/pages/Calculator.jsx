@@ -306,7 +306,7 @@ export default function Calculator() {
 
   return (
     <TooltipProvider>
-    <div className="h-screen flex gap-0 bg-white">
+      <div className="h-screen flex gap-0 bg-white">
       {/* Sidebar - Projects List */}
       <div className="hidden md:flex md:w-64 lg:w-80 px-4 lg:px-6 py-6 flex-col">
         <Card className="h-full flex flex-col">
