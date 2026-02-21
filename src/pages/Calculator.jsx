@@ -517,8 +517,21 @@ export default function Calculator() {
 
             {/* Right Column - Materials & Quote */}
             <div className="lg:col-span-1">
-              <div className="lg:sticky lg:top-6">
+              <div className="lg:sticky lg:top-6 space-y-4">
                 <MaterialsCalculator runs={tapeRuns} />
+                {!isNewProject && (
+                  <VersionManager
+                    versions={versions}
+                    onCreateVersion={createVersionMutation.mutate}
+                    onRevertVersion={revertVersionMutation.mutate}
+                    onDeleteVersion={deleteVersionMutation.mutate}
+                    onViewVersion={(version) => {
+                      setSelectedVersion(version);
+                      setShowVersionViewer(true);
+                    }}
+                    projectName={projectData.project_name}
+                  />
+                )}
               </div>
             </div>
           </div>
