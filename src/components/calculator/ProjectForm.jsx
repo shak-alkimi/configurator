@@ -35,6 +35,15 @@ export default function ProjectForm({ project, onChange }) {
         </div>
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="address">Address</Label>
+        <Input
+          id="address"
+          value={project.address || ''}
+          onChange={(e) => onChange({ ...project, address: e.target.value })}
+        />
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="customer_name">Customer Name</Label>
@@ -53,15 +62,6 @@ export default function ProjectForm({ project, onChange }) {
             onChange={(e) => onChange({ ...project, customer_email: e.target.value })}
           />
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="address">Address</Label>
-        <Input
-          id="address"
-          value={project.address || ''}
-          onChange={(e) => onChange({ ...project, address: e.target.value })}
-        />
       </div>
 
     </div>
