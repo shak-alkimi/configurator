@@ -24,8 +24,6 @@ import ProjectsList from "../components/calculator/ProjectsList";
 import ProjectForm from "../components/calculator/ProjectForm";
 import TapeRunList from "../components/calculator/TapeRunList";
 import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
-import VersionManager from "../components/calculator/VersionManager";
-import VersionViewer from "../components/calculator/VersionViewer";
 
 export default function Calculator() {
   const [selectedProjectId, setSelectedProjectId] = useState(null);
@@ -44,8 +42,6 @@ export default function Calculator() {
   });
   const [isNewProject, setIsNewProject] = useState(true);
   const [formResetKey, setFormResetKey] = useState(0);
-  const [selectedVersion, setSelectedVersion] = useState(null);
-  const [showVersionViewer, setShowVersionViewer] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -62,17 +58,6 @@ export default function Calculator() {
       if (!selectedProjectId) return [];
       const runs = await base44.entities.TapeRun.filter({ project_id: selectedProjectId }, undefined, undefined, undefined, 'dev');
       return runs.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
-    },
-    enabled: !!selectedProjectId,
-  });
-
-  // Fetch versions for selected project
-  const { data: versions = [] } = useQuery({
-    queryKey: ['versions', selectedProjectId],
-    queryFn: async () => {
-      if (!selectedProjectId) return [];
-      const vers = await base44.entities.QuoteVersion.filter({ project_id: selectedProjectId }, '-created_date', undefined, undefined, 'dev');
-      return vers;
     },
     enabled: !!selectedProjectId,
   });
@@ -135,68 +120,6 @@ export default function Calculator() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
-    },
-  });
-
-  // Create version mutation
-  const createVersionMutation = useMutation({
-    mutationFn: async (notes) => {
-      const nextVersion = (versions.length > 0 ? Math.max(...versions.map(v => v.version_number)) : 0) + 1;
-      const totalPrice = calculateTotalPrice(tapeRuns);
-      return await base44.entities.QuoteVersion.create({
-        project_id: selectedProjectId,
-        version_number: nextVersion,
-        project_snapshot: projectData,
-        tape_runs_snapshot: tapeRuns,
-        total_price: totalPrice,
-        notes: notes || ''
-      }, 'dev');
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['versions', selectedProjectId] });
-      toast.success('Version created');
-    },
-  });
-
-  // Revert to version mutation
-  const revertVersionMutation = useMutation({
-    mutationFn: async (versionId) => {
-      const version = versions.find(v => v.id === versionId);
-      if (!version) throw new Error('Version not found');
-      
-      // Delete all current tape runs
-      const currentRuns = tapeRuns;
-      const deletePromises = currentRuns.map(run => base44.entities.TapeRun.delete(run.id, 'dev'));
-      await Promise.all(deletePromises);
-      
-      // Restore project data
-      await base44.entities.Project.update(selectedProjectId, version.project_snapshot, 'dev');
-      
-      // Restore tape runs
-      const restorePromises = version.tape_runs_snapshot.map((run, index) => 
-        base44.entities.TapeRun.create({
-          ...run,
-          order: index,
-          id: undefined,
-          created_date: undefined,
-          updated_date: undefined
-        }, 'dev')
-      );
-      await Promise.all(restorePromises);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
-      toast.success('Reverted to selected version');
-    },
-  });
-
-  // Delete version mutation
-  const deleteVersionMutation = useMutation({
-    mutationFn: (versionId) => base44.entities.QuoteVersion.delete(versionId, 'dev'),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['versions', selectedProjectId] });
-      toast.success('Version deleted');
     },
   });
 
@@ -517,32 +440,14 @@ export default function Calculator() {
 
             {/* Right Column - Materials & Quote */}
             <div className="lg:col-span-1">
-              <div className="lg:sticky lg:top-6 space-y-4">
+              <div className="lg:sticky lg:top-6">
                 <MaterialsCalculator runs={tapeRuns} />
-                {!isNewProject && (
-                  <VersionManager
-                    versions={versions}
-                    onCreateVersion={createVersionMutation.mutate}
-                    onRevertVersion={revertVersionMutation.mutate}
-                    onDeleteVersion={deleteVersionMutation.mutate}
-                    onViewVersion={(version) => {
-                      setSelectedVersion(version);
-                      setShowVersionViewer(true);
-                    }}
-                    projectName={projectData.project_name}
-                  />
-                )}
               </div>
             </div>
           </div>
         </div>
       </div>
       </div>
-      <VersionViewer
-        version={selectedVersion}
-        isOpen={showVersionViewer}
-        onClose={() => setShowVersionViewer(false)}
-      />
     </TooltipProvider>
   );
 }
