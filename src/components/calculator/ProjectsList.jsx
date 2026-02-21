@@ -47,23 +47,25 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
               }`}
               onClick={() => onSelect(project.id)}
             >
-              <CardContent className="p-3">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-sm">{project.project_name}</h3>
-                  <Badge className={`${statusColors[project.status]} text-xs`}>
-                    {project.status}
-                  </Badge>
-                </div>
-                <div className="text-xs text-slate-600 space-y-1">
-                  <div>{project.customer_name}</div>
-                  {project.total_price && (
-                    <div className="font-semibold text-slate-900">
-                      ${project.total_price.toFixed(2)}
-                    </div>
-                  )}
-                  <div className="text-slate-400">
-                    {format(new Date(project.created_date), 'MMM d, yyyy')}
+              <CardContent className="p-3 flex flex-col justify-between min-h-[120px]">
+                <div>
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-sm">{project.project_name}</h3>
+                    <Badge className={`${statusColors[project.status]} text-xs`}>
+                      {project.status}
+                    </Badge>
                   </div>
+                  <div className="text-xs text-slate-600 space-y-1">
+                    <div>{project.customer_name}</div>
+                    {project.total_price && (
+                      <div className="font-semibold text-slate-900">
+                        ${project.total_price.toFixed(2)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="text-xs text-slate-400 mt-2">
+                  {format(new Date(project.created_date), 'MMM d, yyyy')}
                 </div>
               </CardContent>
             </Card>
