@@ -195,8 +195,8 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-1">
-              <Button onClick={handleAdd} size="sm" className="h-9 w-full" disabled={!isFormValid()}>
+            <div className="col-span-1 flex items-end">
+              <Button onClick={handleAdd} size="sm" className="h-9 w-10" disabled={!isFormValid()}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
