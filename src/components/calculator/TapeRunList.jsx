@@ -22,6 +22,7 @@ const CHANNEL_SPECS = {
 export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder }) {
   const [newRun, setNewRun] = useState({
     run_name: '',
+    location: '',
     feet: '',
     inches: '',
     tape_type: '',
@@ -42,6 +43,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     
     onAdd({ 
       run_name: newRun.run_name,
+      location: newRun.location,
       length_feet: totalFeet,
       tape_type: newRun.tape_type,
       cct: newRun.cct,
@@ -50,6 +52,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     });
     setNewRun({
       run_name: '',
+      location: '',
       feet: '',
       inches: '',
       tape_type: '',
@@ -114,16 +117,25 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
       <Card className="border-dashed">
         <CardContent className="pt-4">
           <div className="grid grid-cols-12 gap-3 items-end">
-            <div className="col-span-1 space-y-1.5">
-              <Label className="text-xs">Type</Label>
-              <Input
-                value={newRun.run_name}
-                onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })}
-                className="h-9"
-              />
-            </div>
-            <div className="col-span-1 space-y-1.5">
-              <Label className="text-xs">Feet</Label>
+             <div className="col-span-1 space-y-1.5">
+               <Label className="text-xs">Type</Label>
+               <Input
+                 value={newRun.run_name}
+                 onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })}
+                 className="h-9"
+               />
+             </div>
+             <div className="col-span-1 space-y-1.5">
+               <Label className="text-xs">Location</Label>
+               <Input
+                 value={newRun.location}
+                 onChange={(e) => setNewRun({ ...newRun, location: e.target.value })}
+                 className="h-9"
+                 placeholder="e.g., Kitchen"
+               />
+             </div>
+             <div className="col-span-1 space-y-1.5">
+               <Label className="text-xs">Feet</Label>
               <Input
                 type="number"
                 min="0"
@@ -235,9 +247,13 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                               <GripVertical className="h-5 w-5" />
                             </div>
                             <div className="flex-1 grid grid-cols-12 gap-4">
-                              <div className="col-span-2">
+                              <div className="col-span-1">
                                 <div className="text-xs text-slate-500">Type</div>
                                 <div className="text-sm font-medium">{run.run_name || 'Unnamed Run'}</div>
+                              </div>
+                              <div className="col-span-2">
+                                <div className="text-xs text-slate-500">Location</div>
+                                <div className="text-sm">{run.location || '—'}</div>
                               </div>
                               <div className="col-span-2">
                                 <div className="text-xs text-slate-500">Length</div>
