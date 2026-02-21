@@ -117,27 +117,26 @@ export default function ProjectForm({ project, onChange }) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="sector">Sector</Label>
-        <Select
-          value={project.sector || ''}
-          onValueChange={(value) => onChange({ ...project, sector: value })}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Commercial">Commercial</SelectItem>
-            <SelectItem value="Education">Education</SelectItem>
-            <SelectItem value="Healthcare">Healthcare</SelectItem>
-            <SelectItem value="Hospitality">Hospitality</SelectItem>
-            <SelectItem value="Residential">Residential</SelectItem>
-            <SelectItem value="Other">Other</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="sector">Sector</Label>
+          <Select
+            value={project.sector || ''}
+            onValueChange={(value) => onChange({ ...project, sector: value })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Commercial">Commercial</SelectItem>
+              <SelectItem value="Education">Education</SelectItem>
+              <SelectItem value="Healthcare">Healthcare</SelectItem>
+              <SelectItem value="Hospitality">Hospitality</SelectItem>
+              <SelectItem value="Residential">Residential</SelectItem>
+              <SelectItem value="Other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <div className="space-y-2">
           <Label htmlFor="customer_name">Customer Name</Label>
           <Input
