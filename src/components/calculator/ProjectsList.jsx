@@ -48,7 +48,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
               onClick={() => onSelect(project.id)}
             >
               <CardContent className="p-3">
-                <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex items-start gap-2 mb-2">
                   <h3 className="font-semibold text-sm flex-1 break-words">{project.project_name}</h3>
                   <Badge className={`${statusColors[project.status]} text-xs flex-shrink-0`}>
                     {project.status}
