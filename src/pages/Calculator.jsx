@@ -367,6 +367,7 @@ export default function Calculator() {
                     onUpdate={() => {}}
                     onDelete={(id) => deleteTapeRunMutation.mutate(id)}
                     onReorder={handleReorderRuns}
+                    isSubmitted={projectData.status === 'submitted'}
                   />
                 </CardContent>
               </Card>
