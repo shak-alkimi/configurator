@@ -318,8 +318,8 @@ export default function Calculator() {
         <div className="mx-auto space-y-4 md:space-y-6 p-4 md:py-6 md:pr-6 md:pl-0">
           {/* Header Actions */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-2xl font-bold text-slate-900 break-words">
                 {isNewProject ? 'New Project' : projectData.project_name}
               </h2>
               <p className="text-sm text-slate-500 mt-1">
