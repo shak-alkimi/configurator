@@ -257,6 +257,15 @@ export default function Calculator() {
     });
   };
 
+  const handleSubmitProject = async () => {
+    const totalPrice = calculateTotalPrice(tapeRuns);
+    await saveProjectMutation.mutateAsync({
+      ...projectData,
+      status: 'submitted',
+      total_price: totalPrice
+    });
+  };
+
   return (
     <TooltipProvider>
       <div className="h-screen flex gap-0 bg-white">
@@ -315,7 +324,7 @@ export default function Calculator() {
                     )}
                     <Tooltip>
                        <TooltipTrigger asChild>
-                         <Button variant="outline" size="icon" onClick={() => toast.info('Submit functionality coming soon')}>
+                         <Button variant="outline" size="icon" onClick={handleSubmitProject}>
                            <Send className="h-4 w-4" />
                          </Button>
                        </TooltipTrigger>
