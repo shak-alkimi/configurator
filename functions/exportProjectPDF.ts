@@ -16,8 +16,7 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Project ID required' }, { status: 400 });
         }
 
-        const projects = await base44.asServiceRole.entities.Project.list(undefined, undefined, undefined, undefined, data_env);
-        const project = projects.find(p => p.id === project_id);
+        const project = await base44.asServiceRole.entities.Project.get(project_id, data_env);
 
         if (!project) {
             return Response.json({ error: 'Project not found' }, { status: 404 });
