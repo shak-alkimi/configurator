@@ -358,6 +358,7 @@ export default function Calculator() {
               <Button size="icon" onClick={handleSaveProject}>
                 <Save className="h-4 w-4" />
               </Button>
+              </div>
             </div>
           </div>
 
