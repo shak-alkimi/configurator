@@ -171,7 +171,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-3 space-y-1.5">
+            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">CCT</Label>
               <Select
                 value={newRun.cct}
@@ -190,7 +190,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-3 space-y-1.5">
+            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">Housing</Label>
               <Select
                 value={newRun.channel_type}
