@@ -8,31 +8,13 @@ export default function ProjectForm({ project, onChange }) {
   return (
     <div className="space-y-4">
       <div></div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="project_name">Project Name</Label>
-          <Input
-            id="project_name"
-            value={project.project_name || ''}
-            onChange={(e) => onChange({ ...project, project_name: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="status">Status</Label>
-          <Select
-            value={project.status || 'draft'}
-            onValueChange={(value) => onChange({ ...project, status: value })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="submitted">Submitted</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="project_name">Project Name</Label>
+        <Input
+          id="project_name"
+          value={project.project_name || ''}
+          onChange={(e) => onChange({ ...project, project_name: e.target.value })}
+        />
       </div>
 
       <div className="grid grid-cols-12 gap-4">
