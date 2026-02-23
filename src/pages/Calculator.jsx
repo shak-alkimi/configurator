@@ -195,15 +195,8 @@ export default function Calculator() {
     // Calculate total price from tape runs
     const totalPrice = calculateTotalPrice(tapeRuns);
 
-    // Generate quote number for new projects
-    let quoteNumber = projectData.quote_number;
-    if (isNewProject && !quoteNumber) {
-      quoteNumber = await generateQuoteNumber();
-    }
-
     await saveProjectMutation.mutateAsync({
       ...projectData,
-      quote_number: quoteNumber,
       total_price: totalPrice
     });
   };
@@ -273,25 +266,27 @@ export default function Calculator() {
     }
   };
 
-  const handleUpdateStatus = (projectId, newStatus) => {
-    base44.entities.Project.update(projectId, { status: newStatus }).then(() => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast.success(`Project reverted to ${newStatus}`);
-    });
+  const handleUpdateStatus = async (projectId, newStatus) => {
+    const updateData = { status: newStatus };
+    
+    // Generate quote number when project is approved
+    if (newStatus === 'approved') {
+      const project = projects.find(p => p.id === projectId);
+      if (!project.quote_number) {
+        updateData.quote_number = await generateQuoteNumber();
+      }
+    }
+    
+    await base44.entities.Project.update(projectId, updateData);
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
+    toast.success(`Project ${newStatus === 'approved' ? 'approved' : 'reverted to ' + newStatus}`);
   };
 
   const handleSubmitProject = async () => {
     const totalPrice = calculateTotalPrice(tapeRuns);
     
-    // Generate quote number for new projects
-    let quoteNumber = projectData.quote_number;
-    if (isNewProject && !quoteNumber) {
-      quoteNumber = await generateQuoteNumber();
-    }
-    
     await saveProjectMutation.mutateAsync({
       ...projectData,
-      quote_number: quoteNumber,
       status: 'submitted',
       total_price: totalPrice
     });
