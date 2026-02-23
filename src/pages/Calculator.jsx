@@ -29,6 +29,7 @@ export default function Calculator() {
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({ status: 'all', dateFrom: null, dateTo: null });
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const [projectData, setProjectData] = useState({
     project_name: '',
     customer_name: '',
@@ -375,8 +376,8 @@ export default function Calculator() {
                   <>
                     {!isNewProject && (
                      <>
-                        <DropdownMenu>
-                          <Tooltip>
+                        <DropdownMenu open={exportDropdownOpen} onOpenChange={setExportDropdownOpen}>
+                          <Tooltip open={!exportDropdownOpen ? undefined : false}>
                             <TooltipTrigger asChild>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="icon">
