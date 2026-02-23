@@ -373,26 +373,26 @@ export default function Calculator() {
                   <>
                     {!isNewProject && (
                      <>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="icon">
                                   <Download className="h-4 w-4" />
                                 </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Export</TooltipContent>
-                            </Tooltip>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuItem onClick={handleExportPDF}>
-                              Export as PDF
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={handleExportCSV}>
-                              Export as CSV
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent>
+                                <DropdownMenuItem onClick={handleExportPDF}>
+                                  Export as PDF
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                  Export as CSV
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TooltipTrigger>
+                          <TooltipContent>Export</TooltipContent>
+                        </Tooltip>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button variant="outline" size="icon" onClick={handleDeleteProject}>
