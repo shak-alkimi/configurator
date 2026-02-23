@@ -30,6 +30,7 @@ export default function Calculator() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({ status: 'all', dateFrom: null, dateTo: null });
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+  const [hideExportTooltip, setHideExportTooltip] = useState(false);
   const [projectData, setProjectData] = useState({
     project_name: '',
     customer_name: '',
@@ -377,7 +378,7 @@ export default function Calculator() {
                     {!isNewProject && (
                      <>
                         <DropdownMenu open={exportDropdownOpen} onOpenChange={setExportDropdownOpen}>
-                          <Tooltip open={exportDropdownOpen ? false : undefined}>
+                          <Tooltip open={exportDropdownOpen || hideExportTooltip ? false : undefined}>
                             <TooltipTrigger asChild>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="icon">
@@ -388,10 +389,20 @@ export default function Calculator() {
                             <TooltipContent>Export</TooltipContent>
                           </Tooltip>
                           <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => { handleExportPDF(); setExportDropdownOpen(false); }}>
+                            <DropdownMenuItem onClick={() => { 
+                              handleExportPDF(); 
+                              setExportDropdownOpen(false);
+                              setHideExportTooltip(true);
+                              setTimeout(() => setHideExportTooltip(false), 500);
+                            }}>
                               Export as PDF
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => { handleExportCSV(); setExportDropdownOpen(false); }}>
+                            <DropdownMenuItem onClick={() => { 
+                              handleExportCSV(); 
+                              setExportDropdownOpen(false);
+                              setHideExportTooltip(true);
+                              setTimeout(() => setHideExportTooltip(false), 500);
+                            }}>
                               Export as CSV
                             </DropdownMenuItem>
                           </DropdownMenuContent>
