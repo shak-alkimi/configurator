@@ -26,10 +26,48 @@ Deno.serve(async (req) => {
 
         const doc = new jsPDF();
 
+        // Header
         doc.setFontSize(20);
-        doc.text('ALKILINE - Configured Runs', 20, 20);
+        doc.text('ALKILINE', 20, 20);
+        
+        // Project Information
+        let y = 35;
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.text('Project Information', 20, y);
+        y += 8;
+        
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.text(`Project Name: ${project.project_name}`, 20, y);
+        y += 6;
+        doc.text(`Customer: ${project.customer_name}`, 20, y);
+        y += 6;
+        if (project.customer_email) {
+            doc.text(`Email: ${project.customer_email}`, 20, y);
+            y += 6;
+        }
+        if (project.customer_phone) {
+            doc.text(`Phone: ${project.customer_phone}`, 20, y);
+            y += 6;
+        }
+        if (project.street || project.city || project.state) {
+            const address = [project.street, project.city, project.state].filter(Boolean).join(', ');
+            doc.text(`Address: ${address}`, 20, y);
+            y += 6;
+        }
+        if (project.sector) {
+            doc.text(`Sector: ${project.sector}`, 20, y);
+            y += 6;
+        }
+        doc.text(`Status: ${project.status}`, 20, y);
+        y += 10;
 
-        let y = 40;
+        // Configured Runs
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.text('Configured Runs', 20, y);
+        y += 8;
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
         doc.text('Type', 20, y);
@@ -86,7 +124,64 @@ Deno.serve(async (req) => {
         doc.setFont(undefined, 'bold');
         const totalFeet = tapeRuns.reduce((sum, r) => sum + r.length_feet, 0);
         const totalFeetDisplay = `${Math.floor(totalFeet)}' ${Math.round((totalFeet % 1) * 12)}"`;
-        doc.text(`Total: ${totalFeetDisplay}`, 20, y);
+        doc.text(`Total Length: ${totalFeetDisplay}`, 20, y);
+        y += 10;
+
+        // Materials & Pricing Summary
+        doc.setFontSize(14);
+        doc.text('Materials & Pricing', 20, y);
+        y += 8;
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+
+        // Calculate materials
+        const totalTapeFeet = tapeRuns.reduce((sum, run) => sum + run.length_feet, 0);
+        const totalTapeCost = tapeRuns.reduce((sum, run) => {
+            const spec = TAPE_SPECS[run.tape_type];
+            return sum + (spec ? run.length_feet * spec.price_per_foot : 0);
+        }, 0);
+        
+        const totalChannelCost = tapeRuns.reduce((sum, run) => {
+            const spec = CHANNEL_SPECS[run.channel_type];
+            return sum + (spec ? run.length_feet * spec.price_per_foot : 0);
+        }, 0);
+
+        const totalWattage = tapeRuns.reduce((sum, run) => {
+            const spec = TAPE_SPECS[run.tape_type];
+            return sum + (spec ? run.length_feet * spec.watts_per_foot : 0);
+        }, 0);
+
+        const driversNeeded = Math.ceil(totalWattage / 60);
+        const driverCost = driversNeeded * 85;
+        const hardwareCost = 15;
+        const subtotal = totalTapeCost + totalChannelCost + driverCost + hardwareCost;
+        const shipping = subtotal * 0.05;
+        const total = subtotal + shipping;
+
+        doc.text(`Tape Light (${totalTapeFeet.toFixed(1)} ft): $${totalTapeCost.toFixed(2)}`, 20, y);
+        y += 6;
+        doc.text(`Channel Housing: $${totalChannelCost.toFixed(2)}`, 20, y);
+        y += 6;
+        doc.text(`Drivers (${driversNeeded}x 60W): $${driverCost.toFixed(2)}`, 20, y);
+        y += 6;
+        doc.text(`Hardware & Connectors: $${hardwareCost.toFixed(2)}`, 20, y);
+        y += 6;
+        doc.text(`Subtotal: $${subtotal.toFixed(2)}`, 20, y);
+        y += 6;
+        doc.text(`Shipping (5%): $${shipping.toFixed(2)}`, 20, y);
+        y += 8;
+        doc.setFont(undefined, 'bold');
+        doc.text(`Total: $${total.toFixed(2)}`, 20, y);
+
+        if (project.notes) {
+            y += 10;
+            doc.setFont(undefined, 'bold');
+            doc.text('Notes:', 20, y);
+            y += 6;
+            doc.setFont(undefined, 'normal');
+            const splitNotes = doc.splitTextToSize(project.notes, 170);
+            doc.text(splitNotes, 20, y);
+        }
 
         const pdfBytes = doc.output('arraybuffer');
 

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Save, Trash2, Send } from "lucide-react";
+import { Save, Trash2, Send, Download } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -267,6 +267,60 @@ export default function Calculator() {
     });
   };
 
+  const handleExportPDF = async () => {
+    if (!selectedProjectId) {
+      toast.error('Please save the project first');
+      return;
+    }
+    
+    try {
+      const response = await base44.functions.invoke('exportProjectPDF', {
+        project_id: selectedProjectId,
+        data_env: 'dev'
+      });
+      
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${projectData.project_name || 'project'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      toast.success('PDF exported successfully');
+    } catch (error) {
+      toast.error('Failed to export PDF');
+    }
+  };
+
+  const handleExportCSV = async () => {
+    if (!selectedProjectId) {
+      toast.error('Please save the project first');
+      return;
+    }
+    
+    try {
+      const response = await base44.functions.invoke('exportProjectCSV', {
+        project_id: selectedProjectId,
+        data_env: 'dev'
+      });
+      
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${projectData.project_name || 'project'}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      toast.success('CSV exported successfully');
+    } catch (error) {
+      toast.error('Failed to export CSV');
+    }
+  };
+
   return (
     <TooltipProvider>
       <div className="h-screen flex gap-0 bg-white">
@@ -318,16 +372,36 @@ export default function Calculator() {
                 {(!isNewProject || projectData.project_name || projectData.customer_name || projectData.customer_email || projectData.customer_phone || projectData.notes) && (
                   <>
                     {!isNewProject && (
-                      <>
-                         <Tooltip>
-                           <TooltipTrigger asChild>
-                             <Button variant="outline" size="icon" onClick={handleDeleteProject}>
-                               <Trash2 className="h-4 w-4" />
-                             </Button>
-                           </TooltipTrigger>
-                           <TooltipContent>Delete</TooltipContent>
-                         </Tooltip>
-                      </>
+                     <>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="outline" size="icon">
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Export</TooltipContent>
+                            </Tooltip>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem onClick={handleExportPDF}>
+                              Export as PDF
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleExportCSV}>
+                              Export as CSV
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="outline" size="icon" onClick={handleDeleteProject}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Delete</TooltipContent>
+                        </Tooltip>
+                     </>
                     )}
                     <Tooltip>
                        <TooltipTrigger asChild>
