@@ -40,28 +40,28 @@ Deno.serve(async (req) => {
         
         doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
-        doc.text(`Project Name: ${project.project_name}`, 20, y);
+        doc.text(`Project Name: ${project.data.project_name}`, 20, y);
         y += 6;
-        doc.text(`Customer: ${project.customer_name}`, 20, y);
+        doc.text(`Customer: ${project.data.customer_name}`, 20, y);
         y += 6;
-        if (project.customer_email) {
-            doc.text(`Email: ${project.customer_email}`, 20, y);
+        if (project.data.customer_email) {
+            doc.text(`Email: ${project.data.customer_email}`, 20, y);
             y += 6;
         }
-        if (project.customer_phone) {
-            doc.text(`Phone: ${project.customer_phone}`, 20, y);
+        if (project.data.customer_phone) {
+            doc.text(`Phone: ${project.data.customer_phone}`, 20, y);
             y += 6;
         }
-        if (project.street || project.city || project.state) {
-            const address = [project.street, project.city, project.state].filter(Boolean).join(', ');
+        if (project.data.street || project.data.city || project.data.state) {
+            const address = [project.data.street, project.data.city, project.data.state].filter(Boolean).join(', ');
             doc.text(`Address: ${address}`, 20, y);
             y += 6;
         }
-        if (project.sector) {
-            doc.text(`Sector: ${project.sector}`, 20, y);
+        if (project.data.sector) {
+            doc.text(`Sector: ${project.data.sector}`, 20, y);
             y += 6;
         }
-        doc.text(`Status: ${project.status}`, 20, y);
+        doc.text(`Status: ${project.data.status}`, 20, y);
         y += 10;
 
         // Configured Runs
@@ -93,29 +93,30 @@ Deno.serve(async (req) => {
 
         doc.setFont(undefined, 'normal');
         tapeRuns.forEach((run) => {
+            const runData = run.data || run;
             if (y > 270) {
                 doc.addPage();
                 y = 20;
             }
-            const feet = Math.floor(run.length_feet);
-            const inches = Math.round((run.length_feet % 1) * 12);
+            const feet = Math.floor(runData.length_feet);
+            const inches = Math.round((runData.length_feet % 1) * 12);
             const lengthDisplay = `${feet}' ${inches}"`;
             
-            const tapeSpec = TAPE_SPECS[run.tape_type];
-            const channelSpec = CHANNEL_SPECS[run.channel_type];
-            const outputDisplay = tapeSpec ? `${tapeSpec.watts_per_foot}w/ft` : run.tape_type;
+            const tapeSpec = TAPE_SPECS[runData.tape_type];
+            const channelSpec = CHANNEL_SPECS[runData.channel_type];
+            const outputDisplay = tapeSpec ? `${tapeSpec.watts_per_foot}w/ft` : runData.tape_type;
             
             let cost = 0;
-            if (tapeSpec) cost += run.length_feet * tapeSpec.price_per_foot;
-            if (channelSpec) cost += run.length_feet * channelSpec.price_per_foot;
+            if (tapeSpec) cost += runData.length_feet * tapeSpec.price_per_foot;
+            if (channelSpec) cost += runData.length_feet * channelSpec.price_per_foot;
             
-            const channelDisplay = run.channel_type === 'recessed' ? 'Recessed Flange' : 
-                                   run.channel_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            const channelDisplay = runData.channel_type === 'recessed' ? 'Recessed Flange' : 
+                                   runData.channel_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             
-            doc.text(run.run_name || '', 20, y);
+            doc.text(runData.run_name || '', 20, y);
             doc.text(lengthDisplay, 50, y);
             doc.text(outputDisplay, 80, y);
-            doc.text(run.cct || '', 115, y);
+            doc.text(runData.cct || '', 115, y);
             doc.text(channelDisplay, 145, y);
             doc.text(`$${cost.toFixed(2)}`, 180, y);
             y += 7;
@@ -123,7 +124,10 @@ Deno.serve(async (req) => {
 
         y += 5;
         doc.setFont(undefined, 'bold');
-        const totalFeet = tapeRuns.reduce((sum, r) => sum + r.length_feet, 0);
+        const totalFeet = tapeRuns.reduce((sum, r) => {
+            const runData = r.data || r;
+            return sum + runData.length_feet;
+        }, 0);
         const totalFeetDisplay = `${Math.floor(totalFeet)}' ${Math.round((totalFeet % 1) * 12)}"`;
         doc.text(`Total Length: ${totalFeetDisplay}`, 20, y);
         y += 10;
@@ -136,20 +140,26 @@ Deno.serve(async (req) => {
         doc.setFont(undefined, 'normal');
 
         // Calculate materials
-        const totalTapeFeet = tapeRuns.reduce((sum, run) => sum + run.length_feet, 0);
+        const totalTapeFeet = tapeRuns.reduce((sum, run) => {
+            const runData = run.data || run;
+            return sum + runData.length_feet;
+        }, 0);
         const totalTapeCost = tapeRuns.reduce((sum, run) => {
-            const spec = TAPE_SPECS[run.tape_type];
-            return sum + (spec ? run.length_feet * spec.price_per_foot : 0);
+            const runData = run.data || run;
+            const spec = TAPE_SPECS[runData.tape_type];
+            return sum + (spec ? runData.length_feet * spec.price_per_foot : 0);
         }, 0);
         
         const totalChannelCost = tapeRuns.reduce((sum, run) => {
-            const spec = CHANNEL_SPECS[run.channel_type];
-            return sum + (spec ? run.length_feet * spec.price_per_foot : 0);
+            const runData = run.data || run;
+            const spec = CHANNEL_SPECS[runData.channel_type];
+            return sum + (spec ? runData.length_feet * spec.price_per_foot : 0);
         }, 0);
 
         const totalWattage = tapeRuns.reduce((sum, run) => {
-            const spec = TAPE_SPECS[run.tape_type];
-            return sum + (spec ? run.length_feet * spec.watts_per_foot : 0);
+            const runData = run.data || run;
+            const spec = TAPE_SPECS[runData.tape_type];
+            return sum + (spec ? runData.length_feet * spec.watts_per_foot : 0);
         }, 0);
 
         const driversNeeded = Math.ceil(totalWattage / 60);
@@ -174,13 +184,13 @@ Deno.serve(async (req) => {
         doc.setFont(undefined, 'bold');
         doc.text(`Total: $${total.toFixed(2)}`, 20, y);
 
-        if (project.notes) {
+        if (project.data.notes) {
             y += 10;
             doc.setFont(undefined, 'bold');
             doc.text('Notes:', 20, y);
             y += 6;
             doc.setFont(undefined, 'normal');
-            const splitNotes = doc.splitTextToSize(project.notes, 170);
+            const splitNotes = doc.splitTextToSize(project.data.notes, 170);
             doc.text(splitNotes, 20, y);
         }
 
@@ -190,7 +200,7 @@ Deno.serve(async (req) => {
             status: 200,
             headers: {
                 'Content-Type': 'application/pdf',
-                'Content-Disposition': `attachment; filename="${project.project_name}.pdf"`
+                'Content-Disposition': `attachment; filename="${project.data.project_name}.pdf"`
             }
         });
     } catch (error) {
