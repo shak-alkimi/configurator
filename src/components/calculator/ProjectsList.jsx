@@ -51,7 +51,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
         </div>
         
         {showFilters && (
-          <div className="space-y-3 p-3 border rounded-lg bg-slate-50">
+          <div className="space-y-3 p-3 border rounded-lg bg-[#eeeeee]">
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-700">Status</label>
               <Select
