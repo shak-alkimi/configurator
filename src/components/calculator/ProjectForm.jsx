@@ -7,6 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export default function ProjectForm({ project, onChange }) {
   return (
     <div className="space-y-4 pt-6">
+      {project.quote_number && (
+        <div className="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-slate-600">Quote Number:</span>
+            <span className="text-sm font-bold text-slate-900">{project.quote_number}</span>
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-12 md:col-span-5 space-y-2">
           <Label htmlFor="project_name">Project Name</Label>

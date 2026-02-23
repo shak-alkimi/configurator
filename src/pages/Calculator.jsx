@@ -173,6 +173,18 @@ export default function Calculator() {
     setIsNewProject(false);
   };
 
+  const generateQuoteNumber = async () => {
+    const allProjects = await base44.entities.Project.list();
+    const existingNumbers = allProjects
+      .map(p => p.quote_number)
+      .filter(qn => qn && qn.startsWith('QUOTE-'))
+      .map(qn => parseInt(qn.replace('QUOTE-', '')))
+      .filter(n => !isNaN(n));
+    
+    const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+    return `QUOTE-${String(nextNumber).padStart(3, '0')}`;
+  };
+
   const handleSaveProject = async () => {
     if (!projectData.project_name || !projectData.customer_name) {
       toast.error('Please fill in required fields');
@@ -182,8 +194,15 @@ export default function Calculator() {
     // Calculate total price from tape runs
     const totalPrice = calculateTotalPrice(tapeRuns);
 
+    // Generate quote number for new projects
+    let quoteNumber = projectData.quote_number;
+    if (isNewProject && !quoteNumber) {
+      quoteNumber = await generateQuoteNumber();
+    }
+
     await saveProjectMutation.mutateAsync({
       ...projectData,
+      quote_number: quoteNumber,
       total_price: totalPrice
     });
   };
@@ -262,8 +281,16 @@ export default function Calculator() {
 
   const handleSubmitProject = async () => {
     const totalPrice = calculateTotalPrice(tapeRuns);
+    
+    // Generate quote number for new projects
+    let quoteNumber = projectData.quote_number;
+    if (isNewProject && !quoteNumber) {
+      quoteNumber = await generateQuoteNumber();
+    }
+    
     await saveProjectMutation.mutateAsync({
       ...projectData,
+      quote_number: quoteNumber,
       status: 'submitted',
       total_price: totalPrice
     });
