@@ -221,7 +221,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                       {...provided.draggableProps}
                       className="border-slate-200" 
                       style={{ 
-                        backgroundColor: '#eeeeee',
+                        backgroundColor: snapshot.isDragging ? '#ffffff' : '#eeeeee',
                         ...provided.draggableProps.style 
                       }}
                     >
