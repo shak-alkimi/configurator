@@ -51,7 +51,7 @@ export default function Calculator() {
   // Fetch all projects
   const { data: projects = [], isLoading: projectsLoading } = useQuery({
     queryKey: ['projects'],
-    queryFn: () => base44.entities.Project.list('-updated_date', undefined, undefined, undefined, 'dev'),
+    queryFn: () => base44.entities.Project.list('-updated_date'),
   });
 
   // Fetch tape runs for selected project
@@ -59,7 +59,7 @@ export default function Calculator() {
     queryKey: ['tapeRuns', selectedProjectId],
     queryFn: async () => {
       if (!selectedProjectId) return [];
-      const runs = await base44.entities.TapeRun.filter({ project_id: selectedProjectId }, undefined, undefined, undefined, 'dev');
+      const runs = await base44.entities.TapeRun.filter({ project_id: selectedProjectId });
       return runs.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
     },
     enabled: !!selectedProjectId,
@@ -69,9 +69,9 @@ export default function Calculator() {
   const saveProjectMutation = useMutation({
     mutationFn: async (data) => {
       if (isNewProject) {
-        return await base44.entities.Project.create(data, 'dev');
+        return await base44.entities.Project.create(data);
       } else {
-        return await base44.entities.Project.update(selectedProjectId, data, 'dev');
+        return await base44.entities.Project.update(selectedProjectId, data);
       }
     },
     onSuccess: (result) => {
@@ -86,7 +86,7 @@ export default function Calculator() {
 
   // Create tape run mutation
   const createTapeRunMutation = useMutation({
-    mutationFn: (runData) => base44.entities.TapeRun.create(runData, 'dev'),
+    mutationFn: (runData) => base44.entities.TapeRun.create(runData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
       toast.success('Tape run added');
@@ -95,7 +95,7 @@ export default function Calculator() {
 
   // Delete tape run mutation
   const deleteTapeRunMutation = useMutation({
-    mutationFn: (runId) => base44.entities.TapeRun.delete(runId, 'dev'),
+    mutationFn: (runId) => base44.entities.TapeRun.delete(runId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
       toast.success('Tape run deleted');
@@ -106,7 +106,7 @@ export default function Calculator() {
   const reorderTapeRunsMutation = useMutation({
     mutationFn: async (reorderedRuns) => {
       const updates = reorderedRuns.map((run, index) =>
-        base44.entities.TapeRun.update(run.id, { order: index }, undefined, undefined, 'dev')
+        base44.entities.TapeRun.update(run.id, { order: index })
       );
       await Promise.all(updates);
     },
@@ -132,7 +132,7 @@ export default function Calculator() {
 
   // Delete project mutation
   const deleteProjectMutation = useMutation({
-    mutationFn: (projectId) => base44.entities.Project.delete(projectId, 'dev'),
+    mutationFn: (projectId) => base44.entities.Project.delete(projectId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       handleNewProject();
@@ -254,7 +254,7 @@ export default function Calculator() {
   };
 
   const handleUpdateStatus = (projectId, newStatus) => {
-    base44.entities.Project.update(projectId, { status: newStatus }, undefined, undefined, 'dev').then(() => {
+    base44.entities.Project.update(projectId, { status: newStatus }).then(() => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success(`Project reverted to ${newStatus}`);
     });
@@ -277,8 +277,7 @@ export default function Calculator() {
     
     try {
       const response = await base44.functions.invoke('exportProjectPDF', {
-        project_id: selectedProjectId,
-        data_env: 'dev'
+        project_id: selectedProjectId
       });
       
       const blob = new Blob([response.data], { type: 'application/pdf' });
@@ -304,8 +303,7 @@ export default function Calculator() {
     
     try {
       const response = await base44.functions.invoke('exportProjectCSV', {
-        project_id: selectedProjectId,
-        data_env: 'dev'
+        project_id: selectedProjectId
       });
       
       // response.data is the CSV text string
