@@ -39,7 +39,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
             variant="outline"
             size="icon"
             onClick={() => setShowFilters(!showFilters)}
-            className="h-9 w-9 flex-shrink-0"
+            className={`h-9 w-9 flex-shrink-0 ${showFilters ? 'bg-[#eeeeee]' : ''}`}
           >
             <Filter className="h-4 w-4" />
             {(filters.status !== 'all' || filters.dateFrom || filters.dateTo) && (
