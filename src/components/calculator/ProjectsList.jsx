@@ -25,29 +25,30 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
         <Button onClick={onNew} className="w-full" size="sm">
           <Plus className="h-4 w-4" />
         </Button>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search projects..."
-            className="h-9 text-sm pl-9"
-          />
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search projects..."
+              className="h-9 text-sm pl-9"
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setShowFilters(!showFilters)}
+            className="h-9 w-9 flex-shrink-0"
+          >
+            <Filter className="h-4 w-4" />
+            {(filters.status !== 'all' || filters.dateFrom || filters.dateTo) && (
+              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+                {[filters.status !== 'all' ? 1 : 0, filters.dateFrom ? 1 : 0, filters.dateTo ? 1 : 0].reduce((a, b) => a + b, 0)}
+              </span>
+            )}
+          </Button>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowFilters(!showFilters)}
-          className="w-full"
-        >
-          <Filter className="h-4 w-4 mr-2" />
-          Filters
-          {(filters.status !== 'all' || filters.dateFrom || filters.dateTo) && (
-            <Badge variant="secondary" className="ml-2 h-5 px-1.5">
-              {[filters.status !== 'all' ? 1 : 0, filters.dateFrom ? 1 : 0, filters.dateTo ? 1 : 0].reduce((a, b) => a + b, 0)}
-            </Badge>
-          )}
-        </Button>
         
         {showFilters && (
           <div className="space-y-3 p-3 border rounded-lg bg-slate-50">
