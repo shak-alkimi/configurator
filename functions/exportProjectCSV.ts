@@ -42,13 +42,13 @@ Deno.serve(async (req) => {
         // Project Information Section
         csv += 'PROJECT INFORMATION\n';
         csv += 'Field,Value\n';
-        csv += `Project Name,${escapeCSV(project.project_name)}\n`;
-        csv += `Customer Name,${escapeCSV(project.customer_name)}\n`;
-        csv += `Customer Email,${escapeCSV(project.customer_email || '')}\n`;
-        csv += `Customer Phone,${escapeCSV(project.customer_phone || '')}\n`;
-        csv += `Address,${escapeCSV([project.street, project.city, project.state].filter(Boolean).join(', '))}\n`;
-        csv += `Sector,${escapeCSV(project.sector || '')}\n`;
-        csv += `Status,${escapeCSV(project.status)}\n`;
+        csv += `Project Name,${escapeCSV(project.data.project_name)}\n`;
+        csv += `Customer Name,${escapeCSV(project.data.customer_name)}\n`;
+        csv += `Customer Email,${escapeCSV(project.data.customer_email || '')}\n`;
+        csv += `Customer Phone,${escapeCSV(project.data.customer_phone || '')}\n`;
+        csv += `Address,${escapeCSV([project.data.street, project.data.city, project.data.state].filter(Boolean).join(', '))}\n`;
+        csv += `Sector,${escapeCSV(project.data.sector || '')}\n`;
+        csv += `Status,${escapeCSV(project.data.status)}\n`;
         csv += '\n';
 
         // Configured Runs Section
@@ -56,22 +56,26 @@ Deno.serve(async (req) => {
         csv += 'Type,Length (ft),Output,CCT,Housing,Cost\n';
         
         tapeRuns.forEach((run) => {
-            const lengthDisplay = run.length_feet.toFixed(2);
-            const tapeSpec = TAPE_SPECS[run.tape_type];
-            const channelSpec = CHANNEL_SPECS[run.channel_type];
-            const outputDisplay = tapeSpec ? `${tapeSpec.watts_per_foot}w/ft (${tapeSpec.lumens_per_foot}lm/ft)` : run.tape_type;
+            const runData = run.data || run;
+            const lengthDisplay = runData.length_feet.toFixed(2);
+            const tapeSpec = TAPE_SPECS[runData.tape_type];
+            const channelSpec = CHANNEL_SPECS[runData.channel_type];
+            const outputDisplay = tapeSpec ? `${tapeSpec.watts_per_foot}w/ft (${tapeSpec.lumens_per_foot}lm/ft)` : runData.tape_type;
             
             let cost = 0;
-            if (tapeSpec) cost += run.length_feet * tapeSpec.price_per_foot;
-            if (channelSpec) cost += run.length_feet * channelSpec.price_per_foot;
+            if (tapeSpec) cost += runData.length_feet * tapeSpec.price_per_foot;
+            if (channelSpec) cost += runData.length_feet * channelSpec.price_per_foot;
             
-            const channelDisplay = run.channel_type === 'recessed' ? 'Recessed Flange' : 
-                                   run.channel_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            const channelDisplay = runData.channel_type === 'recessed' ? 'Recessed Flange' : 
+                                   runData.channel_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             
-            csv += `${escapeCSV(run.run_name || '')},${lengthDisplay},${escapeCSV(outputDisplay)},${escapeCSV(run.cct || '')},${escapeCSV(channelDisplay)},${cost.toFixed(2)}\n`;
+            csv += `${escapeCSV(runData.run_name || '')},${lengthDisplay},${escapeCSV(outputDisplay)},${escapeCSV(runData.cct || '')},${escapeCSV(channelDisplay)},${cost.toFixed(2)}\n`;
         });
         
-        const totalFeet = tapeRuns.reduce((sum, r) => sum + r.length_feet, 0);
+        const totalFeet = tapeRuns.reduce((sum, r) => {
+            const runData = r.data || r;
+            return sum + runData.length_feet;
+        }, 0);
         csv += `\nTotal Length,${totalFeet.toFixed(2)} ft\n`;
         csv += '\n';
 
@@ -79,20 +83,26 @@ Deno.serve(async (req) => {
         csv += 'MATERIALS & PRICING\n';
         csv += 'Item,Quantity,Cost\n';
 
-        const totalTapeFeet = tapeRuns.reduce((sum, run) => sum + run.length_feet, 0);
+        const totalTapeFeet = tapeRuns.reduce((sum, run) => {
+            const runData = run.data || run;
+            return sum + runData.length_feet;
+        }, 0);
         const totalTapeCost = tapeRuns.reduce((sum, run) => {
-            const spec = TAPE_SPECS[run.tape_type];
-            return sum + (spec ? run.length_feet * spec.price_per_foot : 0);
+            const runData = run.data || run;
+            const spec = TAPE_SPECS[runData.tape_type];
+            return sum + (spec ? runData.length_feet * spec.price_per_foot : 0);
         }, 0);
         
         const totalChannelCost = tapeRuns.reduce((sum, run) => {
-            const spec = CHANNEL_SPECS[run.channel_type];
-            return sum + (spec ? run.length_feet * spec.price_per_foot : 0);
+            const runData = run.data || run;
+            const spec = CHANNEL_SPECS[runData.channel_type];
+            return sum + (spec ? runData.length_feet * spec.price_per_foot : 0);
         }, 0);
 
         const totalWattage = tapeRuns.reduce((sum, run) => {
-            const spec = TAPE_SPECS[run.tape_type];
-            return sum + (spec ? run.length_feet * spec.watts_per_foot : 0);
+            const runData = run.data || run;
+            const spec = TAPE_SPECS[runData.tape_type];
+            return sum + (spec ? runData.length_feet * spec.watts_per_foot : 0);
         }, 0);
 
         const driversNeeded = Math.ceil(totalWattage / 60);
@@ -110,16 +120,16 @@ Deno.serve(async (req) => {
         csv += `Shipping (5%),-,${shipping.toFixed(2)}\n`;
         csv += `TOTAL,-,${total.toFixed(2)}\n`;
 
-        if (project.notes) {
+        if (project.data.notes) {
             csv += '\nNOTES\n';
-            csv += `${escapeCSV(project.notes)}\n`;
+            csv += `${escapeCSV(project.data.notes)}\n`;
         }
 
         return new Response(csv, {
             status: 200,
             headers: {
                 'Content-Type': 'text/csv',
-                'Content-Disposition': `attachment; filename="${project.project_name}.csv"`
+                'Content-Disposition': `attachment; filename="${project.data.project_name}.csv"`
             }
         });
     } catch (error) {
