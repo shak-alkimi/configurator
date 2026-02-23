@@ -276,7 +276,7 @@ export default function Calculator() {
     try {
       const response = await base44.functions.invoke('exportProjectPDF', {
         project_id: selectedProjectId,
-        data_env: 'prod'
+        data_env: 'dev'
       });
       
       const blob = new Blob([response.data], { type: 'application/pdf' });
@@ -303,7 +303,7 @@ export default function Calculator() {
     try {
       const response = await base44.functions.invoke('exportProjectCSV', {
         project_id: selectedProjectId,
-        data_env: 'prod'
+        data_env: 'dev'
       });
       
       // response.data is the CSV text string
