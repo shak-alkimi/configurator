@@ -76,6 +76,7 @@ export default function Calculator() {
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      setProjectData(result);
       if (isNewProject) {
         setSelectedProjectId(result.id);
         setIsNewProject(false);
