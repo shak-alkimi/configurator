@@ -306,7 +306,9 @@ export default function Calculator() {
         data_env: 'dev'
       });
       
-      const blob = new Blob([response.data], { type: 'text/csv' });
+      // response.data is the CSV text string
+      const csvData = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+      const blob = new Blob([csvData], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
