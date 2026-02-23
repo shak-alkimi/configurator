@@ -377,7 +377,7 @@ export default function Calculator() {
                     {!isNewProject && (
                      <>
                         <DropdownMenu open={exportDropdownOpen} onOpenChange={setExportDropdownOpen}>
-                          <Tooltip open={!exportDropdownOpen ? undefined : false}>
+                          <Tooltip open={exportDropdownOpen ? false : undefined}>
                             <TooltipTrigger asChild>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="icon">
@@ -388,10 +388,10 @@ export default function Calculator() {
                             <TooltipContent>Export</TooltipContent>
                           </Tooltip>
                           <DropdownMenuContent>
-                            <DropdownMenuItem onClick={handleExportPDF}>
+                            <DropdownMenuItem onClick={() => { handleExportPDF(); setExportDropdownOpen(false); }}>
                               Export as PDF
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={handleExportCSV}>
+                            <DropdownMenuItem onClick={() => { handleExportCSV(); setExportDropdownOpen(false); }}>
                               Export as CSV
                             </DropdownMenuItem>
                           </DropdownMenuContent>
