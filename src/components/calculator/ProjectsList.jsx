@@ -174,8 +174,15 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
                       ${project.total_price.toFixed(2)}
                     </div>
                   )}
-                  <div className="text-slate-400">
-                    {format(new Date(project.created_date), 'MMM d, yyyy')}
+                  <div className="flex items-center justify-between">
+                    <div className="text-slate-400">
+                      {format(new Date(project.created_date), 'MMM d, yyyy')}
+                    </div>
+                    {project.quote_number && (
+                      <div className="text-slate-500 font-medium">
+                        {project.quote_number}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
