@@ -3,11 +3,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Plus, FileText, Search, RotateCcw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Plus, FileText, Search, RotateCcw, Filter, X, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 
-export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading, searchQuery, onSearchChange, onUpdateStatus }) {
+export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading, searchQuery, onSearchChange, onUpdateStatus, filters, onFiltersChange }) {
   const [hoveredId, setHoveredId] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
   const statusColors = {
     draft: "bg-slate-100 text-slate-700",
     submitted: "bg-blue-100 text-blue-700",
@@ -26,9 +30,96 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
           <Input
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search projects..."
             className="h-9 text-sm pl-9"
           />
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowFilters(!showFilters)}
+          className="w-full"
+        >
+          <Filter className="h-4 w-4 mr-2" />
+          Filters
+          {(filters.status !== 'all' || filters.dateFrom || filters.dateTo) && (
+            <Badge variant="secondary" className="ml-2 h-5 px-1.5">
+              {[filters.status !== 'all' ? 1 : 0, filters.dateFrom ? 1 : 0, filters.dateTo ? 1 : 0].reduce((a, b) => a + b, 0)}
+            </Badge>
+          )}
+        </Button>
+        
+        {showFilters && (
+          <div className="space-y-3 p-3 border rounded-lg bg-slate-50">
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-slate-700">Status</label>
+              <Select
+                value={filters.status}
+                onValueChange={(value) => onFiltersChange({ ...filters, status: value })}
+              >
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="All statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="submitted">Submitted</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-slate-700">Date From</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full h-9 text-sm justify-start text-left font-normal">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {filters.dateFrom ? format(filters.dateFrom, 'MMM d, yyyy') : 'Select date'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={filters.dateFrom}
+                    onSelect={(date) => onFiltersChange({ ...filters, dateFrom: date })}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-slate-700">Date To</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full h-9 text-sm justify-start text-left font-normal">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {filters.dateTo ? format(filters.dateTo, 'MMM d, yyyy') : 'Select date'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={filters.dateTo}
+                    onSelect={(date) => onFiltersChange({ ...filters, dateTo: date })}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onFiltersChange({ status: 'all', dateFrom: null, dateTo: null })}
+              className="w-full"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Clear filters
+            </Button>
+          </div>
+        )}
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-2">

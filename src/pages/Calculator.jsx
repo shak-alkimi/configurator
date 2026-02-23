@@ -28,6 +28,7 @@ import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
 export default function Calculator() {
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({ status: 'all', dateFrom: null, dateTo: null });
   const [projectData, setProjectData] = useState({
     project_name: '',
     customer_name: '',
@@ -277,10 +278,14 @@ export default function Calculator() {
           </CardHeader>
           <CardContent className="flex-1 px-2 pb-6 pt-0 overflow-y-auto">
             <ProjectsList
-              projects={projects.filter(p => 
-                p.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                p.customer_name.toLowerCase().includes(searchQuery.toLowerCase())
-              )}
+              projects={projects.filter(p => {
+                const matchesSearch = p.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  p.customer_name.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesStatus = filters.status === 'all' || p.status === filters.status;
+                const matchesDateFrom = !filters.dateFrom || new Date(p.created_date) >= filters.dateFrom;
+                const matchesDateTo = !filters.dateTo || new Date(p.created_date) <= filters.dateTo;
+                return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo;
+              })}
               selectedId={selectedProjectId}
               onSelect={handleSelectProject}
               onNew={handleNewProject}
@@ -288,6 +293,8 @@ export default function Calculator() {
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
               onUpdateStatus={handleUpdateStatus}
+              filters={filters}
+              onFiltersChange={setFilters}
             />
           </CardContent>
         </Card>
