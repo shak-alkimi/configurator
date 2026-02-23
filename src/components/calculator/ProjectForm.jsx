@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export default function ProjectForm({ project, onChange }) {
   return (
     <div className="space-y-4 pt-6">
-      {project.quote_number && (
+      {project.quote_number && project.status === 'approved' && (
         <div className="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-slate-600">Quote Number:</span>

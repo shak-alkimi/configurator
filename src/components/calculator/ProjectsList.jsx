@@ -178,7 +178,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
                     <div className="text-slate-400">
                       {format(new Date(project.created_date), 'MMM d, yyyy')}
                     </div>
-                    {project.quote_number && (
+                    {project.quote_number && project.status === 'approved' && (
                       <div className="text-slate-500 font-medium">
                         {project.quote_number}
                       </div>
