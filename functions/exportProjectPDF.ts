@@ -79,6 +79,7 @@ Deno.serve(async (req) => {
         doc.text('Cost', 180, y);
         y += 7;
 
+        // Shared constants
         const TAPE_SPECS = {
             "2w": { price_per_foot: 10, watts_per_foot: 2.0, lumens_per_foot: 200 },
             "4w": { price_per_foot: 12, watts_per_foot: 4.0, lumens_per_foot: 400 }
@@ -90,6 +91,14 @@ Deno.serve(async (req) => {
             surface: { price_per_foot: 8 },
             none: { price_per_foot: 0 }
         };
+
+        const DRIVER_MAX_WATTS = 96;
+        const DRIVER_LOAD_FACTOR = 0.8;
+        const DRIVER_PRICE = 65;
+        const CLIPS_PER_SECTION = 4;
+        const CLIPS_PER_SET = 12;
+        const CLIP_SET_PRICE = 15;
+        const SHIPPING_RATE = 0.10;
 
         doc.setFont(undefined, 'normal');
         tapeRuns.forEach((run) => {
@@ -106,9 +115,14 @@ Deno.serve(async (req) => {
             const channelSpec = CHANNEL_SPECS[runData.channel_type];
             const outputDisplay = tapeSpec ? `${tapeSpec.watts_per_foot}w/ft` : runData.tape_type;
             
+            // Calculate cost with rounded channel sections
             let cost = 0;
             if (tapeSpec) cost += runData.length_feet * tapeSpec.price_per_foot;
-            if (channelSpec) cost += runData.length_feet * channelSpec.price_per_foot;
+            if (channelSpec && runData.channel_type !== 'none') {
+                const sections = Math.ceil(runData.length_feet / 4);
+                const actualFeet = sections * 4;
+                cost += actualFeet * channelSpec.price_per_foot;
+            }
             
             const channelDisplay = runData.channel_type === 'recessed' ? 'Recessed Flange' : 
                                    runData.channel_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -150,10 +164,16 @@ Deno.serve(async (req) => {
             return sum + (spec ? runData.length_feet * spec.price_per_foot : 0);
         }, 0);
         
+        // Calculate channel cost with rounded 4' sections
         const totalChannelCost = tapeRuns.reduce((sum, run) => {
             const runData = run.data || run;
             const spec = CHANNEL_SPECS[runData.channel_type];
-            return sum + (spec ? runData.length_feet * spec.price_per_foot : 0);
+            if (spec && runData.channel_type !== 'none') {
+                const sections = Math.ceil(runData.length_feet / 4);
+                const actualFeet = sections * 4;
+                return sum + actualFeet * spec.price_per_foot;
+            }
+            return sum;
         }, 0);
 
         const totalWattage = tapeRuns.reduce((sum, run) => {
@@ -162,24 +182,36 @@ Deno.serve(async (req) => {
             return sum + (spec ? runData.length_feet * spec.watts_per_foot : 0);
         }, 0);
 
-        const driversNeeded = Math.ceil(totalWattage / 60);
-        const driverCost = driversNeeded * 85;
-        const hardwareCost = 15;
-        const subtotal = totalTapeCost + totalChannelCost + driverCost + hardwareCost;
-        const shipping = subtotal * 0.05;
+        const driversNeeded = Math.ceil(totalWattage / (DRIVER_MAX_WATTS * DRIVER_LOAD_FACTOR));
+        const driverCost = driversNeeded * DRIVER_PRICE;
+        
+        // Calculate clips
+        const totalSections = tapeRuns.reduce((sum, run) => {
+            const runData = run.data || run;
+            if (runData.channel_type !== 'none') {
+                return sum + Math.ceil(runData.length_feet / 4);
+            }
+            return sum;
+        }, 0);
+        const totalClips = totalSections * CLIPS_PER_SECTION;
+        const clipSets = Math.ceil(totalClips / CLIPS_PER_SET);
+        const clipCost = clipSets * CLIP_SET_PRICE;
+        
+        const subtotal = totalTapeCost + totalChannelCost + driverCost + clipCost;
+        const shipping = subtotal * SHIPPING_RATE;
         const total = subtotal + shipping;
 
         doc.text(`Tape Light (${totalTapeFeet.toFixed(1)} ft): $${totalTapeCost.toFixed(2)}`, 20, y);
         y += 6;
         doc.text(`Channel Housing: $${totalChannelCost.toFixed(2)}`, 20, y);
         y += 6;
-        doc.text(`Drivers (${driversNeeded}x 60W): $${driverCost.toFixed(2)}`, 20, y);
+        doc.text(`Drivers (${driversNeeded}x ${DRIVER_MAX_WATTS}W): $${driverCost.toFixed(2)}`, 20, y);
         y += 6;
-        doc.text(`Hardware & Connectors: $${hardwareCost.toFixed(2)}`, 20, y);
+        doc.text(`Mounting Hardware (${clipSets} sets): $${clipCost.toFixed(2)}`, 20, y);
         y += 6;
         doc.text(`Subtotal: $${subtotal.toFixed(2)}`, 20, y);
         y += 6;
-        doc.text(`Shipping (5%): $${shipping.toFixed(2)}`, 20, y);
+        doc.text(`Shipping (${(SHIPPING_RATE * 100).toFixed(0)}%): $${shipping.toFixed(2)}`, 20, y);
         y += 8;
         doc.setFont(undefined, 'bold');
         doc.text(`Total: $${total.toFixed(2)}`, 20, y);
