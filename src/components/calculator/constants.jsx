@@ -1,3 +1,4 @@
+
 // Shared constants for tape light calculations
 
 export const TAPE_SPECS = {
@@ -36,4 +37,9 @@ export const DRIVER_SPECS = [
   { max_watts: 96, price: 65, name: "96W Driver" }
 ];
 
+export const DRIVER_LOAD_FACTOR = 0.8; // Load drivers to 80% capacity
+export const CLIPS_PER_SECTION = 4; // 4 clips per 4' section
+export const CLIPS_PER_SET = 12; // Clips come in sets of 12
+export const CLIP_SET_PRICE = 15; // $15 per set
 export const SPOOL_LENGTH_FEET = 16 + (4 / 12); // 16'4" per spool
+export const SHIPPING_RATE = 0.10; // 10% of subtotal

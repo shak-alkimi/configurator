@@ -144,6 +144,27 @@ export default function ProjectForm({ project, onChange }) {
         </div>
       </div>
 
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-6 space-y-2">
+          <Label htmlFor="customer_phone">Customer Phone</Label>
+          <Input
+            id="customer_phone"
+            type="tel"
+            value={project.customer_phone || ''}
+            onChange={(e) => onChange({ ...project, customer_phone: e.target.value })}
+          />
+        </div>
+        <div className="col-span-6 space-y-2">
+          <Label htmlFor="notes">Notes</Label>
+          <Textarea
+            id="notes"
+            value={project.notes || ''}
+            onChange={(e) => onChange({ ...project, notes: e.target.value })}
+            rows={3}
+          />
+        </div>
+      </div>
+
     </div>
   );
 }
