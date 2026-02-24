@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Save, Trash2, Send, Download } from "lucide-react";
-import { TAPE_SPECS, CHANNEL_SPECS, DRIVER_SPECS } from "@/lib/constants";
+import { TAPE_SPECS, CHANNEL_SPECS, DRIVER_SPECS } from "../components/calculator/constants";
 import {
   DropdownMenu,
   DropdownMenuContent,
