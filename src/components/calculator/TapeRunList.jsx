@@ -282,8 +282,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
           )}
         </Droppable>
       </DragDropContext>
-
-
     </div>
   );
 }
