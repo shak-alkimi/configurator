@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2, Ruler, GripVertical, AlertCircle } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { TAPE_SPECS, CHANNEL_SPECS } from "./constants.js";
+import { TAPE_SPECS, CHANNEL_SPECS } from "@/components/calculator/constants";
 
 export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder }) {
   const [newRun, setNewRun] = useState({

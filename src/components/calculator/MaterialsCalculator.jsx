@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { TAPE_SPECS, CHANNEL_SPECS, DRIVER_SPECS, SPOOL_LENGTH_FEET } from "./constants.js";
+import { TAPE_SPECS, CHANNEL_SPECS, DRIVER_SPECS, SPOOL_LENGTH_FEET } from "@/components/calculator/constants";
 
 export default function MaterialsCalculator({ runs }) {
 
