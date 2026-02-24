@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Save, Trash2, Send, Download } from "lucide-react";
-import { TAPE_SPECS, CHANNEL_SPECS, DRIVER_SPECS } from "@/components/calculator/constants";
+import { calculateTotalPrice } from "@/components/calculator/calculations";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +32,7 @@ export default function Calculator() {
   const [filters, setFilters] = useState({ status: 'all', dateFrom: null, dateTo: null });
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const [hideExportTooltip, setHideExportTooltip] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [projectData, setProjectData] = useState({
     project_name: '',
     customer_name: '',
@@ -205,7 +206,7 @@ export default function Calculator() {
       return;
     }
 
-    // Calculate total price from tape runs
+    // Calculate total price from tape runs using shared function
     const totalPrice = calculateTotalPrice(tapeRuns);
 
     await saveProjectMutation.mutateAsync({
@@ -215,78 +216,36 @@ export default function Calculator() {
   };
 
   const handleAddTapeRun = async (runData) => {
-    const nextOrder = tapeRuns.length;
-    if (!selectedProjectId && isNewProject) {
-      // Save project first
-      if (!projectData.project_name || !projectData.customer_name) {
-        toast.error('Please save project details first');
-        return;
+    try {
+      const nextOrder = tapeRuns.length;
+      if (!selectedProjectId && isNewProject) {
+        // Save project first
+        if (!projectData.project_name || !projectData.customer_name) {
+          toast.error('Please save project details first');
+          return;
+        }
+        const result = await saveProjectMutation.mutateAsync(projectData);
+        setSelectedProjectId(result.id);
+        setIsNewProject(false);
+        
+        // Now add the tape run
+        await createTapeRunMutation.mutateAsync({
+          ...runData,
+          project_id: result.id,
+          order: nextOrder
+        });
+      } else {
+        await createTapeRunMutation.mutateAsync({
+          ...runData,
+          project_id: selectedProjectId,
+          order: nextOrder
+        });
       }
-      const result = await saveProjectMutation.mutateAsync(projectData);
-      setSelectedProjectId(result.id);
-      setIsNewProject(false);
-      
-      // Now add the tape run
-      await createTapeRunMutation.mutateAsync({
-        ...runData,
-        project_id: result.id,
-        order: nextOrder
-      });
-    } else {
-      await createTapeRunMutation.mutateAsync({
-        ...runData,
-        project_id: selectedProjectId,
-        order: nextOrder
-      });
+    } catch (error) {
+      console.error('Error adding tape run:', error);
+      toast.error('Failed to add tape run');
     }
   };
-
-  const calculateTotalPrice = (runs) => {
-    // Calculate tape and channel costs
-    let tapeCost = 0;
-    let channelCost = 0;
-    let totalWatts = 0;
-    
-    runs.forEach(run => {
-      const tapeSpec = TAPE_SPECS[run.tape_type];
-      const channelSpec = CHANNEL_SPECS[run.channel_type];
-      
-      if (tapeSpec) {
-        tapeCost += run.length_feet * tapeSpec.price_per_foot;
-        totalWatts += run.length_feet * tapeSpec.watts_per_foot;
-      }
-      
-      if (channelSpec && run.channel_type !== 'none') {
-        const sections = Math.ceil(run.length_feet / 4);
-        const actualFeet = sections * 4;
-        channelCost += actualFeet * channelSpec.price_per_foot;
-      }
-    });
-
-    // Calculate drivers (96W each, loaded to 80% capacity)
-    const driversNeeded = Math.ceil(totalWatts / (DRIVER_SPECS[0].max_watts * 0.8));
-    const driverCost = driversNeeded * DRIVER_SPECS[0].price;
-
-    // Calculate mounting hardware (clips)
-    const totalSections = runs.reduce((sum, run) => {
-      if (run.channel_type !== 'none') {
-        return sum + Math.ceil(run.length_feet / 4);
-      }
-      return sum;
-    }, 0);
-    const totalClips = totalSections * 4;
-    const clipSets = Math.ceil(totalClips / 12);
-    const clipCost = clipSets * 15;
-
-    // Calculate subtotal and shipping
-    const subtotal = tapeCost + channelCost + driverCost + clipCost;
-    const shippingCost = subtotal * 0.10;
-
-    return subtotal + shippingCost;
-  };
-
-
-
 
 
   const handleDeleteProject = () => {
@@ -296,19 +255,24 @@ export default function Calculator() {
   };
 
   const handleUpdateStatus = async (projectId, newStatus) => {
-    const updateData = { status: newStatus };
-    
-    // Generate quote number when project is approved
-    if (newStatus === 'approved') {
-      const project = projects.find(p => p.id === projectId);
-      if (!project.quote_number) {
-        updateData.quote_number = await generateQuoteNumber();
+    try {
+      const updateData = { status: newStatus };
+      
+      // Generate quote number when project is approved
+      if (newStatus === 'approved') {
+        const project = projects.find(p => p.id === projectId);
+        if (!project.quote_number) {
+          updateData.quote_number = await generateQuoteNumber();
+        }
       }
+      
+      await base44.entities.Project.update(projectId, updateData);
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success(`Project ${newStatus === 'approved' ? 'approved' : 'reverted to ' + newStatus}`);
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast.error('Failed to update project status');
     }
-    
-    await base44.entities.Project.update(projectId, updateData);
-    queryClient.invalidateQueries({ queryKey: ['projects'] });
-    toast.success(`Project ${newStatus === 'approved' ? 'approved' : 'reverted to ' + newStatus}`);
   };
 
   const handleSubmitProject = async () => {
@@ -327,6 +291,7 @@ export default function Calculator() {
       return;
     }
     
+    setIsExporting(true);
     try {
       const response = await base44.functions.invoke('exportProjectPDF', {
         project_id: selectedProjectId
@@ -344,6 +309,8 @@ export default function Calculator() {
       toast.success('PDF exported successfully');
     } catch (error) {
       toast.error('Failed to export PDF');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -353,6 +320,7 @@ export default function Calculator() {
       return;
     }
     
+    setIsExporting(true);
     try {
       const response = await base44.functions.invoke('exportProjectCSV', {
         project_id: selectedProjectId
@@ -372,6 +340,8 @@ export default function Calculator() {
       toast.success('CSV exported successfully');
     } catch (error) {
       toast.error('Failed to export CSV');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -431,7 +401,7 @@ export default function Calculator() {
                           <Tooltip open={exportDropdownOpen || hideExportTooltip ? false : undefined}>
                             <TooltipTrigger asChild>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="icon">
+                                <Button variant="outline" size="icon" disabled={isExporting}>
                                   <Download className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
