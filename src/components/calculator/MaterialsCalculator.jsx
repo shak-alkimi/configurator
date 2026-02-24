@@ -1,9 +1,9 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { TAPE_SPECS, CHANNEL_SPECS, DRIVER_SPECS, SPOOL_LENGTH_FEET } from "@/components/calculator/constants";
+import { TAPE_SPECS, CHANNEL_SPECS, DRIVER_SPECS, SPOOL_LENGTH_FEET, DRIVER_LOAD_FACTOR, CLIPS_PER_SECTION, CLIPS_PER_SET, CLIP_SET_PRICE, SHIPPING_RATE } from "@/components/calculator/constants";
 
-export default function MaterialsCalculator({ runs }) {
+const MaterialsCalculator = React.memo(({ runs }) => {
 
   const calculations = React.useMemo(() => {
     // Calculate tape totals by type and CCT
@@ -46,21 +46,21 @@ export default function MaterialsCalculator({ runs }) {
       }
     });
 
-    // Calculate required drivers (96W each, loaded to 80% capacity)
+    // Calculate required drivers
     const requiredDrivers = [];
     let remainingWatts = totalWatts;
     while (remainingWatts > 0) {
       const driver = DRIVER_SPECS[0];
       requiredDrivers.push(driver);
-      remainingWatts -= driver.max_watts * 0.8;
+      remainingWatts -= driver.max_watts * DRIVER_LOAD_FACTOR;
     }
 
-    // Calculate mounting hardware (clips) - 4 clips per 4' housing section
+    // Calculate mounting hardware (clips)
     const totalClips = Object.values(channelByType).reduce((sum, channel) => {
-      return sum + (channel.sections * 4); // 4 clips per 4' section
+      return sum + (channel.sections * CLIPS_PER_SECTION);
     }, 0);
-    const clipSets = Math.ceil(totalClips / 12); // Clips come in sets of 12
-    const clipCost = clipSets * 15; // $15 per set
+    const clipSets = Math.ceil(totalClips / CLIPS_PER_SET);
+    const clipCost = clipSets * CLIP_SET_PRICE;
 
     // Calculate tape to tape connectors - one needed every 16'4" (one per spool join)
     const tapeToTapeConnectors = runs.reduce((sum, run) => {
@@ -74,8 +74,8 @@ export default function MaterialsCalculator({ runs }) {
     const driverCost = requiredDrivers.reduce((sum, d) => sum + d.price, 0);
     const subtotal = tapeCost + channelCost + driverCost + clipCost;
     
-    // Calculate shipping as 10% of subtotal
-    const shippingCost = subtotal * 0.10;
+    // Calculate shipping
+    const shippingCost = subtotal * SHIPPING_RATE;
     
     // Calculate total with shipping
     const totalCost = subtotal + shippingCost;
@@ -265,4 +265,8 @@ export default function MaterialsCalculator({ runs }) {
       </Card>
     </div>
   );
-}
+});
+
+MaterialsCalculator.displayName = 'MaterialsCalculator';
+
+export default MaterialsCalculator;

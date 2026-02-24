@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2, Ruler, GripVertical, AlertCircle } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { TAPE_SPECS, CHANNEL_SPECS } from "@/components/calculator/constants";
+import { calculateRunCost } from "@/components/calculator/calculations";
 
 export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder }) {
   const [newRun, setNewRun] = useState({
@@ -56,16 +57,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  const calculateRunCost = (run) => {
-    const tapeSpec = TAPE_SPECS[run.tape_type];
-    const channelSpec = CHANNEL_SPECS[run.channel_type];
-    
-    if (!tapeSpec || !channelSpec) return 0;
-    
-    const tapeCost = run.length_feet * tapeSpec.price_per_foot;
-    const channelCost = run.length_feet * channelSpec.price_per_foot;
-    return tapeCost + channelCost;
-  };
+
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
