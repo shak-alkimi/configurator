@@ -1,25 +1,9 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-
-const TAPE_SPECS = {
-  "2w": { watts_per_foot: 2.0, price_per_foot: 10, lumens_per_foot: 200 },
-  "4w": { watts_per_foot: 4.0, price_per_foot: 12, lumens_per_foot: 400 }
-};
-
-const CHANNEL_SPECS = {
-  corner: { price_per_foot: 10, clips_per_4ft: 4 },
-  recessed: { price_per_foot: 12, clips_per_4ft: 4 },
-  surface: { price_per_foot: 8, clips_per_4ft: 4 },
-  none: { price_per_foot: 0, clips_per_4ft: 0 }
-};
-
-const DRIVER_SPECS = [
-  { max_watts: 96, price: 65, name: "96W Driver" }
-];
+import { TAPE_SPECS, CHANNEL_SPECS, DRIVER_SPECS, SPOOL_LENGTH_FEET } from "@/lib/constants";
 
 export default function MaterialsCalculator({ runs }) {
-  const SPOOL_LENGTH_FEET = 16 + (4 / 12); // 16'4" per spool
 
   const calculations = React.useMemo(() => {
     // Calculate tape totals by type and CCT

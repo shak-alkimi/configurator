@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Save, Trash2, Send, Download } from "lucide-react";
+import { TAPE_SPECS, CHANNEL_SPECS, DRIVER_SPECS } from "@/lib/constants";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -83,6 +84,9 @@ export default function Calculator() {
       }
       toast.success('Project saved successfully');
     },
+    onError: (error) => {
+      toast.error('Failed to save project');
+    },
   });
 
   // Create tape run mutation
@@ -92,6 +96,9 @@ export default function Calculator() {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
       toast.success('Tape run added');
     },
+    onError: (error) => {
+      toast.error('Failed to add tape run');
+    },
   });
 
   // Delete tape run mutation
@@ -100,6 +107,9 @@ export default function Calculator() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
       toast.success('Tape run deleted');
+    },
+    onError: (error) => {
+      toast.error('Failed to delete tape run');
     },
   });
 
@@ -139,6 +149,9 @@ export default function Calculator() {
       handleNewProject();
       toast.success('Project deleted');
     },
+    onError: (error) => {
+      toast.error('Failed to delete project');
+    },
   });
 
   // Load selected project
@@ -175,8 +188,8 @@ export default function Calculator() {
   };
 
   const generateQuoteNumber = async () => {
-    const allProjects = await base44.entities.Project.list();
-    const existingNumbers = allProjects
+    const recentProjects = await base44.entities.Project.list('-created_date', 100);
+    const existingNumbers = recentProjects
       .map(p => p.quote_number)
       .filter(qn => qn && qn.startsWith('QUOTE-'))
       .map(qn => parseInt(qn.replace('QUOTE-', '')))
@@ -229,31 +242,47 @@ export default function Calculator() {
   };
 
   const calculateTotalPrice = (runs) => {
-    const TAPE_SPECS = {
-      "2w": { price_per_foot: 10 },
-      "4w": { price_per_foot: 12 }
-    };
-
-    const CHANNEL_SPECS = {
-      surface: { price_per_foot: 8 },
-      recessed: { price_per_foot: 12 },
-      corner: { price_per_foot: 10 },
-      none: { price_per_foot: 0 }
-    };
-
-    let total = 0;
+    // Calculate tape and channel costs
+    let tapeCost = 0;
+    let channelCost = 0;
+    let totalWatts = 0;
+    
     runs.forEach(run => {
       const tapeSpec = TAPE_SPECS[run.tape_type];
       const channelSpec = CHANNEL_SPECS[run.channel_type];
-      if (tapeSpec) total += run.length_feet * tapeSpec.price_per_foot;
-      if (channelSpec) total += run.length_feet * channelSpec.price_per_foot;
+      
+      if (tapeSpec) {
+        tapeCost += run.length_feet * tapeSpec.price_per_foot;
+        totalWatts += run.length_feet * tapeSpec.watts_per_foot;
+      }
+      
+      if (channelSpec && run.channel_type !== 'none') {
+        const sections = Math.ceil(run.length_feet / 4);
+        const actualFeet = sections * 4;
+        channelCost += actualFeet * channelSpec.price_per_foot;
+      }
     });
 
-    // Add drivers and hardware (simplified)
-    total += 85; // Base driver cost
-    total += 15; // Hardware cost
+    // Calculate drivers (96W each, loaded to 80% capacity)
+    const driversNeeded = Math.ceil(totalWatts / (DRIVER_SPECS[0].max_watts * 0.8));
+    const driverCost = driversNeeded * DRIVER_SPECS[0].price;
 
-    return total;
+    // Calculate mounting hardware (clips)
+    const totalSections = runs.reduce((sum, run) => {
+      if (run.channel_type !== 'none') {
+        return sum + Math.ceil(run.length_feet / 4);
+      }
+      return sum;
+    }, 0);
+    const totalClips = totalSections * 4;
+    const clipSets = Math.ceil(totalClips / 12);
+    const clipCost = clipSets * 15;
+
+    // Calculate subtotal and shipping
+    const subtotal = tapeCost + channelCost + driverCost + clipCost;
+    const shippingCost = subtotal * 0.10;
+
+    return subtotal + shippingCost;
   };
 
 

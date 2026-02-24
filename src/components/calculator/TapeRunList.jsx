@@ -4,20 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Trash2, Ruler, GripVertical } from "lucide-react";
+import { Plus, Trash2, Ruler, GripVertical, AlertCircle } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-
-const TAPE_SPECS = {
-  "2w": { price_per_foot: 10, watts_per_foot: 2.0, lumens_per_foot: 200 },
-  "4w": { price_per_foot: 12, watts_per_foot: 4.0, lumens_per_foot: 400 }
-};
-
-const CHANNEL_SPECS = {
-  corner: { price_per_foot: 10 },
-  recessed: { price_per_foot: 12 },
-  surface: { price_per_foot: 8 },
-  none: { price_per_foot: 0 }
-};
+import { TAPE_SPECS, CHANNEL_SPECS } from "@/lib/constants";
 
 export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder }) {
   const [newRun, setNewRun] = useState({
@@ -99,7 +88,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
 
   return (
     <div className="space-y-4">
-      <div></div>
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold" style={{ color: '#D4AF37' }}>ALKILINE</h3>
         <span className="text-xs text-slate-500">
@@ -201,6 +189,12 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
               </Button>
             </div>
           </div>
+          {!isFormValid() && (newRun.feet || newRun.inches || newRun.tape_type || newRun.cct || newRun.channel_type) && (
+            <div className="flex items-center gap-2 text-xs text-amber-600 mt-2">
+              <AlertCircle className="h-4 w-4" />
+              <span>Please fill in all required fields (length, output, CCT, housing)</span>
+            </div>
+          )}
         </CardContent>
       </Card>
 
