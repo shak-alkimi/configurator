@@ -366,9 +366,11 @@ export default function Calculator() {
                 className="h-10 w-auto -ml-6 transition-opacity duration-300"
               />
             ) : (
-              <div className="h-10 w-10 bg-[#FF0000] rounded-lg flex items-center justify-center text-white font-bold text-lg">
-                A
-              </div>
+              <img 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/ef9a323dc_Screenshot2026-02-16085558.png" 
+                alt="Alkimi Icon" 
+                className="h-10 w-10 transition-opacity duration-300"
+              />
             )}
           </CardHeader>
           <CardContent className={`flex-1 px-2 pb-6 pt-0 overflow-y-auto ${sidebarHovered ? '' : 'overflow-hidden'}`}>
