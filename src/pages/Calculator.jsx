@@ -358,12 +358,18 @@ export default function Calculator() {
         onMouseLeave={() => setSidebarHovered(false)}
       >
         <Card className="h-full flex flex-col">
-          <CardHeader className="pb-3">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/363b1fdb0_Screenshot2026-02-16175106.png" 
-              alt="Alkimi Logo" 
-              className={`h-10 w-auto -ml-6 transition-opacity duration-300 ${sidebarHovered ? 'opacity-100' : 'opacity-0'}`}
-            />
+          <CardHeader className="pb-3 flex items-center justify-center">
+            {sidebarHovered ? (
+              <img 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/363b1fdb0_Screenshot2026-02-16175106.png" 
+                alt="Alkimi Logo" 
+                className="h-10 w-auto -ml-6 transition-opacity duration-300"
+              />
+            ) : (
+              <div className="h-10 w-10 bg-[#FF0000] rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                A
+              </div>
+            )}
           </CardHeader>
           <CardContent className={`flex-1 px-2 pb-6 pt-0 overflow-y-auto ${sidebarHovered ? '' : 'overflow-hidden'}`}>
             <ProjectsList
