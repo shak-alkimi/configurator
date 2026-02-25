@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Plus, FileText, Search, RotateCcw, Filter, X, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 
-export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading, searchQuery, onSearchChange, onUpdateStatus, filters, onFiltersChange, isCollapsed = false }) {
+export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading, searchQuery, onSearchChange, onUpdateStatus, filters, onFiltersChange }) {
   const [hoveredId, setHoveredId] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const statusColors = {
@@ -20,42 +20,34 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
 
   return (
     <div className="h-full flex flex-col">
-      <div className={`p-4 space-y-3 ${isCollapsed ? 'items-center' : ''}`}>
-        {isCollapsed ? (
-          <Button onClick={onNew} className="w-full" size="icon">
-            <Search className="h-4 w-4" />
-          </Button>
-        ) : (
-          <Button onClick={onNew} className="w-full" size="sm">
-            <Plus className="h-4 w-4" />
-          </Button>
-        )}
-        {!isCollapsed && (
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Search projects..."
-                className="h-9 text-sm pl-9"
-              />
-            </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setShowFilters(!showFilters)}
-              className={`h-9 w-9 flex-shrink-0 ${showFilters ? 'bg-[#eeeeee]' : ''}`}
-            >
-              <Filter className="h-4 w-4" />
-              {(filters.status !== 'all' || filters.dateFrom || filters.dateTo) && (
-                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
-                  {[filters.status !== 'all' ? 1 : 0, filters.dateFrom ? 1 : 0, filters.dateTo ? 1 : 0].reduce((a, b) => a + b, 0)}
-                </span>
-              )}
-            </Button>
+      <div className="p-4 space-y-3">
+        <Button onClick={onNew} className="w-full" size="sm">
+          <Plus className="h-4 w-4" />
+        </Button>
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search projects..."
+              className="h-9 text-sm pl-9"
+            />
           </div>
-        )}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setShowFilters(!showFilters)}
+            className={`h-9 w-9 flex-shrink-0 ${showFilters ? 'bg-[#eeeeee]' : ''}`}
+          >
+            <Filter className="h-4 w-4" />
+            {(filters.status !== 'all' || filters.dateFrom || filters.dateTo) && (
+              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+                {[filters.status !== 'all' ? 1 : 0, filters.dateFrom ? 1 : 0, filters.dateTo ? 1 : 0].reduce((a, b) => a + b, 0)}
+              </span>
+            )}
+          </Button>
+        </div>
         
         {showFilters && (
           <div className="space-y-3 p-3 border rounded-lg bg-[#eeeeee]">
@@ -131,10 +123,8 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
-        {isCollapsed ? null : isLoading ? (
-          <div className="text-center py-8 text-slate-400 text-sm">
-            Loading...
-          </div>
+        {isLoading ? (
+          <div className="text-center py-8 text-slate-400 text-sm">Loading...</div>
         ) : projects.length === 0 ? (
           <div className="text-center py-8 text-slate-400 text-sm">
             <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
@@ -149,66 +139,51 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
               }`}
               onClick={() => onSelect(project.id)}
             >
-              <CardContent className={isCollapsed ? "p-2" : "p-3"}>
-                {isCollapsed ? (
-                  <div className="flex flex-col items-center gap-1">
-                    <Badge className={`${statusColors[project.status]} text-[10px] px-1 py-0.5`}>
-                      {project.status[0].toUpperCase()}
+              <CardContent className="p-3">
+                <div className="flex items-start gap-2 mb-2">
+                  <h3 className="font-semibold text-sm flex-1 min-w-0 break-words line-clamp-2 min-h-[2.5rem]">{project.project_name}</h3>
+                  <div
+                    className="relative flex flex-col items-end gap-1"
+                    onMouseEnter={() => setHoveredId(project.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                  >
+                    <Badge className={`${statusColors[project.status]} text-xs flex-shrink-0 cursor-default`}>
+                      {project.status}
                     </Badge>
-                    {project.total_price && (
-                      <div className="text-[10px] font-semibold text-slate-900">
-                        ${Math.round(project.total_price)}
+                    {hoveredId === project.id && project.status === 'submitted' && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs bg-white border border-slate-200 hover:bg-slate-50 whitespace-nowrap"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onUpdateStatus(project.id, 'draft');
+                        }}
+                      >
+                        <RotateCcw className="h-3 w-3 mr-1" />
+                        Revert
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div className="text-xs text-slate-600 space-y-1">
+                  <div>{project.customer_name}</div>
+                  {project.total_price && (
+                    <div className="font-semibold text-slate-900">
+                      ${project.total_price.toFixed(2)}
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <div className="text-slate-400">
+                      {format(new Date(project.created_date), 'MMM d, yyyy')}
+                    </div>
+                    {project.quote_number && project.status === 'approved' && (
+                      <div className="text-slate-500 font-medium">
+                        {project.quote_number}
                       </div>
                     )}
                   </div>
-                ) : (
-                  <>
-                    <div className="flex items-start gap-2 mb-2">
-                      <h3 className="font-semibold text-sm flex-1 min-w-0 break-words line-clamp-2 min-h-[2.5rem]">{project.project_name}</h3>
-                      <div
-                        className="relative flex flex-col items-end gap-1"
-                        onMouseEnter={() => setHoveredId(project.id)}
-                        onMouseLeave={() => setHoveredId(null)}
-                      >
-                        <Badge className={`${statusColors[project.status]} text-xs flex-shrink-0 cursor-default`}>
-                          {project.status}
-                        </Badge>
-                        {hoveredId === project.id && project.status === 'submitted' && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 px-2 text-xs bg-white border border-slate-200 hover:bg-slate-50 whitespace-nowrap"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onUpdateStatus(project.id, 'draft');
-                            }}
-                          >
-                            <RotateCcw className="h-3 w-3 mr-1" />
-                            Revert
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                    <div className="text-xs text-slate-600 space-y-1">
-                      <div>{project.customer_name}</div>
-                      {project.total_price && (
-                        <div className="font-semibold text-slate-900">
-                          ${project.total_price.toFixed(2)}
-                        </div>
-                      )}
-                      <div className="flex items-center justify-between">
-                        <div className="text-slate-400">
-                          {format(new Date(project.created_date), 'MMM d, yyyy')}
-                        </div>
-                        {project.quote_number && project.status === 'approved' && (
-                          <div className="text-slate-500 font-medium">
-                            {project.quote_number}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                )}
+                </div>
               </CardContent>
             </Card>
           ))

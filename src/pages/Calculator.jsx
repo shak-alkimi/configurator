@@ -33,7 +33,6 @@ export default function Calculator() {
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const [hideExportTooltip, setHideExportTooltip] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [sidebarHovered, setSidebarHovered] = useState(false);
   const [projectData, setProjectData] = useState({
     project_name: '',
     customer_name: '',
@@ -350,30 +349,12 @@ export default function Calculator() {
     <TooltipProvider>
       <div className="h-screen flex gap-0 bg-white">
       {/* Sidebar - Projects List */}
-      <div 
-        className={`hidden md:flex px-4 lg:px-6 py-6 flex-col transition-all duration-300 ${
-          sidebarHovered ? 'md:w-64 lg:w-80' : 'md:w-32'
-        }`}
-        onMouseEnter={() => setSidebarHovered(true)}
-        onMouseLeave={() => setSidebarHovered(false)}
-      >
-        <Card className={`h-full flex flex-col transition-colors duration-300 ${!sidebarHovered ? 'bg-[#000000]' : ''}`}>
-          <CardHeader className="pb-3 flex items-center justify-center">
-            {sidebarHovered ? (
-              <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/363b1fdb0_Screenshot2026-02-16175106.png" 
-                alt="Alkimi Logo" 
-                className="h-10 w-auto -ml-6 transition-opacity duration-300"
-              />
-            ) : (
-              <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/ef9a323dc_Screenshot2026-02-16085558.png" 
-                alt="Alkimi Icon" 
-                className="h-16 w-16 transition-opacity duration-300"
-              />
-            )}
+      <div className="hidden md:flex md:w-64 lg:w-80 px-4 lg:px-6 py-6 flex-col">
+        <Card className="h-full flex flex-col">
+          <CardHeader className="pb-3">
+            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698fc81203f85a20f281d9dc/363b1fdb0_Screenshot2026-02-16175106.png" alt="Alkimi Logo" className="h-10 w-auto -ml-6" />
           </CardHeader>
-          <CardContent className={`flex-1 px-2 pb-6 pt-0 overflow-y-auto ${sidebarHovered ? '' : 'overflow-hidden'}`}>
+          <CardContent className="flex-1 px-2 pb-6 pt-0 overflow-y-auto">
             <ProjectsList
               projects={projects.filter(p => {
                 const matchesSearch = p.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -392,7 +373,6 @@ export default function Calculator() {
               onUpdateStatus={handleUpdateStatus}
               filters={filters}
               onFiltersChange={setFilters}
-              isCollapsed={!sidebarHovered}
             />
           </CardContent>
         </Card>
