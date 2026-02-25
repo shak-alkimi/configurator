@@ -357,7 +357,7 @@ export default function Calculator() {
         onMouseEnter={() => setSidebarHovered(true)}
         onMouseLeave={() => setSidebarHovered(false)}
       >
-        <Card className="h-full flex flex-col">
+        <Card className={`h-full flex flex-col transition-colors duration-300 ${!sidebarHovered ? 'bg-[#000000]' : ''}`}>
           <CardHeader className="pb-3 flex items-center justify-center">
             {sidebarHovered ? (
               <img 
