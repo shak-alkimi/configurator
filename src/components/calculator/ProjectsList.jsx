@@ -21,9 +21,15 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
   return (
     <div className="h-full flex flex-col">
       <div className={`p-4 space-y-3 ${isCollapsed ? 'items-center' : ''}`}>
-        <Button onClick={onNew} className="w-full" size={isCollapsed ? "icon" : "sm"}>
-          <Plus className="h-4 w-4" />
-        </Button>
+        {isCollapsed ? (
+          <Button onClick={onNew} className="w-full" size="icon">
+            <Search className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button onClick={onNew} className="w-full" size="sm">
+            <Plus className="h-4 w-4" />
+          </Button>
+        )}
         {!isCollapsed && (
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -125,18 +131,14 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
-        {isLoading ? (
+        {isCollapsed ? null : isLoading ? (
           <div className="text-center py-8 text-slate-400 text-sm">
-            {isCollapsed ? '...' : 'Loading...'}
+            Loading...
           </div>
         ) : projects.length === 0 ? (
           <div className="text-center py-8 text-slate-400 text-sm">
-            {!isCollapsed && (
-              <>
-                <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                No projects yet.<br />Create your first project.
-              </>
-            )}
+            <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
+            No projects yet.<br />Create your first project.
           </div>
         ) : (
           projects.map((project) => (

@@ -352,7 +352,7 @@ export default function Calculator() {
       {/* Sidebar - Projects List */}
       <div 
         className={`hidden md:flex px-4 lg:px-6 py-6 flex-col transition-all duration-300 ${
-          sidebarHovered ? 'md:w-64 lg:w-80' : 'md:w-20'
+          sidebarHovered ? 'md:w-64 lg:w-80' : 'md:w-32'
         }`}
         onMouseEnter={() => setSidebarHovered(true)}
         onMouseLeave={() => setSidebarHovered(false)}
