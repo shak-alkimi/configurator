@@ -106,7 +106,7 @@ export default function ProjectForm({ project, onChange }) {
       </div>
 
       <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-6 space-y-2">
+        <div className="col-span-4 space-y-2">
           <Label htmlFor="customer_name">Customer Name</Label>
           <Input
             id="customer_name"
@@ -114,7 +114,7 @@ export default function ProjectForm({ project, onChange }) {
             onChange={(e) => onChange({ ...project, customer_name: e.target.value })}
           />
         </div>
-        <div className="col-span-6 space-y-2">
+        <div className="col-span-4 space-y-2">
           <Label htmlFor="customer_email">Customer Email</Label>
           <Input
             id="customer_email"
@@ -123,10 +123,7 @@ export default function ProjectForm({ project, onChange }) {
             onChange={(e) => onChange({ ...project, customer_email: e.target.value })}
           />
         </div>
-      </div>
-
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-6 space-y-2">
+        <div className="col-span-4 space-y-2">
           <Label htmlFor="customer_phone">Customer Phone</Label>
           <Input
             id="customer_phone"
@@ -135,7 +132,10 @@ export default function ProjectForm({ project, onChange }) {
             onChange={(e) => onChange({ ...project, customer_phone: e.target.value })}
           />
         </div>
-        <div className="col-span-6 space-y-2">
+      </div>
+
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-12 space-y-2">
           <Label htmlFor="notes">Notes</Label>
           <Textarea
             id="notes"
