@@ -80,7 +80,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pt-2">
         <h3 className="text-sm font-semibold" style={{ color: '#D4AF37' }}>ALKILINE</h3>
         <span className="text-xs text-slate-500">
           Total: {(() => {
