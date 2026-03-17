@@ -107,25 +107,6 @@ export default function ProjectForm({ project, onChange }) {
 
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-6 space-y-2">
-          <Label htmlFor="sector">Sector</Label>
-          <Select
-            value={project.sector || ''}
-            onValueChange={(value) => onChange({ ...project, sector: value })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Commercial">Commercial</SelectItem>
-              <SelectItem value="Education">Education</SelectItem>
-              <SelectItem value="Healthcare">Healthcare</SelectItem>
-              <SelectItem value="Hospitality">Hospitality</SelectItem>
-              <SelectItem value="Residential">Residential</SelectItem>
-              <SelectItem value="Other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="col-span-3 space-y-2">
           <Label htmlFor="customer_name">Customer Name</Label>
           <Input
             id="customer_name"
@@ -133,7 +114,7 @@ export default function ProjectForm({ project, onChange }) {
             onChange={(e) => onChange({ ...project, customer_name: e.target.value })}
           />
         </div>
-        <div className="col-span-3 space-y-2">
+        <div className="col-span-6 space-y-2">
           <Label htmlFor="customer_email">Customer Email</Label>
           <Input
             id="customer_email"
