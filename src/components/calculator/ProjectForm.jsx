@@ -16,7 +16,7 @@ export default function ProjectForm({ project, onChange }) {
       )}
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-4 space-y-2">
-          <Label htmlFor="project_name">Project Name</Label>
+          <Label htmlFor="project_name">Project</Label>
           <Input
             id="project_name"
             value={project.project_name || ''}
