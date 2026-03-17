@@ -127,7 +127,7 @@ export default function ProjectForm({ project, onChange }) {
           />
         </div>
         <div className="col-span-4 space-y-2">
-          <Label htmlFor="customer_phone">Customer Phone</Label>
+          <Label htmlFor="customer_phone">Phone</Label>
           <Input
             id="customer_phone"
             type="tel"
