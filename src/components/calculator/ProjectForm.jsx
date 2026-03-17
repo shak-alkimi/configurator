@@ -118,7 +118,7 @@ export default function ProjectForm({ project, onChange }) {
           />
         </div>
         <div className="col-span-4 space-y-2">
-          <Label htmlFor="customer_email">Customer Email</Label>
+          <Label htmlFor="customer_email">Email</Label>
           <Input
             id="customer_email"
             type="email"
