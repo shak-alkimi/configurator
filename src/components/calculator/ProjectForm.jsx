@@ -137,7 +137,7 @@ export default function ProjectForm({ project, onChange }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-4">
+      <div className="grid grid-cols-12 gap-4 pb-4">
         <div className="col-span-12 space-y-2">
           <Label htmlFor="notes">Notes</Label>
           <Input
