@@ -352,7 +352,7 @@ export default function Calculator() {
       <div className="hidden md:flex md:w-64 lg:w-80 px-4 lg:px-6 py-6 flex-col">
         <Card className="h-full flex flex-col">
           <CardHeader className="pb-3">
-            <img src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/badc89fb6_Alkimi_logo_long_black.png" alt="Alkimi Logo" className="h-8 w-auto" />
+            <img src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/badc89fb6_Alkimi_logo_long_black.png" alt="Alkimi Logo" className="h-8 w-auto -ml-6" />
           </CardHeader>
           <CardContent className="flex-1 px-2 pb-6 pt-0 overflow-y-auto">
             <ProjectsList
