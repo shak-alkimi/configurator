@@ -135,7 +135,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
             <Card
               key={project.id}
               className={`cursor-pointer transition-all hover:shadow-md ${
-                selectedId === project.id ? 'ring-2 ring-slate-900 shadow-md' : ''
+                selectedId === project.id ? 'ring-2 ring-[#252320] shadow-md' : ''
               }`}
               onClick={() => onSelect(project.id)}
             >

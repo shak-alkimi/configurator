@@ -385,7 +385,7 @@ export default function Calculator() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
             <div className="lg:col-span-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <h2 className="text-2xl font-bold text-slate-900 break-words">
+                <h2 className="text-2xl font-bold break-words" style={{ color: '#252320' }}>
                   {isNewProject ? 'New Project' : (projectData.project_name?.length > 50 ? projectData.project_name.substring(0, 50) + '...' : projectData.project_name)}
                 </h2>
                 <p className="text-sm text-slate-500 mt-1">

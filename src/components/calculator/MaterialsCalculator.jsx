@@ -224,7 +224,7 @@ const MaterialsCalculator = React.memo(({ runs }) => {
       </Card>
 
       {/* Pricing Summary */}
-      <Card className="border-black bg-black">
+      <Card className="border-[#252320] bg-[#252320]">
         <CardHeader className="flex flex-row items-start justify-between">
           <CardTitle className="text-lg text-white">Summary</CardTitle>
           <img 
