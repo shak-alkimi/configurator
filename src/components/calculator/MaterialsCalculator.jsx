@@ -230,7 +230,7 @@ const MaterialsCalculator = React.memo(({ runs }) => {
           <img 
             src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/2b8625608_Alkimi_icon_white_transparent.png" 
             alt="Logo" 
-            className="h-6 w-auto"
+            className="h-[18px] w-auto"
           />
         </CardHeader>
         <CardContent className="space-y-3">
