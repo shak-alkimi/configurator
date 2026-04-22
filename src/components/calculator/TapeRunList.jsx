@@ -81,7 +81,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between pt-6">
-        <h3 className="text-sm font-semibold" style={{ color: '#7CCF1A' }}>ALKILINE</h3>
+        <h3 className="text-sm font-semibold" style={{ color: '#35790B' }}>ALKILINE</h3>
         <span className="text-xs text-slate-500">
           Total: {(() => {
             const totalFeet = runs.reduce((sum, r) => sum + r.length_feet, 0);

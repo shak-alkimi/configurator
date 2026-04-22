@@ -8,7 +8,7 @@ export default function Layout({ children, currentPageName }) {
         
         button[class*="default"],
         .bg-primary {
-          background-color: #35790b !important;
+          background-color: #35790B !important;
           color: white !important;
         }
         
