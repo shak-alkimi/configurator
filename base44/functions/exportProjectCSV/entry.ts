@@ -24,26 +24,27 @@ Deno.serve(async (req) => {
         const project = projects[0];
         const tapeRuns = await base44.asServiceRole.entities.TapeRun.filter({ project_id }, undefined, undefined, undefined, data_env);
 
-        // Shared constants
-        const TAPE_SPECS = {
-            "2w": { price_per_foot: 10, watts_per_foot: 2.0, lumens_per_foot: 200 },
-            "4w": { price_per_foot: 12, watts_per_foot: 4.0, lumens_per_foot: 400 }
+        // Pricing constants — keep in sync with src/components/calculator/constants.jsx
+        const CONSTANTS = {
+            TAPE_SPECS: {
+                "2w": { price_per_foot: 10, watts_per_foot: 2.0, lumens_per_foot: 200 },
+                "4w": { price_per_foot: 12, watts_per_foot: 4.0, lumens_per_foot: 400 }
+            },
+            CHANNEL_SPECS: {
+                corner: { price_per_foot: 10 },
+                recessed: { price_per_foot: 12 },
+                surface: { price_per_foot: 8 },
+                none: { price_per_foot: 0 }
+            },
+            DRIVER_MAX_WATTS: 96,
+            DRIVER_LOAD_FACTOR: 0.8,
+            DRIVER_PRICE: 65,
+            CLIPS_PER_SECTION: 4,
+            CLIPS_PER_SET: 12,
+            CLIP_SET_PRICE: 15,
+            SHIPPING_RATE: 0.10
         };
-        
-        const CHANNEL_SPECS = {
-            corner: { price_per_foot: 10 },
-            recessed: { price_per_foot: 12 },
-            surface: { price_per_foot: 8 },
-            none: { price_per_foot: 0 }
-        };
-
-        const DRIVER_MAX_WATTS = 96;
-        const DRIVER_LOAD_FACTOR = 0.8;
-        const DRIVER_PRICE = 65;
-        const CLIPS_PER_SECTION = 4;
-        const CLIPS_PER_SET = 12;
-        const CLIP_SET_PRICE = 15;
-        const SHIPPING_RATE = 0.10;
+        const { TAPE_SPECS, CHANNEL_SPECS, DRIVER_MAX_WATTS, DRIVER_LOAD_FACTOR, DRIVER_PRICE, CLIPS_PER_SECTION, CLIPS_PER_SET, CLIP_SET_PRICE, SHIPPING_RATE } = CONSTANTS;
 
         // Build CSV
         let csv = '';
