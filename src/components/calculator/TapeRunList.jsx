@@ -67,7 +67,9 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     const [movedRun] = reorderedRuns.splice(result.source.index, 1);
     reorderedRuns.splice(result.destination.index, 0, movedRun);
     
-    onReorder(reorderedRuns);
+    // Defer the reorder so dnd can finish its drop animation before
+    // the optimistic setQueryData re-render fires.
+    setTimeout(() => onReorder(reorderedRuns), 0);
   };
 
   // Check if form is valid (all required fields filled)
@@ -200,7 +202,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
               ref={provided.innerRef}
             >
               {runs.map((run, index) => (
-                <Draggable key={run.id} draggableId={run.id} index={index}>
+                <Draggable key={run.id} draggableId={String(run.id)} index={index}>
                   {(provided, snapshot) => (
                     <Card 
                       ref={provided.innerRef}
