@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,7 @@ import { TAPE_SPECS, CHANNEL_SPECS } from "@/components/calculator/constants";
 import { calculateRunCost } from "@/components/calculator/calculations";
 
 export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder }) {
+  const [localRuns, setLocalRuns] = useState(runs);
   const [newRun, setNewRun] = useState({
     run_name: '',
     feet: '',
@@ -19,6 +20,10 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     channel_type: '',
     notes: ''
   });
+
+  useEffect(() => {
+    setLocalRuns(runs);
+  }, [runs]);
 
   const handleAdd = () => {
     const feet = parseFloat(newRun.feet) || 0;
@@ -63,12 +68,11 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     if (!result.destination) return;
     if (result.source.index === result.destination.index) return;
     
-    const reorderedRuns = Array.from(runs);
+    const reorderedRuns = Array.from(localRuns);
     const [movedRun] = reorderedRuns.splice(result.source.index, 1);
     reorderedRuns.splice(result.destination.index, 0, movedRun);
-    
-    // Defer the reorder so dnd can finish its drop animation before
-    // the optimistic setQueryData re-render fires.
+
+    setLocalRuns(reorderedRuns);
     setTimeout(() => onReorder(reorderedRuns), 0);
   };
 
@@ -86,7 +90,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
         <h3 className="text-sm font-semibold" style={{ color: '#35790B' }}>Configure</h3>
         <span className="text-xs text-slate-500">
           Total: {(() => {
-            const totalFeet = runs.reduce((sum, r) => sum + r.length_feet, 0);
+            const totalFeet = localRuns.reduce((sum, r) => sum + r.length_feet, 0);
             return `${Math.floor(totalFeet)}' ${Math.round((totalFeet % 1) * 12)}"`;
           })()}
         </span>
@@ -201,7 +205,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
               {...provided.droppableProps}
               ref={provided.innerRef}
             >
-              {runs.map((run, index) => (
+              {localRuns.map((run, index) => (
                 <Draggable key={run.id} draggableId={String(run.id)} index={index}>
                   {(provided, snapshot) => (
                     <Card 
