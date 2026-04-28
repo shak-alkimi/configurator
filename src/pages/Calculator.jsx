@@ -40,7 +40,6 @@ export default function Calculator() {
     street: '',
     city: '',
     state: '',
-    sector: '',
     notes: '',
     status: 'draft'
   });
@@ -175,7 +174,6 @@ export default function Calculator() {
       street: '',
       city: '',
       state: '',
-      sector: '',
       notes: '',
       status: 'draft'
     });
@@ -241,14 +239,13 @@ export default function Calculator() {
         });
       }
     } catch (error) {
-      console.error('Error adding tape run:', error);
       toast.error('Failed to add tape run');
     }
   };
 
 
   const handleDeleteProject = () => {
-    if (selectedProjectId && confirm('Are you sure you want to delete this project?')) {
+    if (selectedProjectId) {
       deleteProjectMutation.mutate(selectedProjectId);
     }
   };
@@ -269,19 +266,21 @@ export default function Calculator() {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success(`Project ${newStatus === 'approved' ? 'approved' : 'reverted to ' + newStatus}`);
     } catch (error) {
-      console.error('Error updating status:', error);
       toast.error('Failed to update project status');
     }
   };
 
   const handleSubmitProject = async () => {
     const totalPrice = calculateTotalPrice(tapeRuns);
-    
-    await saveProjectMutation.mutateAsync({
-      ...projectData,
-      status: 'submitted',
-      total_price: totalPrice
-    });
+    try {
+      await saveProjectMutation.mutateAsync({
+        ...projectData,
+        status: 'submitted',
+        total_price: totalPrice
+      });
+    } catch (error) {
+      toast.error('Failed to submit project');
+    }
   };
 
   const handleExportPDF = async () => {
