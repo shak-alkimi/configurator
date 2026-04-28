@@ -206,7 +206,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
               ref={provided.innerRef}
             >
               {localRuns.map((run, index) => (
-                <Draggable key={run.id} draggableId={String(run.id)} index={index}>
+                <Draggable key={String(run.id)} draggableId={String(run.id)} index={index}>
                   {(provided, snapshot) => (
                     <Card 
                       ref={provided.innerRef}
