@@ -38,7 +38,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
             variant="outline"
             size="icon"
             onClick={() => setShowFilters(!showFilters)}
-            className={`h-9 w-9 flex-shrink-0 ${showFilters ? 'bg-[#eeeeee]' : ''}`}
+            className={`h-9 w-9 flex-shrink-0 ${showFilters ? 'bg-muted' : ''}`}
           >
             <Filter className="h-4 w-4" />
             {(filters.status !== 'all' || filters.dateFrom || filters.dateTo) && (
@@ -50,7 +50,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
         </div>
         
         {showFilters && (
-          <div className="space-y-3 p-3 border rounded-lg bg-[#eeeeee]">
+          <div className="space-y-3 p-3 border rounded-lg bg-muted">
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-700">Status</label>
               <Select
