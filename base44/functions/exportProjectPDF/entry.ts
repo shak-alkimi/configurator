@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
 
         // Header
         doc.setFontSize(20);
-        doc.text('ALKILINE', 20, 20);
+        doc.text('ALKIMI', 20, 20);
         
         // Project Information
         let y = 35;
