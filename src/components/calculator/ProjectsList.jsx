@@ -15,7 +15,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
   const statusColors = {
     draft: "bg-slate-100 text-slate-700",
     submitted: "bg-blue-100 text-blue-700",
-    approved: "bg-green-100 text-[#35790B]"
+    approved: "bg-green-100 text-primary"
   };
 
   return (
