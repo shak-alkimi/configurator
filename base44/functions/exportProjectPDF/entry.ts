@@ -72,11 +72,12 @@ Deno.serve(async (req) => {
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
         doc.text('Type', 20, y);
-        doc.text('Length', 50, y);
-        doc.text('Output', 80, y);
-        doc.text('CCT', 115, y);
-        doc.text('Housing', 145, y);
-        doc.text('Cost', 180, y);
+        doc.text('Length', 48, y);
+        doc.text('Output', 73, y);
+        doc.text('CCT', 103, y);
+        doc.text('Housing', 128, y);
+        doc.text('Driver Group', 158, y);
+        doc.text('Cost', 193, y);
         y += 7;
 
         // Pricing constants — keep in sync with src/components/calculator/constants.jsx
@@ -129,11 +130,12 @@ Deno.serve(async (req) => {
                                    runData.channel_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             
             doc.text(runData.run_name || '', 20, y);
-            doc.text(lengthDisplay, 50, y);
-            doc.text(outputDisplay, 80, y);
-            doc.text(runData.cct || '', 115, y);
-            doc.text(channelDisplay, 145, y);
-            doc.text(`$${cost.toFixed(2)}`, 180, y);
+            doc.text(lengthDisplay, 48, y);
+            doc.text(outputDisplay, 73, y);
+            doc.text(runData.cct || '', 103, y);
+            doc.text(channelDisplay, 128, y);
+            doc.text(runData.driver_group || '', 158, y);
+            doc.text(`$${cost.toFixed(2)}`, 193, y);
             y += 7;
         });
 
