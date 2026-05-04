@@ -87,6 +87,9 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     return totalFeet > 0 && newRun.cct && newRun.tape_type && newRun.channel_type;
   };
 
+  const driverGroupData = calculateDriverGroups(localRuns);
+  const driverGroupMap = Object.fromEntries(driverGroupData.map(g => [g.name, g]));
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between pt-6">
@@ -167,7 +170,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-3 space-y-1.5">
+            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">Housing</Label>
               <Select
                 value={newRun.channel_type}
@@ -183,6 +186,15 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                   <SelectItem value="none">None</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="col-span-1 space-y-1.5">
+              <Label className="text-xs">Driver</Label>
+              <Input
+                value={newRun.driver_group}
+                onChange={(e) => setNewRun({ ...newRun, driver_group: e.target.value })}
+                placeholder="Driver 1"
+                className="w-16 text-xs h-9"
+              />
             </div>
             <div className="col-span-1">
               <Button onClick={handleAdd} size="sm" className="h-9 w-full" disabled={!isFormValid()}>
@@ -254,9 +266,23 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                 <div className="text-xs text-slate-500">CCT</div>
                                 <div className="text-sm">{run.cct || '—'}</div>
                               </div>
-                              <div className="col-span-2">
+                              <div className="col-span-1">
                                 <div className="text-xs text-slate-500">Housing</div>
                                 <div className="text-sm">{formatChannelType(run.channel_type)}</div>
+                              </div>
+                              <div className="col-span-2">
+                                <div className="text-xs text-slate-500">Driver</div>
+                                <div className="flex items-center gap-1">
+                                  <Input
+                                    value={run.driver_group || ''}
+                                    onChange={(e) => onUpdate(run.id, { driver_group: e.target.value })}
+                                    placeholder="Driver 1"
+                                    className="w-16 text-xs h-7 px-2"
+                                  />
+                                  {run.driver_group && driverGroupMap[run.driver_group]?.overloaded && (
+                                    <AlertCircle className="h-4 w-4 text-orange-500 flex-shrink-0" />
+                                  )}
+                                </div>
                               </div>
                               <div className="col-span-1 text-right">
                                 <div className="text-xs text-slate-500">Cost</div>
