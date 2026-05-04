@@ -52,7 +52,7 @@
     },
     "driver_group": {
       "type": "string",
-      "description": "Driver group label \u2014 runs sharing the same label share a single driver"
+      "description": "Driver group assignment (e.g. Driver 1, Driver 2). Runs sharing the same driver get the same label."
     },
     "order": {
       "type": "number",
