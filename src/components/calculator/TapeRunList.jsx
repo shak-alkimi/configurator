@@ -241,41 +241,46 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                             >
                               <GripVertical className="h-5 w-5" />
                             </div>
-                            <div className="flex-1 grid grid-cols-12 gap-4">
-                              <div className="col-span-2">
+                            <div className="flex-1 flex items-start gap-3 min-w-0 flex-nowrap">
+                              <div className="min-w-0 w-16 shrink-0">
                                 <div className="text-xs text-slate-500">Type</div>
-                                <div className="text-sm font-medium">{run.run_name || 'Unnamed Run'}</div>
+                                <div className="text-sm font-medium truncate">{run.run_name || 'Unnamed'}</div>
                               </div>
-                              <div className="col-span-2">
+                              <div className="w-14 shrink-0">
                                 <div className="text-xs text-slate-500">Length</div>
-                                <div className="text-sm">
+                                <div className="text-sm whitespace-nowrap">
                                   {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
                                 </div>
                               </div>
-                              <div className="col-span-2">
+                              <div className="w-24 shrink-0">
                                 <div className="text-xs text-slate-500">Output</div>
-                                <div className="text-sm">
+                                <div className="text-sm whitespace-nowrap">
                                   {(() => {
                                     const specs = TAPE_SPECS[run.tape_type];
                                     if (!specs) return '—';
-                                    return `${specs.watts_per_foot}w/ft (${specs.lumens_per_foot}lm/ft)`;
+                                    return `${specs.watts_per_foot}w/ft`;
                                   })()}
                                 </div>
                               </div>
-                              <div className="col-span-3">
+                              <div className="w-24 shrink-0">
                                 <div className="text-xs text-slate-500">CCT</div>
-                                <div className="text-sm">{run.cct || '—'}</div>
+                                <div className="text-sm whitespace-nowrap">{run.cct || '—'}</div>
                               </div>
-                              <div className="col-span-1">
+                              <div className="w-20 shrink-0">
                                 <div className="text-xs text-slate-500">Housing</div>
-                                <div className="text-sm">{formatChannelType(run.channel_type)}</div>
+                                <div className="text-sm whitespace-nowrap">{formatChannelType(run.channel_type)}</div>
                               </div>
-                              <div className="col-span-2">
+                              <div className="w-20 shrink-0">
                                 <div className="text-xs text-slate-500">Driver</div>
                                 <div className="flex items-center gap-1">
                                   <input
-                                    value={run.driver_group || ''}
-                                    onChange={(e) => onUpdate(run.id, { driver_group: e.target.value })}
+                                    defaultValue={run.driver_group || ''}
+                                    key={run.id + '-' + run.driver_group}
+                                    onBlur={(e) => {
+                                      if (e.target.value !== (run.driver_group || '')) {
+                                        onUpdate(run.id, { driver_group: e.target.value });
+                                      }
+                                    }}
                                     placeholder="Driver 1"
                                     className="w-14 text-xs border border-input rounded px-1 py-0.5 bg-background"
                                   />
@@ -284,9 +289,9 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                   )}
                                 </div>
                               </div>
-                              <div className="col-span-1 text-right">
+                              <div className="text-right shrink-0">
                                 <div className="text-xs text-slate-500">Cost</div>
-                                <div className="text-sm font-semibold">${calculateRunCost(run).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                <div className="text-sm font-semibold whitespace-nowrap">${calculateRunCost(run).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                               </div>
                             </div>
                           </div>
