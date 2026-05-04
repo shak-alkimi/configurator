@@ -247,7 +247,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                     >
                       <CardContent className="py-3">
                         {editingId === run.id ? (
-                          <div className="flex flex-wrap gap-2 items-end">
+                          <div className="flex flex-wrap gap-2 items-end bg-white">
                             <div className="space-y-1">
                               <Label className="text-xs">Type</Label>
                               <Input value={editValues.run_name} onChange={e => setEditValues({...editValues, run_name: e.target.value})} className="h-8 w-16 text-xs" />
