@@ -117,6 +117,15 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 className="h-9 w-full"
               />
             </div>
+            <div className="shrink-0 w-20 space-y-1.5">
+              <Label className="text-xs">Location</Label>
+              <input
+                placeholder="Location"
+                value={newRun.location}
+                onChange={e => setNewRun({ ...newRun, location: e.target.value })}
+                className="w-full h-9 text-xs border border-input rounded px-2 bg-background"
+              />
+            </div>
             <div className="shrink-0 w-14 space-y-1.5">
               <Label className="text-xs">Feet</Label>
               <Input
@@ -153,15 +162,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                   <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div className="shrink-0 w-20 space-y-1.5">
-              <Label className="text-xs">Location</Label>
-              <input
-                placeholder="Location"
-                value={newRun.location}
-                onChange={e => setNewRun({ ...newRun, location: e.target.value })}
-                className="w-full h-9 text-xs border border-input rounded px-2 bg-background"
-              />
             </div>
             <div className="shrink-0 w-36 space-y-1.5">
               <Label className="text-xs">CCT</Label>
@@ -258,6 +258,15 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                 <div className="text-xs text-slate-500">Type</div>
                                 <div className="text-sm font-medium truncate">{run.run_name || 'Unnamed'}</div>
                               </div>
+                              <div className="w-20 shrink-0">
+                                <div className="text-xs text-slate-500">Location</div>
+                                <input
+                                  defaultValue={run.location || ''}
+                                  key={run.id + '-' + run.location}
+                                  onBlur={(e) => onUpdate(run.id, { location: e.target.value })}
+                                  className="shrink-0 w-20 text-xs border border-input rounded px-1 py-0.5 bg-background"
+                                />
+                              </div>
                               <div className="w-14 shrink-0">
                                 <div className="text-xs text-slate-500">Length</div>
                                 <div className="text-sm whitespace-nowrap">
@@ -273,15 +282,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                     return `${specs.watts_per_foot}w/ft`;
                                   })()}
                                 </div>
-                              </div>
-                              <div className="w-20 shrink-0">
-                                <div className="text-xs text-slate-500">Location</div>
-                                <input
-                                  defaultValue={run.location || ''}
-                                  key={run.id + '-' + run.location}
-                                  onBlur={(e) => onUpdate(run.id, { location: e.target.value })}
-                                  className="shrink-0 w-20 text-xs border border-input rounded px-1 py-0.5 bg-background"
-                                />
                               </div>
                               <div className="w-24 shrink-0">
                                 <div className="text-xs text-slate-500">CCT</div>
