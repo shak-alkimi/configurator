@@ -4,13 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Trash2, Ruler, GripVertical, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Ruler, GripVertical, AlertCircle, Pencil, Check, X } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { TAPE_SPECS, CHANNEL_SPECS } from "@/components/calculator/constants";
 import { calculateRunCost, calculateDriverGroups } from "@/components/calculator/calculations";
 
 export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder }) {
   const [localRuns, setLocalRuns] = useState(runs);
+  const [editingId, setEditingId] = useState(null);
+  const [editValues, setEditValues] = useState({});
   const [newRun, setNewRun] = useState({
     run_name: '',
     feet: '',
@@ -244,6 +246,83 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                       }}
                     >
                       <CardContent className="py-3">
+                        {editingId === run.id ? (
+                          <div className="flex flex-wrap gap-2 items-end">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Type</Label>
+                              <Input value={editValues.run_name} onChange={e => setEditValues({...editValues, run_name: e.target.value})} className="h-8 w-16 text-xs" />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Location</Label>
+                              <Input value={editValues.location} onChange={e => setEditValues({...editValues, location: e.target.value})} className="h-8 w-20 text-xs" />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Feet</Label>
+                              <Input type="number" min="0" value={editValues.feet} onChange={e => setEditValues({...editValues, feet: e.target.value})} className="h-8 w-14 text-xs" />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Inches</Label>
+                              <Input type="number" min="0" max="11" step="0.5" value={editValues.inches} onChange={e => setEditValues({...editValues, inches: e.target.value})} className="h-8 w-14 text-xs" />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Output</Label>
+                              <Select value={editValues.tape_type} onValueChange={v => setEditValues({...editValues, tape_type: v})}>
+                                <SelectTrigger className="h-8 w-24 text-xs"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
+                                  <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">CCT</Label>
+                              <Select value={editValues.cct} onValueChange={v => setEditValues({...editValues, cct: v})}>
+                                <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="2400k">2400k</SelectItem>
+                                  <SelectItem value="2700k">2700k</SelectItem>
+                                  <SelectItem value="3000k">3000k</SelectItem>
+                                  <SelectItem value="3500k">3500k</SelectItem>
+                                  <SelectItem value="Warm Dim (22-30k)">Warm Dim (22-30k)</SelectItem>
+                                  <SelectItem value="Tunable White (18-40k)">Tunable White (18-40k)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Housing</Label>
+                              <Select value={editValues.channel_type} onValueChange={v => setEditValues({...editValues, channel_type: v})}>
+                                <SelectTrigger className="h-8 w-24 text-xs"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="corner">Corner</SelectItem>
+                                  <SelectItem value="recessed">Recessed Flange</SelectItem>
+                                  <SelectItem value="surface">Surface</SelectItem>
+                                  <SelectItem value="none">None</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Driver</Label>
+                              <Input value={editValues.driver_group} onChange={e => setEditValues({...editValues, driver_group: e.target.value})} className="h-8 w-20 text-xs" />
+                            </div>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:text-green-700" onClick={() => {
+                              onUpdate(run.id, {
+                                run_name: editValues.run_name,
+                                location: editValues.location,
+                                length_feet: (parseFloat(editValues.feet) || 0) + (parseFloat(editValues.inches) || 0) / 12,
+                                tape_type: editValues.tape_type,
+                                cct: editValues.cct,
+                                channel_type: editValues.channel_type,
+                                driver_group: editValues.driver_group
+                              });
+                              setEditingId(null);
+                            }}>
+                              <Check className="h-4 w-4" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-slate-600" onClick={() => setEditingId(null)}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 flex-1">
                             <div 
@@ -259,12 +338,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                               </div>
                               <div className="w-20 shrink-0">
                                 <div className="text-xs text-slate-500">Location</div>
-                                <input
-                                  defaultValue={run.location || ''}
-                                  key={run.id + '-' + run.location}
-                                  onBlur={(e) => onUpdate(run.id, { location: e.target.value })}
-                                  className="shrink-0 w-20 text-xs border border-input rounded px-1 py-0.5 bg-background"
-                                />
+                                <div className="text-sm whitespace-nowrap">{run.location || '—'}</div>
                               </div>
                               <div className="w-14 shrink-0">
                                 <div className="text-xs text-slate-500">Length</div>
@@ -293,17 +367,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                               <div className="w-20 shrink-0">
                                 <div className="text-xs text-slate-500">Driver</div>
                                 <div className="flex items-center gap-1">
-                                  <input
-                                    defaultValue={run.driver_group || ''}
-                                    key={run.id + '-' + run.driver_group}
-                                    onBlur={(e) => {
-                                      if (e.target.value !== (run.driver_group || '')) {
-                                        onUpdate(run.id, { driver_group: e.target.value });
-                                      }
-                                    }}
-                                    placeholder="Driver 1"
-                                    className="w-14 text-xs border border-input rounded px-1 py-0.5 bg-background"
-                                  />
+                                  <span className="text-sm">{run.driver_group || '—'}</span>
                                   {run.driver_group && driverGroupMap[run.driver_group]?.overloaded && (
                                     <AlertCircle className="h-4 w-4 text-orange-500 flex-shrink-0" />
                                   )}
@@ -315,15 +379,38 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                               </div>
                             </div>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => onDelete(run.id)}
-                            className="h-8 w-8 text-slate-400 hover:text-red-600"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                setEditingId(run.id);
+                                setEditValues({
+                                  run_name: run.run_name || '',
+                                  location: run.location || '',
+                                  feet: Math.floor(run.length_feet),
+                                  inches: Math.round((run.length_feet % 1) * 12),
+                                  tape_type: run.tape_type,
+                                  cct: run.cct,
+                                  channel_type: run.channel_type,
+                                  driver_group: run.driver_group || ''
+                                });
+                              }}
+                              className="h-8 w-8 text-slate-400 hover:text-slate-600"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => onDelete(run.id)}
+                              className="h-8 w-8 text-slate-400 hover:text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
+                        )}
                       </CardContent>
                     </Card>
                   )}
