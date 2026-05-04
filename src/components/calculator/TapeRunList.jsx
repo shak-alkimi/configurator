@@ -373,7 +373,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                   )}
                                 </div>
                               </div>
-                              <div className="text-right shrink-0">
+                              <div className="text-right shrink-0 ml-auto">
                                 <div className="text-xs text-slate-500">Cost</div>
                                 <div className="text-sm font-semibold whitespace-nowrap">${calculateRunCost(run).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                               </div>
