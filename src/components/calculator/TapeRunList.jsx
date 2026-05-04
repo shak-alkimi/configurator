@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2, Ruler, GripVertical, AlertCircle } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { TAPE_SPECS, CHANNEL_SPECS } from "@/components/calculator/constants";
-import { calculateRunCost } from "@/components/calculator/calculations";
+import { calculateRunCost, calculateDriverGroups } from "@/components/calculator/calculations";
 
 export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder }) {
   const [localRuns, setLocalRuns] = useState(runs);
@@ -18,7 +18,8 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     tape_type: '',
     cct: '',
     channel_type: '',
-    notes: ''
+    notes: '',
+    driver_group: ''
   });
 
   useEffect(() => {
@@ -41,7 +42,8 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
       tape_type: newRun.tape_type,
       cct: newRun.cct,
       channel_type: newRun.channel_type,
-      notes: newRun.notes
+      notes: newRun.notes,
+      driver_group: newRun.driver_group
     });
     setNewRun({
       run_name: '',
@@ -50,7 +52,8 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
       tape_type: '',
       cct: '',
       channel_type: '',
-      notes: ''
+      notes: '',
+      driver_group: ''
     });
   };
 

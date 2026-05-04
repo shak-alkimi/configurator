@@ -54,6 +54,26 @@ export function calculateTotalPrice(runs) {
   return subtotal + shippingCost;
 }
 
+export function calculateDriverGroups(runs) {
+  const driverMax = DRIVER_SPECS[0].max_watts * DRIVER_LOAD_FACTOR;
+  const groups = {};
+  runs.forEach(run => {
+    const group = run.driver_group || 'Unassigned';
+    if (!groups[group]) groups[group] = { runs: [], totalWatts: 0 };
+    groups[group].runs.push(run);
+    const spec = TAPE_SPECS[run.tape_type];
+    if (spec) groups[group].totalWatts += run.length_feet * spec.watts_per_foot;
+  });
+  return Object.entries(groups).map(([name, data]) => ({
+    name,
+    totalWatts: parseFloat(data.totalWatts.toFixed(1)),
+    capacity: driverMax,
+    loadPercent: Math.round((data.totalWatts / driverMax) * 100),
+    overloaded: data.totalWatts > driverMax,
+    runs: data.runs,
+  }));
+}
+
 export function calculateRunCost(run) {
   const tapeSpec = TAPE_SPECS[run.tape_type];
   const channelSpec = CHANNEL_SPECS[run.channel_type];
