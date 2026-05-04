@@ -1,0 +1,66 @@
+{
+  "name": "TapeRun",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Reference to the parent project"
+    },
+    "run_name": {
+      "type": "string",
+      "description": "Name of the tape run"
+    },
+    "length_feet": {
+      "type": "number",
+      "description": "Length of the tape run in feet"
+    },
+    "tape_type": {
+      "type": "string",
+      "enum": [
+        "2w",
+        "4w"
+      ],
+      "default": "4w",
+      "description": "Output type of LED tape light"
+    },
+    "cct": {
+      "type": "string",
+      "enum": [
+        "2400k",
+        "2700k",
+        "3000k",
+        "3500k",
+        "Warm Dim (22-30k)",
+        "Tunable White (18-40k)"
+      ],
+      "description": "Correlated Color Temperature"
+    },
+    "channel_type": {
+      "type": "string",
+      "enum": [
+        "corner",
+        "recessed",
+        "surface",
+        "none"
+      ],
+      "default": "corner",
+      "description": "Type of channel for mounting"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes for this run"
+    },
+    "driver_group": {
+      "type": "string",
+      "description": "Driver group label \u2014 runs sharing the same label share a single driver"
+    },
+    "order": {
+      "type": "number",
+      "description": "Display order of the run"
+    }
+  },
+  "required": [
+    "project_id",
+    "length_feet"
+  ]
+}
