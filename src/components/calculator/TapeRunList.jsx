@@ -154,13 +154,13 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-1 space-y-1.5">
+            <div className="col-span-2 space-y-1.5">
               <Label className="text-xs">Location</Label>
               <input
                 placeholder="Location"
                 value={newRun.location}
                 onChange={e => setNewRun({ ...newRun, location: e.target.value })}
-                className="shrink-0 w-20 text-xs border border-input rounded px-1 py-0.5 bg-background h-9"
+                className="w-full text-xs border border-input rounded px-2 py-0.5 bg-background h-9"
               />
             </div>
             <div className="col-span-3 space-y-1.5">
