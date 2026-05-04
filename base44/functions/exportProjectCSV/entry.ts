@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
 
         // Configured Runs Section
         csv += 'CONFIGURED RUNS\n';
-        csv += 'Type,Length (ft),Output,CCT,Housing,Cost\n';
+        csv += 'Type,Length (ft),Output,CCT,Housing,Notes,Driver Group,Cost\n';
         
         tapeRuns.forEach((run) => {
             const runData = run.data || run;
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
             const channelDisplay = runData.channel_type === 'recessed' ? 'Recessed Flange' : 
                                    runData.channel_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             
-            csv += `${escapeCSV(runData.run_name || '')},${lengthDisplay},${escapeCSV(outputDisplay)},${escapeCSV(runData.cct || '')},${escapeCSV(channelDisplay)},${cost.toFixed(2)}\n`;
+            csv += `${escapeCSV(runData.run_name || '')},${lengthDisplay},${escapeCSV(outputDisplay)},${escapeCSV(runData.cct || '')},${escapeCSV(channelDisplay)},${escapeCSV(runData.notes || '')},${escapeCSV(runData.driver_group || '')},${cost.toFixed(2)}\n`;
         });
         
         const totalFeet = tapeRuns.reduce((sum, r) => {
