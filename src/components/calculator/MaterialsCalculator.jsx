@@ -81,8 +81,6 @@ const MaterialsCalculator = React.memo(({ runs }) => {
     // Calculate total with shipping
     const totalCost = subtotal + shippingCost;
 
-    const driverGroups = calculateDriverGroups(runs);
-
     return {
       tapeByTypeCCT,
       channelByType,
@@ -97,9 +95,10 @@ const MaterialsCalculator = React.memo(({ runs }) => {
       shippingCost,
       totalCost,
       tapeToTapeConnectors,
-      driverGroups
     };
   }, [runs]);
+
+  const driverGroups = calculateDriverGroups(runs);
 
   if (runs.length === 0) {
     return (
@@ -199,11 +198,11 @@ const MaterialsCalculator = React.memo(({ runs }) => {
           </div>
 
           {/* Driver Load */}
-          {calculations.driverGroups.some(g => g.name !== 'Unassigned') && (
+          {driverGroups.some(g => g.name !== 'Unassigned') && (
             <div>
               <h4 className="text-sm font-semibold text-slate-700 mb-2">Driver Load</h4>
               <div className="space-y-3">
-                {calculations.driverGroups
+                {driverGroups
                   .filter(g => g.name !== 'Unassigned')
                   .map(group => {
                     const barColor = group.loadPercent < 70

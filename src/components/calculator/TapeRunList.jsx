@@ -273,11 +273,11 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                               <div className="col-span-2">
                                 <div className="text-xs text-slate-500">Driver</div>
                                 <div className="flex items-center gap-1">
-                                  <Input
+                                  <input
                                     value={run.driver_group || ''}
                                     onChange={(e) => onUpdate(run.id, { driver_group: e.target.value })}
                                     placeholder="Driver 1"
-                                    className="w-16 text-xs h-7 px-2"
+                                    className="w-14 text-xs border border-input rounded px-1 py-0.5 bg-background"
                                   />
                                   {run.driver_group && driverGroupMap[run.driver_group]?.overloaded && (
                                     <AlertCircle className="h-4 w-4 text-orange-500 flex-shrink-0" />
