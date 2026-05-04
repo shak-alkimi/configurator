@@ -108,26 +108,26 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
       {/* Add New Run */}
       <Card className="border-dashed">
         <CardContent className="pt-4">
-          <div className="grid grid-cols-12 gap-3 items-end">
-            <div className="col-span-1 space-y-1.5">
+          <div className="flex flex-nowrap items-end gap-1 overflow-x-auto">
+            <div className="shrink-0 w-16 space-y-1.5">
               <Label className="text-xs">Type</Label>
               <Input
                 value={newRun.run_name}
                 onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })}
-                className="h-9"
+                className="h-9 w-full"
               />
             </div>
-            <div className="col-span-1 space-y-1.5">
+            <div className="shrink-0 w-14 space-y-1.5">
               <Label className="text-xs">Feet</Label>
               <Input
                 type="number"
                 min="0"
                 value={newRun.feet}
                 onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })}
-                className="h-9"
+                className="h-9 w-full"
               />
             </div>
-            <div className="col-span-1 space-y-1.5">
+            <div className="shrink-0 w-14 space-y-1.5">
               <Label className="text-xs">Inches</Label>
               <Input
                 type="number"
@@ -136,16 +136,16 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 step="0.5"
                 value={newRun.inches}
                 onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })}
-                className="h-9"
+                className="h-9 w-full"
               />
             </div>
-            <div className="col-span-2 space-y-1.5">
+            <div className="shrink-0 w-24 space-y-1.5">
               <Label className="text-xs">Output</Label>
               <Select
                 value={newRun.tape_type}
                 onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })}
               >
-                <SelectTrigger className="h-9">
+                <SelectTrigger className="h-9 w-full">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -154,22 +154,22 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-2 space-y-1.5">
+            <div className="shrink-0 w-20 space-y-1.5">
               <Label className="text-xs">Location</Label>
               <input
                 placeholder="Location"
                 value={newRun.location}
                 onChange={e => setNewRun({ ...newRun, location: e.target.value })}
-                className="w-full text-xs border border-input rounded px-2 py-0.5 bg-background h-9"
+                className="w-full h-9 text-xs border border-input rounded px-2 bg-background"
               />
             </div>
-            <div className="col-span-3 space-y-1.5">
+            <div className="shrink-0 w-36 space-y-1.5">
               <Label className="text-xs">CCT</Label>
               <Select
                 value={newRun.cct}
                 onValueChange={(value) => setNewRun({ ...newRun, cct: value })}
               >
-                <SelectTrigger className="h-9">
+                <SelectTrigger className="h-9 w-full">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -182,13 +182,13 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-2 space-y-1.5">
+            <div className="shrink-0 w-20 space-y-1.5">
               <Label className="text-xs">Housing</Label>
               <Select
                 value={newRun.channel_type}
                 onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })}
               >
-                <SelectTrigger className="h-9">
+                <SelectTrigger className="h-9 w-full">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
@@ -199,17 +199,17 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-1 space-y-1.5">
+            <div className="shrink-0 w-20 space-y-1.5">
               <Label className="text-xs">Driver</Label>
               <Input
                 value={newRun.driver_group}
                 onChange={(e) => setNewRun({ ...newRun, driver_group: e.target.value })}
                 placeholder="Driver 1"
-                className="w-16 text-xs h-9"
+                className="h-9 w-full text-xs"
               />
             </div>
-            <div className="col-span-1">
-              <Button onClick={handleAdd} size="sm" className="h-9 w-full" disabled={!isFormValid()}>
+            <div className="shrink-0">
+              <Button onClick={handleAdd} size="sm" className="h-9" disabled={!isFormValid()}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
