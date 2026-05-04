@@ -111,7 +111,8 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
       <Card className="border-dashed">
         <CardContent className="pt-4">
           <div className="flex items-end gap-2 w-full">
-            <div className="flex-1 min-w-0 space-y-1.5">
+            <div className="w-10 shrink-0" />
+            <div className="w-20 shrink-0 space-y-1.5">
               <Label className="text-xs">Type</Label>
               <Input
                 value={newRun.run_name}
@@ -119,7 +120,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 className="h-9 w-full"
               />
             </div>
-            <div className="flex-1 min-w-0 space-y-1.5">
+            <div className="w-24 shrink-0 space-y-1.5">
               <Label className="text-xs">Location</Label>
               <input
                 value={newRun.location}
@@ -149,7 +150,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 className="h-9 w-full"
               />
             </div>
-            <div className="flex-1 min-w-0 space-y-1.5">
+            <div className="w-28 shrink-0 space-y-1.5">
               <Label className="text-xs">Output</Label>
               <Select
                 value={newRun.tape_type}
@@ -164,7 +165,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex-1 min-w-0 space-y-1.5">
+            <div className="w-24 shrink-0 space-y-1.5">
               <Label className="text-xs">CCT</Label>
               <Select
                 value={newRun.cct}
@@ -183,7 +184,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex-1 min-w-0 space-y-1.5">
+            <div className="w-28 shrink-0 space-y-1.5">
               <Label className="text-xs">Housing</Label>
               <Select
                 value={newRun.channel_type}
@@ -200,7 +201,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex-1 min-w-0 space-y-1.5">
+            <div className="w-20 shrink-0 space-y-1.5">
               <Label className="text-xs">Driver</Label>
               <Input
                 value={newRun.driver_group}
@@ -331,22 +332,22 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                             >
                               <GripVertical className="h-5 w-5" />
                             </div>
-                            <div className="flex-1 flex items-start gap-2 min-w-0">
-                              <div className="flex-1 min-w-0">
+                            <div className="flex items-start gap-2">
+                              <div className="w-20 shrink-0">
                                 <div className="text-xs text-slate-500">Type</div>
                                 <div className="text-sm font-medium truncate">{run.run_name || 'Unnamed'}</div>
                               </div>
-                              <div className="flex-1 min-w-0">
+                              <div className="w-24 shrink-0">
                                 <div className="text-xs text-slate-500">Location</div>
                                 <div className="text-sm truncate">{run.location || '—'}</div>
                               </div>
-                              <div className="w-16 shrink-0">
+                              <div className="w-20 shrink-0">
                                 <div className="text-xs text-slate-500">Length</div>
                                 <div className="text-sm whitespace-nowrap">
                                   {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
                                 </div>
                               </div>
-                              <div className="flex-1 min-w-0">
+                              <div className="w-28 shrink-0">
                                 <div className="text-xs text-slate-500">Output</div>
                                 <div className="text-sm whitespace-nowrap">
                                   {(() => {
@@ -356,15 +357,15 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                   })()}
                                 </div>
                               </div>
-                              <div className="flex-1 min-w-0">
+                              <div className="w-24 shrink-0">
                                 <div className="text-xs text-slate-500">CCT</div>
                                 <div className="text-sm truncate">{run.cct || '—'}</div>
                               </div>
-                              <div className="flex-1 min-w-0">
+                              <div className="w-28 shrink-0">
                                 <div className="text-xs text-slate-500">Housing</div>
                                 <div className="text-sm truncate">{formatChannelType(run.channel_type)}</div>
                               </div>
-                              <div className="flex-1 min-w-0">
+                              <div className="w-20 shrink-0">
                                 <div className="text-xs text-slate-500">Driver</div>
                                 <div className="flex items-center gap-1">
                                   <span className="text-sm">{run.driver_group || '—'}</span>
