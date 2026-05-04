@@ -16,6 +16,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     feet: '',
     inches: '',
     tape_type: '',
+    location: '',
     cct: '',
     channel_type: '',
     notes: '',
@@ -40,6 +41,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
       run_name: newRun.run_name,
       length_feet: totalFeet,
       tape_type: newRun.tape_type,
+      location: newRun.location,
       cct: newRun.cct,
       channel_type: newRun.channel_type,
       notes: newRun.notes,
@@ -50,6 +52,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
       feet: '',
       inches: '',
       tape_type: '',
+      location: '',
       cct: '',
       channel_type: '',
       notes: '',
@@ -150,6 +153,15 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                   <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="col-span-1 space-y-1.5">
+              <Label className="text-xs">Location</Label>
+              <input
+                placeholder="Location"
+                value={newRun.location}
+                onChange={e => setNewRun({ ...newRun, location: e.target.value })}
+                className="shrink-0 w-20 text-xs border border-input rounded px-1 py-0.5 bg-background h-9"
+              />
             </div>
             <div className="col-span-3 space-y-1.5">
               <Label className="text-xs">CCT</Label>
@@ -261,6 +273,15 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                     return `${specs.watts_per_foot}w/ft`;
                                   })()}
                                 </div>
+                              </div>
+                              <div className="w-20 shrink-0">
+                                <div className="text-xs text-slate-500">Location</div>
+                                <input
+                                  defaultValue={run.location || ''}
+                                  key={run.id + '-' + run.location}
+                                  onBlur={(e) => onUpdate(run.id, { location: e.target.value })}
+                                  className="shrink-0 w-20 text-xs border border-input rounded px-1 py-0.5 bg-background"
+                                />
                               </div>
                               <div className="w-24 shrink-0">
                                 <div className="text-xs text-slate-500">CCT</div>
