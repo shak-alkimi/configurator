@@ -120,7 +120,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
             <div className="shrink-0 w-20 space-y-1.5">
               <Label className="text-xs">Location</Label>
               <input
-                placeholder="Location"
                 value={newRun.location}
                 onChange={e => setNewRun({ ...newRun, location: e.target.value })}
                 className="w-full h-9 text-xs border border-input rounded px-2 bg-background"
