@@ -2,17 +2,12 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Trash2, AlertTriangle, Plus } from "lucide-react";
+import { calculateDriverGroups } from "@/components/calculator/calculations";
 
 export default function DriverManager({ drivers, runs, onDriversChange }) {
-  const LOAD_FACTOR = 0.8;
-
-  const getDriverWatts = (driverName) => {
-    return runs.reduce((sum, run) => {
-      if (run.driver_group !== driverName) return sum;
-      const wattsPerFoot = run.tape_type === '2w' ? 2 : run.tape_type === '4w' ? 4 : 0;
-      return sum + run.length_feet * wattsPerFoot;
-    }, 0);
-  };
+  const groupMap = Object.fromEntries(
+    calculateDriverGroups(runs, drivers).map(g => [g.name, g])
+  );
 
   const updateDriver = (id, field, value) => {
     onDriversChange(drivers.map(d => d.id === id ? { ...d, [field]: value } : d));
@@ -37,10 +32,11 @@ export default function DriverManager({ drivers, runs, onDriversChange }) {
       </div>
 
       {drivers.map(driver => {
-        const effectiveCapacity = driver.maxWatts * LOAD_FACTOR;
-        const usedWatts = getDriverWatts(driver.name);
-        const loadPercent = effectiveCapacity > 0 ? (usedWatts / effectiveCapacity) * 100 : 0;
-        const overloaded = loadPercent > 100;
+        const group = groupMap[driver.name];
+        const effectiveCapacity = driver.maxWatts * 0.8;
+        const usedWatts = group?.totalWatts ?? 0;
+        const loadPercent = group?.loadPercent ?? 0;
+        const overloaded = group?.overloaded ?? false;
         const barColor = loadPercent > 90 ? 'bg-red-500' : loadPercent > 70 ? 'bg-yellow-400' : 'bg-green-500';
 
         return (
