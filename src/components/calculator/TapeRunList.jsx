@@ -118,73 +118,50 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
 
       {/* Add New Run */}
       <Card className="border-dashed">
-        <CardContent className="pt-4">
-          <div className="flex items-end gap-3 w-full">
-            {/* Drag handle placeholder */}
+        <CardContent className="pt-4 pb-4">
+          {/* Column headers */}
+          <div className="flex items-center gap-3 w-full mb-1.5 px-0">
             <div className="w-6 shrink-0" />
-            <div className="flex-1 min-w-0 space-y-1.5">
-              <Label className="text-xs">Type</Label>
-              <Input
-                value={newRun.run_name}
-                onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })}
-                className="h-9 w-full"
-              />
+            <div className="flex-1 min-w-0 text-xs text-slate-500">Type</div>
+            <div className="flex-1 min-w-0 text-xs text-slate-500">Location</div>
+            <div className="w-32 shrink-0 text-xs text-slate-500">Length</div>
+            <div className="flex-1 min-w-0 text-xs text-slate-500">Output</div>
+            <div className="flex-1 min-w-0 text-xs text-slate-500">CCT</div>
+            <div className="flex-1 min-w-0 text-xs text-slate-500">Housing</div>
+            <div className="flex-1 min-w-0 text-xs text-slate-500">Lens</div>
+            <div className="flex-1 min-w-0 text-xs text-slate-500">Finish</div>
+            <div className="flex-1 min-w-0 text-xs text-slate-500">Driver</div>
+            <div className="w-14 shrink-0" />
+            <div className="flex shrink-0 gap-0">
+              <div className="h-8 w-8" />
+              <div className="h-8 w-8" />
             </div>
-            <div className="flex-1 min-w-0 space-y-1.5">
-              <Label className="text-xs">Location</Label>
-              <Input
-                value={newRun.location}
-                onChange={e => setNewRun({ ...newRun, location: e.target.value })}
-                className="h-9 w-full"
-              />
+          </div>
+          {/* Input row */}
+          <div className="flex items-center gap-3 w-full">
+            <div className="w-6 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <Input value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} className="h-9 w-full" />
             </div>
-            <div className="w-32 shrink-0 space-y-1.5">
-              <Label className="text-xs">Length</Label>
-              <div className="flex gap-1">
-                <Input
-                  type="number"
-                  min="0"
-                  placeholder="ft"
-                  value={newRun.feet}
-                  onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })}
-                  className="h-9 w-full"
-                />
-                <Input
-                  type="number"
-                  min="0"
-                  max="11"
-                  step="0.5"
-                  placeholder="in"
-                  value={newRun.inches}
-                  onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })}
-                  className="h-9 w-full"
-                />
-              </div>
+            <div className="flex-1 min-w-0">
+              <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} className="h-9 w-full" />
             </div>
-            <div className="flex-1 min-w-0 space-y-1.5">
-              <Label className="text-xs">Output</Label>
-              <Select
-                value={newRun.tape_type}
-                onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })}
-              >
-                <SelectTrigger className="h-9 w-full">
-                  <SelectValue placeholder="" />
-                </SelectTrigger>
+            <div className="w-32 shrink-0 flex gap-1">
+              <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} className="h-9 w-full" />
+              <Input type="number" min="0" max="11" step="0.5" placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} className="h-9 w-full" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <Select value={newRun.tape_type} onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })}>
+                <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
                   <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex-1 min-w-0 space-y-1.5">
-              <Label className="text-xs">CCT</Label>
-              <Select
-                value={newRun.cct}
-                onValueChange={(value) => setNewRun({ ...newRun, cct: value })}
-              >
-                <SelectTrigger className="h-9 w-full">
-                  <SelectValue placeholder="" />
-                </SelectTrigger>
+            <div className="flex-1 min-w-0">
+              <Select value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value })}>
+                <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="2400k">2400k</SelectItem>
                   <SelectItem value="2700k">2700k</SelectItem>
@@ -195,15 +172,9 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex-1 min-w-0 space-y-1.5">
-              <Label className="text-xs">Housing</Label>
-              <Select
-                value={newRun.channel_type}
-                onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })}
-              >
-                <SelectTrigger className="h-9 w-full">
-                  <SelectValue placeholder="" />
-                </SelectTrigger>
+            <div className="flex-1 min-w-0">
+              <Select value={newRun.channel_type} onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })}>
+                <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="corner">Corner</SelectItem>
                   <SelectItem value="recessed">Recessed Flange</SelectItem>
@@ -212,30 +183,18 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex-1 min-w-0 space-y-1.5">
-              <Label className="text-xs">Lens</Label>
-              <Select
-                value={newRun.lens}
-                onValueChange={(value) => setNewRun({ ...newRun, lens: value })}
-              >
-                <SelectTrigger className="h-9 w-full">
-                  <SelectValue placeholder="" />
-                </SelectTrigger>
+            <div className="flex-1 min-w-0">
+              <Select value={newRun.lens} onValueChange={(value) => setNewRun({ ...newRun, lens: value })}>
+                <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Clear">Clear</SelectItem>
                   <SelectItem value="Frosted">Frosted</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex-1 min-w-0 space-y-1.5">
-              <Label className="text-xs">Finish</Label>
-              <Select
-                value={newRun.finish}
-                onValueChange={(value) => setNewRun({ ...newRun, finish: value })}
-              >
-                <SelectTrigger className="h-9 w-full">
-                  <SelectValue placeholder="" />
-                </SelectTrigger>
+            <div className="flex-1 min-w-0">
+              <Select value={newRun.finish} onValueChange={(value) => setNewRun({ ...newRun, finish: value })}>
+                <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Aluminum">Aluminum</SelectItem>
                   <SelectItem value="Black">Black</SelectItem>
@@ -243,15 +202,9 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex-1 min-w-0 space-y-1.5">
-              <Label className="text-xs">Driver</Label>
-              <Select
-                value={newRun.driver_group}
-                onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })}
-              >
-                <SelectTrigger className="h-9 w-full">
-                  <SelectValue placeholder="" />
-                </SelectTrigger>
+            <div className="flex-1 min-w-0">
+              <Select value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })}>
+                <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {(drivers || []).map(d => (
                     <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
@@ -260,8 +213,8 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               </Select>
             </div>
             {/* Cost placeholder */}
-            <div className="shrink-0 text-right w-14" />
-            {/* Actions: Add button + delete placeholder to match [edit][delete] */}
+            <div className="w-14 shrink-0" />
+            {/* Add + placeholder to match [edit][delete] */}
             <div className="flex items-center shrink-0">
               <Button onClick={handleAdd} size="icon" variant="ghost" className="h-8 w-8" disabled={!isFormValid()}>
                 <Plus className="h-4 w-4" />
