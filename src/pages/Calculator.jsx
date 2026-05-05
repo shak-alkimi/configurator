@@ -498,6 +498,7 @@ export default function Calculator() {
                    key={selectedProjectId || `new-${formResetKey}`}
                    runs={tapeRuns}
                    drivers={drivers}
+                   onDriversChange={setDrivers}
                    onAdd={handleAddTapeRun}
                    onUpdate={() => {}}
                    onDelete={(id) => deleteTapeRunMutation.mutate(id)}

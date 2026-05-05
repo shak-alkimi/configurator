@@ -8,8 +8,9 @@ import { Plus, Trash2, Ruler, GripVertical, AlertCircle, Pencil, Check, X } from
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { TAPE_SPECS, CHANNEL_SPECS } from "@/components/calculator/constants";
 import { calculateRunCost, calculateDriverGroups } from "@/components/calculator/calculations";
+import DriverManager from "@/components/calculator/DriverManager";
 
-export default function TapeRunList({ runs, drivers, onAdd, onUpdate, onDelete, onReorder }) {
+export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onUpdate, onDelete, onReorder }) {
   const [localRuns, setLocalRuns] = useState(runs);
   const [editingId, setEditingId] = useState(null);
   const [editValues, setEditValues] = useState({});
@@ -112,6 +113,8 @@ export default function TapeRunList({ runs, drivers, onAdd, onUpdate, onDelete, 
           })()}
         </span>
       </div>
+
+      <DriverManager drivers={drivers || []} runs={localRuns} onDriversChange={onDriversChange} />
 
       {/* Add New Run */}
       <Card className="border-dashed">

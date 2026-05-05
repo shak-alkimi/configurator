@@ -1,0 +1,100 @@
+import React from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Trash2, AlertTriangle, Plus } from "lucide-react";
+
+export default function DriverManager({ drivers, runs, onDriversChange }) {
+  const LOAD_FACTOR = 0.8;
+
+  const getDriverWatts = (driverName) => {
+    return runs.reduce((sum, run) => {
+      if (run.driver_group !== driverName) return sum;
+      const wattsPerFoot = run.tape_type === '2w' ? 2 : run.tape_type === '4w' ? 4 : 0;
+      return sum + run.length_feet * wattsPerFoot;
+    }, 0);
+  };
+
+  const updateDriver = (id, field, value) => {
+    onDriversChange(drivers.map(d => d.id === id ? { ...d, [field]: value } : d));
+  };
+
+  const removeDriver = (id) => {
+    onDriversChange(drivers.filter(d => d.id !== id));
+  };
+
+  const addDriver = () => {
+    const nextN = drivers.length + 1;
+    onDriversChange([...drivers, { id: String(Date.now()), name: `Driver ${nextN}`, maxWatts: 96 }]);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between pt-6 pb-1">
+        <h3 className="text-sm font-semibold" style={{ color: '#35790B' }}>Drivers</h3>
+        <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={addDriver}>
+          <Plus className="h-3 w-3" /> Add Driver
+        </Button>
+      </div>
+
+      {drivers.map(driver => {
+        const effectiveCapacity = driver.maxWatts * LOAD_FACTOR;
+        const usedWatts = getDriverWatts(driver.name);
+        const loadPercent = effectiveCapacity > 0 ? (usedWatts / effectiveCapacity) * 100 : 0;
+        const overloaded = loadPercent > 100;
+        const barColor = loadPercent > 90 ? 'bg-red-500' : loadPercent > 70 ? 'bg-yellow-400' : 'bg-green-500';
+
+        return (
+          <div key={driver.id} className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-3 py-2">
+            {/* Name */}
+            <Input
+              value={driver.name}
+              onChange={e => updateDriver(driver.id, 'name', e.target.value)}
+              className="h-7 w-24 text-xs font-medium"
+            />
+            {/* Max Watts */}
+            <div className="flex items-center gap-1 shrink-0">
+              <Input
+                type="number"
+                min="1"
+                value={driver.maxWatts}
+                onChange={e => updateDriver(driver.id, 'maxWatts', parseFloat(e.target.value) || 0)}
+                className="h-7 w-16 text-xs"
+              />
+              <span className="text-xs text-slate-400">W</span>
+            </div>
+            {/* Load text */}
+            <span className="text-xs text-slate-600 shrink-0 w-28">
+              {usedWatts.toFixed(1)}W / {effectiveCapacity.toFixed(1)}W
+            </span>
+            {/* Progress bar */}
+            <div className="flex-1 min-w-0">
+              <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${barColor}`}
+                  style={{ width: `${Math.min(loadPercent, 100)}%` }}
+                />
+              </div>
+            </div>
+            {/* Percent */}
+            <span className={`text-xs shrink-0 w-9 text-right font-medium ${overloaded ? 'text-red-600' : 'text-slate-500'}`}>
+              {Math.round(loadPercent)}%
+            </span>
+            {/* Overload warning */}
+            {overloaded && (
+              <AlertTriangle className="h-4 w-4 text-red-500 shrink-0" />
+            )}
+            {/* Remove */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-slate-400 hover:text-red-600 shrink-0"
+              onClick={() => removeDriver(driver.id)}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
