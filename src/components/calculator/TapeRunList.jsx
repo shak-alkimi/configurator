@@ -111,7 +111,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
       <Card className="border-dashed">
         <CardContent className="pt-4">
           <div className="flex items-end gap-3 w-full">
-            <div className="w-6 shrink-0" />
             <div className="flex-1 min-w-0 space-y-1.5">
               <Label className="text-xs">Type</Label>
               <Input
