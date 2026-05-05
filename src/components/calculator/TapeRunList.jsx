@@ -422,7 +422,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             <div className="text-xs text-slate-500">Location</div>
                             <div className="text-sm truncate">{run.location || '—'}</div>
                           </div>
-                          <div className="w-14 shrink-0">
+                          <div className="w-32 shrink-0">
                             <div className="text-xs text-slate-500">Length</div>
                             <div className="text-sm whitespace-nowrap">
                               {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
