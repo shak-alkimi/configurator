@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Save, Trash2, Send, Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { Save, Trash2, Send, Download, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { calculateTotalPrice } from "@/components/calculator/calculations";
 import {
   DropdownMenu,
@@ -351,8 +351,11 @@ export default function Calculator() {
       <div className={`hidden md:flex flex-col py-6 transition-all duration-300 ${sidebarCollapsed ? 'w-14 px-2' : 'w-64 lg:w-80 px-4 lg:px-6'}`}>
         <Card className="h-full flex flex-col overflow-hidden">
           {sidebarCollapsed ? (
-            <div className="flex flex-col items-center pt-4 gap-4">
+            <div className="flex flex-col items-center pt-4 gap-3 px-1">
               <span className="font-bold text-lg" style={{ color: '#252320' }}>A</span>
+              <Button className="w-full" size="sm" onClick={() => { handleNewProject(); setSidebarCollapsed(false); }}>
+                <Plus className="h-4 w-4" />
+              </Button>
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarCollapsed(false)}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
