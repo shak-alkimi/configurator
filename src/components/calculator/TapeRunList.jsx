@@ -120,6 +120,8 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
       <Card className="border-dashed">
         <CardContent className="pt-4">
           <div className="flex items-end gap-3 w-full">
+            {/* Drag handle placeholder */}
+            <div className="w-6 shrink-0" />
             <div className="flex-1 min-w-0 space-y-1.5">
               <Label className="text-xs">Type</Label>
               <Input
@@ -130,10 +132,10 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
             </div>
             <div className="flex-1 min-w-0 space-y-1.5">
               <Label className="text-xs">Location</Label>
-              <input
+              <Input
                 value={newRun.location}
                 onChange={e => setNewRun({ ...newRun, location: e.target.value })}
-                className="w-full h-9 text-xs border border-input rounded px-2 bg-background"
+                className="h-9 w-full"
               />
             </div>
             <div className="w-14 shrink-0 space-y-1.5">
@@ -147,7 +149,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               />
             </div>
             <div className="w-14 shrink-0 space-y-1.5">
-              <Label className="text-xs">Inches</Label>
+              <Label className="text-xs">In</Label>
               <Input
                 type="number"
                 min="0"
@@ -256,10 +258,15 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 </SelectContent>
               </Select>
             </div>
-            <div className="shrink-0">
-              <Button onClick={handleAdd} size="sm" className="h-9" disabled={!isFormValid()}>
+            {/* Cost placeholder to align with saved rows */}
+            <div className="shrink-0 text-right" style={{ minWidth: '3.5rem' }} />
+            {/* Add button in place of the edit+delete icons */}
+            <div className="flex items-center shrink-0">
+              <Button onClick={handleAdd} size="icon" className="h-8 w-8" disabled={!isFormValid()}>
                 <Plus className="h-4 w-4" />
               </Button>
+              {/* placeholder to match the second icon button */}
+              <div className="h-8 w-8" />
             </div>
           </div>
           {!isFormValid() && (newRun.feet || newRun.inches || newRun.tape_type || newRun.cct || newRun.channel_type) && (
