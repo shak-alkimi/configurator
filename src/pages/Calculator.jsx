@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Save, Trash2, Send, Download } from "lucide-react";
+import { Save, Trash2, Send, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { calculateTotalPrice } from "@/components/calculator/calculations";
 import {
   DropdownMenu,
