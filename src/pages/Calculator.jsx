@@ -352,15 +352,12 @@ export default function Calculator() {
         <Card className="h-full flex flex-col overflow-hidden">
           {sidebarCollapsed ? (
             <div className="flex flex-col items-center pt-4 gap-3 px-1">
-              <span className="font-bold text-lg" style={{ color: '#252320' }}>A</span>
+              <button onClick={() => setSidebarCollapsed(false)} className="font-bold text-lg hover:opacity-70 transition-opacity" style={{ color: '#252320' }}>A</button>
               <Button className="w-full" size="sm" onClick={() => { handleNewProject(); setSidebarCollapsed(false); }}>
                 <Plus className="h-4 w-4" />
               </Button>
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarCollapsed(false)}>
                 <Search className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarCollapsed(false)}>
-                <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
           ) : (
