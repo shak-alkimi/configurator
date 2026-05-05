@@ -27,6 +27,9 @@ import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
 
 export default function Calculator() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [drivers, setDrivers] = useState([
+    { id: '1', name: 'Driver 1', maxWatts: 96 }
+  ]);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({ status: 'all', dateFrom: null, dateTo: null });
@@ -492,12 +495,13 @@ export default function Calculator() {
               <Card>
                 <CardContent>
                   <TapeRunList
-                    key={selectedProjectId || `new-${formResetKey}`}
-                    runs={tapeRuns}
-                    onAdd={handleAddTapeRun}
-                    onUpdate={() => {}}
-                    onDelete={(id) => deleteTapeRunMutation.mutate(id)}
-                    onReorder={handleReorderRuns}
+                   key={selectedProjectId || `new-${formResetKey}`}
+                   runs={tapeRuns}
+                   drivers={drivers}
+                   onAdd={handleAddTapeRun}
+                   onUpdate={() => {}}
+                   onDelete={(id) => deleteTapeRunMutation.mutate(id)}
+                   onReorder={handleReorderRuns}
                   />
                 </CardContent>
               </Card>

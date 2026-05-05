@@ -9,7 +9,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { TAPE_SPECS, CHANNEL_SPECS } from "@/components/calculator/constants";
 import { calculateRunCost, calculateDriverGroups } from "@/components/calculator/calculations";
 
-export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder }) {
+export default function TapeRunList({ runs, drivers, onAdd, onUpdate, onDelete, onReorder }) {
   const [localRuns, setLocalRuns] = useState(runs);
   const [editingId, setEditingId] = useState(null);
   const [editValues, setEditValues] = useState({});
@@ -98,7 +98,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     return totalFeet > 0 && newRun.cct && newRun.tape_type && newRun.channel_type;
   };
 
-  const driverGroupData = calculateDriverGroups(localRuns);
+  const driverGroupData = calculateDriverGroups(localRuns, drivers);
   const driverGroupMap = Object.fromEntries(driverGroupData.map(g => [g.name, g]));
 
   return (
