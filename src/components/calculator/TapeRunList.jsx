@@ -22,6 +22,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
     cct: '',
     channel_type: '',
     lens: '',
+    finish: '',
     notes: '',
     driver_group: ''
   });
@@ -48,6 +49,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
       cct: newRun.cct,
       channel_type: newRun.channel_type,
       lens: newRun.lens,
+      finish: newRun.finish,
       notes: newRun.notes,
       driver_group: newRun.driver_group
     });
@@ -60,6 +62,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
       cct: '',
       channel_type: '',
       lens: '',
+      finish: '',
       notes: '',
       driver_group: ''
     });
@@ -221,6 +224,22 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
               </Select>
             </div>
             <div className="flex-1 min-w-0 space-y-1.5">
+              <Label className="text-xs">Finish</Label>
+              <Select
+                value={newRun.finish}
+                onValueChange={(value) => setNewRun({ ...newRun, finish: value })}
+              >
+                <SelectTrigger className="h-9 w-full">
+                  <SelectValue placeholder="" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Aluminum">Aluminum</SelectItem>
+                  <SelectItem value="Black">Black</SelectItem>
+                  <SelectItem value="White">White</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex-1 min-w-0 space-y-1.5">
               <Label className="text-xs">Driver</Label>
               <Input
                 value={newRun.driver_group}
@@ -333,6 +352,17 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                               </Select>
                             </div>
                             <div className="space-y-1">
+                              <Label className="text-xs">Finish</Label>
+                              <Select value={editValues.finish} onValueChange={v => setEditValues({...editValues, finish: v})}>
+                                <SelectTrigger className="h-8 w-24 text-xs"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Aluminum">Aluminum</SelectItem>
+                                  <SelectItem value="Black">Black</SelectItem>
+                                  <SelectItem value="White">White</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1">
                               <Label className="text-xs">Driver</Label>
                               <Input value={editValues.driver_group} onChange={e => setEditValues({...editValues, driver_group: e.target.value})} className="h-8 w-20 text-xs" />
                             </div>
@@ -345,6 +375,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                 cct: editValues.cct,
                                 channel_type: editValues.channel_type,
                                 lens: editValues.lens,
+                                finish: editValues.finish,
                                 driver_group: editValues.driver_group
                               });
                               setEditingId(null);
@@ -400,6 +431,10 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                             <div className="text-sm truncate">{run.lens || '—'}</div>
                           </div>
                           <div className="flex-1 min-w-0">
+                            <div className="text-xs text-slate-500">Finish</div>
+                            <div className="text-sm truncate">{run.finish || '—'}</div>
+                          </div>
+                          <div className="flex-1 min-w-0">
                             <div className="text-xs text-slate-500">Driver</div>
                             <div className="flex items-center gap-1">
                               <span className="text-sm">{run.driver_group || '—'}</span>
@@ -427,6 +462,7 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                                   cct: run.cct,
                                   channel_type: run.channel_type,
                                   lens: run.lens || '',
+                                  finish: run.finish || '',
                                   driver_group: run.driver_group || ''
                                 });
                               }}
