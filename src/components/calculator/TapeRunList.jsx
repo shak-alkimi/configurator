@@ -138,27 +138,28 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 className="h-9 w-full"
               />
             </div>
-            <div className="w-14 shrink-0 space-y-1.5">
-              <Label className="text-xs">Feet</Label>
-              <Input
-                type="number"
-                min="0"
-                value={newRun.feet}
-                onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })}
-                className="h-9 w-full"
-              />
-            </div>
-            <div className="w-14 shrink-0 space-y-1.5">
-              <Label className="text-xs">In</Label>
-              <Input
-                type="number"
-                min="0"
-                max="11"
-                step="0.5"
-                value={newRun.inches}
-                onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })}
-                className="h-9 w-full"
-              />
+            <div className="w-32 shrink-0 space-y-1.5">
+              <Label className="text-xs">Length</Label>
+              <div className="flex gap-1">
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="ft"
+                  value={newRun.feet}
+                  onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })}
+                  className="h-9 w-full"
+                />
+                <Input
+                  type="number"
+                  min="0"
+                  max="11"
+                  step="0.5"
+                  placeholder="in"
+                  value={newRun.inches}
+                  onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })}
+                  className="h-9 w-full"
+                />
+              </div>
             </div>
             <div className="flex-1 min-w-0 space-y-1.5">
               <Label className="text-xs">Output</Label>
@@ -258,14 +259,13 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 </SelectContent>
               </Select>
             </div>
-            {/* Cost placeholder to align with saved rows */}
-            <div className="shrink-0 text-right" style={{ minWidth: '3.5rem' }} />
-            {/* Add button in place of the edit+delete icons */}
+            {/* Cost placeholder */}
+            <div className="shrink-0 text-right w-14" />
+            {/* Actions: Add button + delete placeholder to match [edit][delete] */}
             <div className="flex items-center shrink-0">
-              <Button onClick={handleAdd} size="icon" className="h-8 w-8" disabled={!isFormValid()}>
+              <Button onClick={handleAdd} size="icon" variant="ghost" className="h-8 w-8" disabled={!isFormValid()}>
                 <Plus className="h-4 w-4" />
               </Button>
-              {/* placeholder to match the second icon button */}
               <div className="h-8 w-8" />
             </div>
           </div>
