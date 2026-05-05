@@ -146,9 +146,9 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
             <div className="flex-1 min-w-0">
               <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} className="h-9 w-full" />
             </div>
-            <div className="w-32 shrink-0 flex gap-1">
-              <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} className="h-9 w-full" />
-              <Input type="number" min="0" max="11" step="0.5" placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} className="h-9 w-full" />
+            <div className="w-32 shrink-0 flex">
+              <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} className="h-9 flex-1 min-w-0" />
+              <Input type="number" min="0" max="11" step="0.5" placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} className="h-9 flex-1 min-w-0" />
             </div>
             <div className="flex-1 min-w-0">
               <Select value={newRun.tape_type} onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })}>
