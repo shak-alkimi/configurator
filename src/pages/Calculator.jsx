@@ -26,6 +26,7 @@ import TapeRunList from "../components/calculator/TapeRunList";
 import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
 
 export default function Calculator() {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({ status: 'all', dateFrom: null, dateTo: null });
