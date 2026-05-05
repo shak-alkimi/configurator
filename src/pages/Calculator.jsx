@@ -348,32 +348,46 @@ export default function Calculator() {
     <TooltipProvider>
       <div className="h-screen flex gap-0 bg-white">
       {/* Sidebar - Projects List */}
-      <div className="hidden md:flex md:w-64 lg:w-80 px-4 lg:px-6 py-6 flex-col">
-        <Card className="h-full flex flex-col">
-          <CardHeader className="pb-3">
-            <img src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/badc89fb6_Alkimi_logo_long_black.png" alt="Alkimi Logo" className="h-8 w-auto -ml-6" />
-          </CardHeader>
-          <CardContent className="flex-1 px-2 pb-6 pt-0 overflow-y-auto">
-            <ProjectsList
-              projects={projects.filter(p => {
-                const matchesSearch = p.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  p.customer_name.toLowerCase().includes(searchQuery.toLowerCase());
-                const matchesStatus = filters.status === 'all' || p.status === filters.status;
-                const matchesDateFrom = !filters.dateFrom || new Date(p.created_date) >= filters.dateFrom;
-                const matchesDateTo = !filters.dateTo || new Date(p.created_date) <= filters.dateTo;
-                return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo;
-              })}
-              selectedId={selectedProjectId}
-              onSelect={handleSelectProject}
-              onNew={handleNewProject}
-              isLoading={projectsLoading}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              onUpdateStatus={handleUpdateStatus}
-              filters={filters}
-              onFiltersChange={setFilters}
-            />
-          </CardContent>
+      <div className={`hidden md:flex flex-col py-6 transition-all duration-300 ${sidebarCollapsed ? 'w-14 px-2' : 'w-64 lg:w-80 px-4 lg:px-6'}`}>
+        <Card className="h-full flex flex-col overflow-hidden">
+          {sidebarCollapsed ? (
+            <div className="flex flex-col items-center pt-4 gap-4">
+              <span className="font-bold text-lg" style={{ color: '#252320' }}>A</span>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarCollapsed(false)}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <>
+              <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                <img src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/badc89fb6_Alkimi_logo_long_black.png" alt="Alkimi Logo" className="h-8 w-auto -ml-6" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => setSidebarCollapsed(true)}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </CardHeader>
+              <CardContent className="flex-1 px-2 pb-6 pt-0 overflow-y-auto">
+                <ProjectsList
+                  projects={projects.filter(p => {
+                    const matchesSearch = p.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      p.customer_name.toLowerCase().includes(searchQuery.toLowerCase());
+                    const matchesStatus = filters.status === 'all' || p.status === filters.status;
+                    const matchesDateFrom = !filters.dateFrom || new Date(p.created_date) >= filters.dateFrom;
+                    const matchesDateTo = !filters.dateTo || new Date(p.created_date) <= filters.dateTo;
+                    return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo;
+                  })}
+                  selectedId={selectedProjectId}
+                  onSelect={handleSelectProject}
+                  onNew={handleNewProject}
+                  isLoading={projectsLoading}
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                  onUpdateStatus={handleUpdateStatus}
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                />
+              </CardContent>
+            </>
+          )}
         </Card>
       </div>
 
