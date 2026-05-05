@@ -242,12 +242,19 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
             </div>
             <div className="flex-1 min-w-0 space-y-1.5">
               <Label className="text-xs">Driver</Label>
-              <Input
+              <Select
                 value={newRun.driver_group}
-                onChange={(e) => setNewRun({ ...newRun, driver_group: e.target.value })}
-                placeholder="Driver 1"
-                className="h-9 w-full text-xs"
-              />
+                onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })}
+              >
+                <SelectTrigger className="h-9 w-full">
+                  <SelectValue placeholder="" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(drivers || []).map(d => (
+                    <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="shrink-0">
               <Button onClick={handleAdd} size="sm" className="h-9" disabled={!isFormValid()}>
@@ -363,7 +370,14 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Driver</Label>
-                              <Input value={editValues.driver_group} onChange={e => setEditValues({...editValues, driver_group: e.target.value})} className="h-8 w-20 text-xs" />
+                              <Select value={editValues.driver_group} onValueChange={v => setEditValues({...editValues, driver_group: v})}>
+                                <SelectTrigger className="h-8 w-28 text-xs"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {(drivers || []).map(d => (
+                                    <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </div>
                             <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:text-green-700" onClick={() => {
                               onUpdate(run.id, {
