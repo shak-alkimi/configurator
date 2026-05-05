@@ -216,8 +216,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Drop">Drop</SelectItem>
-                  <SelectItem value="Display">Display</SelectItem>
                   <SelectItem value="Clear">Clear</SelectItem>
                   <SelectItem value="Frosted">Frosted</SelectItem>
                 </SelectContent>
@@ -344,8 +342,6 @@ export default function TapeRunList({ runs, onAdd, onUpdate, onDelete, onReorder
                               <Select value={editValues.lens} onValueChange={v => setEditValues({...editValues, lens: v})}>
                                 <SelectTrigger className="h-8 w-24 text-xs"><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="Drop">Drop</SelectItem>
-                                  <SelectItem value="Display">Display</SelectItem>
                                   <SelectItem value="Clear">Clear</SelectItem>
                                   <SelectItem value="Frosted">Frosted</SelectItem>
                                 </SelectContent>
