@@ -420,7 +420,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             <div className="text-xs text-slate-500">Cost</div>
                             <div className="text-sm font-semibold whitespace-nowrap">${calculateRunCost(run).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                           </div>
-                          <div className="flex items-center shrink-0 gap-0">
+                          <div className="flex shrink-0 gap-0 items-center">
                             <Button
                               variant="ghost"
                               size="icon"
