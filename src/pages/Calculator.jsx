@@ -355,8 +355,8 @@ export default function Calculator() {
         <Card className="h-full flex flex-col overflow-hidden">
           {sidebarCollapsed ? (
             <div className="flex flex-col items-center pt-4 gap-3">
-              <button onClick={() => setSidebarCollapsed(false)} className="hover:opacity-70 transition-opacity flex items-center justify-start w-full">
-                <img src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/39d546fde_alkimi-a-logo.png" alt="A" className="w-full h-8 object-cover object-left" />
+              <button onClick={() => setSidebarCollapsed(false)} className="hover:opacity-70 transition-opacity block" style={{width: 'calc(100% + 2px)', marginLeft: '-1px'}}>
+                <img src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/39d546fde_alkimi-a-logo.png" alt="A" className="w-full h-8 object-cover object-left block" />
               </button>
               <Button className="w-full" size="sm" onClick={() => { handleNewProject(); setSidebarCollapsed(false); }}>
                 <Plus className="h-4 w-4" />
