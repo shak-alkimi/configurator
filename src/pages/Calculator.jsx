@@ -460,9 +460,9 @@ export default function Calculator() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6">
             {/* Left Column - Project Details */}
-            <div className="lg:col-span-3 space-y-4 md:space-y-6">
+            <div className="lg:col-span-4 space-y-4 md:space-y-6">
               <Card>
                 <CardContent>
                   <ProjectForm
