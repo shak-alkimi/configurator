@@ -354,7 +354,7 @@ export default function Calculator() {
       <div className={`hidden md:flex flex-col py-6 transition-all duration-300 ${sidebarCollapsed ? 'w-14 px-2' : 'w-64 lg:w-80 px-4 lg:px-6'}`}>
         <Card className="h-full flex flex-col overflow-hidden">
           {sidebarCollapsed ? (
-            <div className="flex flex-col items-center pt-4 gap-3 px-1">
+            <div className="flex flex-col items-center pt-4 gap-3">
               <button onClick={() => setSidebarCollapsed(false)} className="hover:opacity-70 transition-opacity flex items-center justify-start w-full overflow-hidden">
                 <img src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/39d546fde_alkimi-a-logo.png" alt="A" className="w-8 h-8 object-contain -ml-2" />
               </button>
