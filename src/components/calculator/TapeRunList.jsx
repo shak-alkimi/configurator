@@ -128,6 +128,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <div className="w-32 shrink-0 text-xs text-slate-500">Length</div>
               <div className="w-28 shrink-0 text-xs text-slate-500">Output</div>
               <div className="w-36 shrink-0 text-xs text-slate-500">CCT</div>
+
               <div className="w-32 shrink-0 text-xs text-slate-500">Housing</div>
               <div className="w-24 shrink-0 text-xs text-slate-500">Lens</div>
               <div className="w-24 shrink-0 text-xs text-slate-500">Finish</div>
@@ -157,7 +158,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-32 shrink-0">
+              <div className="w-36 shrink-0">
                 <Select value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value })}>
                   <SelectTrigger className="h-9 w-full">
                     <SelectValue>
