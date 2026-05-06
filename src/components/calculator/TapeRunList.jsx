@@ -123,7 +123,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
             {/* Column headers */}
             <div className="flex items-center gap-2 mb-1.5">
               <div className="w-6 shrink-0" />
-              <div className="w-24 shrink-0 text-xs text-slate-500">Type</div>
+              <div className="w-32 shrink-0 text-xs text-slate-500">Type</div>
               <div className="w-28 shrink-0 text-xs text-slate-500">Location</div>
               <div className="w-32 shrink-0 text-xs text-slate-500">Length</div>
               <div className="w-28 shrink-0 text-xs text-slate-500">Output</div>
@@ -138,7 +138,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
             {/* Input row */}
             <div className="flex items-center gap-2">
               <div className="w-6 shrink-0" />
-              <div className="w-24 shrink-0">
+              <div className="w-32 shrink-0">
                 <Input value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} className="h-9 w-full" />
               </div>
               <div className="w-28 shrink-0">
@@ -363,7 +363,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                           >
                             <GripVertical className="h-5 w-5" />
                           </div>
-                          <div className="w-24 shrink-0">
+                          <div className="w-32 shrink-0">
                             <div className="text-xs text-slate-500">Type</div>
                             <div className="text-sm font-medium truncate">{run.run_name || 'Unnamed'}</div>
                           </div>
