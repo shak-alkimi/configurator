@@ -351,12 +351,12 @@ export default function Calculator() {
     <TooltipProvider>
       <div className="h-screen flex gap-0 bg-white">
       {/* Sidebar - Projects List */}
-      <div className={`hidden md:flex flex-col py-6 transition-all duration-300 ${sidebarCollapsed ? 'w-14 px-2' : 'w-64 lg:w-80 px-4 lg:px-6'}`}>
+      <div className={`hidden md:flex flex-col py-6 transition-all duration-300 ${sidebarCollapsed ? 'w-16 px-2' : 'w-64 lg:w-80 px-4 lg:px-6'}`}>
         <Card className="h-full flex flex-col overflow-hidden">
           {sidebarCollapsed ? (
             <div className="flex flex-col items-center pt-4 gap-3">
-              <button onClick={() => setSidebarCollapsed(false)} className="hover:opacity-70 transition-opacity flex items-center justify-center w-full overflow-hidden">
-                <img src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/badc89fb6_Alkimi_logo_long_black.png" alt="Alkimi" className="w-8 h-8 object-contain" />
+              <button onClick={() => setSidebarCollapsed(false)} className="hover:opacity-70 transition-opacity">
+                <img src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/badc89fb6_Alkimi_logo_long_black.png" alt="Alkimi" className="h-8 w-8 object-contain" />
               </button>
               <Button className="w-full" size="sm" onClick={() => { handleNewProject(); setSidebarCollapsed(false); }}>
                 <Plus className="h-4 w-4" />
