@@ -356,7 +356,7 @@ export default function Calculator() {
           {sidebarCollapsed ? (
             <div className="flex flex-col items-center pt-4 gap-3">
               <button onClick={() => setSidebarCollapsed(false)} className="hover:opacity-70 transition-opacity w-full overflow-hidden flex items-center justify-start p-0">
-                <img src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/badc89fb6_Alkimi_logo_long_black.png" alt="Alkimi" className="h-8 w-auto object-left flex-shrink-0" />
+                <img src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/badc89fb6_Alkimi_logo_long_black.png" alt="Alkimi" className="h-8 w-auto object-left flex-shrink-0 -ml-16" />
               </button>
               <Button className="w-full" size="sm" onClick={() => { handleNewProject(); setSidebarCollapsed(false); }}>
                 <Plus className="h-4 w-4" />
