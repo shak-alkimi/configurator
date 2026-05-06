@@ -209,7 +209,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
             </div>
             {/* Add + placeholder to match [edit][delete] */}
             <div className="flex items-center shrink-0">
-              <Button onClick={handleAdd} size="icon" variant="ghost" className="h-8 w-8" disabled={!isFormValid()}>
+              <Button onClick={handleAdd} size="icon" className={`h-8 w-8 ${isFormValid() ? 'bg-[#3A5F3A] text-white hover:bg-[#2d4a2d]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'} rounded`} disabled={!isFormValid()}>
                 <Plus className="h-4 w-4" />
               </Button>
               <div className="h-8 w-8" />
