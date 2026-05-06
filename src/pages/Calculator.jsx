@@ -380,11 +380,12 @@ export default function Calculator() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto space-y-4 md:space-y-6 p-4 md:py-6 md:pr-6 md:pl-0">
-          {/* Header Actions */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
-            <div className="lg:col-span-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="flex-1 overflow-y-auto flex gap-0">
+        {/* Center - Configurator */}
+        <div className="flex-1 min-w-0 overflow-y-auto">
+          <div className="space-y-4 md:space-y-6 p-4 md:py-6">
+            {/* Header Actions */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <h2 className="text-2xl font-bold break-words" style={{ color: '#252320' }}>
                   {isNewProject ? 'New Project' : (projectData.project_name?.length > 50 ? projectData.project_name.substring(0, 50) + '...' : projectData.project_name)}
@@ -458,42 +459,37 @@ export default function Calculator() {
                 )}
               </div>
             </div>
+
+            <Card>
+              <CardContent>
+                <ProjectForm
+                  project={projectData}
+                  onChange={setProjectData}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent>
+                <TapeRunList
+                 key={selectedProjectId || `new-${formResetKey}`}
+                 runs={tapeRuns}
+                 drivers={drivers}
+                 onDriversChange={setDrivers}
+                 onAdd={handleAddTapeRun}
+                 onUpdate={() => {}}
+                 onDelete={(id) => deleteTapeRunMutation.mutate(id)}
+                 onReorder={handleReorderRuns}
+                />
+              </CardContent>
+            </Card>
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6">
-            {/* Left Column - Project Details */}
-            <div className="lg:col-span-4 space-y-4 md:space-y-6">
-              <Card>
-                <CardContent>
-                  <ProjectForm
-                    project={projectData}
-                    onChange={setProjectData}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent>
-                  <TapeRunList
-                   key={selectedProjectId || `new-${formResetKey}`}
-                   runs={tapeRuns}
-                   drivers={drivers}
-                   onDriversChange={setDrivers}
-                   onAdd={handleAddTapeRun}
-                   onUpdate={() => {}}
-                   onDelete={(id) => deleteTapeRunMutation.mutate(id)}
-                   onReorder={handleReorderRuns}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Right Column - Materials & Quote */}
-            <div className="lg:col-span-1">
-              <div className="lg:sticky lg:top-6">
-                <MaterialsCalculator runs={tapeRuns} />
-              </div>
-            </div>
+        {/* Right Column - Materials & Quote (matches left sidebar width) */}
+        <div className="hidden md:flex flex-col py-6 w-64 lg:w-80 px-4 lg:px-6 shrink-0">
+          <div className="sticky top-6">
+            <MaterialsCalculator runs={tapeRuns} />
           </div>
         </div>
       </div>
