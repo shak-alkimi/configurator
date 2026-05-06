@@ -16,7 +16,8 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
   const [editValues, setEditValues] = useState({});
   const [newRun, setNewRun] = useState({
     run_name: '',
-    length: '',
+    feet: '',
+    inches: '',
     tape_type: '',
     location: '',
     cct: '',
@@ -32,7 +33,9 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
   }, [runs]);
 
   const handleAdd = () => {
-    const totalFeet = parseFloat(newRun.length) || 0;
+    const feet = parseFloat(newRun.feet) || 0;
+    const inches = parseFloat(newRun.inches) || 0;
+    const totalFeet = feet + (inches / 12);
     
     // Validation: all required fields must be filled
     if (!newRun.cct || !newRun.tape_type || !newRun.channel_type || totalFeet <= 0) {
@@ -53,7 +56,8 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
     });
     setNewRun({
       run_name: '',
-      length: '',
+      feet: '',
+      inches: '',
       tape_type: '',
       location: '',
       cct: '',
@@ -89,7 +93,9 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
 
   // Check if form is valid (all required fields filled)
   const isFormValid = () => {
-    const totalFeet = parseFloat(newRun.length) || 0;
+    const feet = parseFloat(newRun.feet) || 0;
+    const inches = parseFloat(newRun.inches) || 0;
+    const totalFeet = feet + (inches / 12);
     return totalFeet > 0 && newRun.cct && newRun.tape_type && newRun.channel_type;
   };
 
@@ -119,13 +125,15 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <div className="w-6 shrink-0" />
               <div className="w-24 shrink-0 text-xs text-slate-500">Type</div>
               <div className="w-28 shrink-0 text-xs text-slate-500">Location</div>
-              <div className="w-24 shrink-0 text-xs text-slate-500">Length (ft)</div>
+              <div className="w-32 shrink-0 text-xs text-slate-500">Length</div>
               <div className="w-28 shrink-0 text-xs text-slate-500">Output</div>
               <div className="w-36 shrink-0 text-xs text-slate-500">CCT</div>
               <div className="w-32 shrink-0 text-xs text-slate-500">Housing</div>
               <div className="w-24 shrink-0 text-xs text-slate-500">Lens</div>
               <div className="w-24 shrink-0 text-xs text-slate-500">Finish</div>
-              <div className="w-9 shrink-0" />
+              <div className="w-28 shrink-0 text-xs text-slate-500">Driver</div>
+              <div className="w-14 shrink-0" />
+              <div className="w-16 shrink-0" />
             </div>
             {/* Input row */}
             <div className="flex items-center gap-2">
@@ -136,8 +144,9 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <div className="w-28 shrink-0">
                 <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} className="h-9 w-full" />
               </div>
-              <div className="w-24 shrink-0">
-                <Input type="number" min="0" step="0.1" placeholder="ft" value={newRun.length} onChange={(e) => setNewRun({ ...newRun, length: e.target.value })} className="h-9 w-full" />
+              <div className="w-32 shrink-0 flex gap-1">
+                <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} className="h-9 w-0 flex-1" />
+                <Input type="number" min="0" max="11" step="0.5" placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} className="h-9 w-0 flex-1" />
               </div>
               <div className="w-28 shrink-0">
                 <Select value={newRun.tape_type} onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })}>
@@ -191,14 +200,25 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-9 shrink-0">
+              <div className="w-28 shrink-0">
+                <Select value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })}>
+                  <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {(drivers || []).map(d => (
+                      <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center shrink-0 w-16">
                 <Button onClick={handleAdd} size="icon" className={`h-8 w-8 ${isFormValid() ? 'bg-[#3A5F3A] text-white hover:bg-[#2d4a2d]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'} rounded`} disabled={!isFormValid()}>
                   <Plus className="h-4 w-4" />
                 </Button>
+                <div className="h-8 w-8" />
               </div>
             </div>
           </div>
-          {!isFormValid() && (newRun.length || newRun.tape_type || newRun.cct || newRun.channel_type) && (
+          {!isFormValid() && (newRun.feet || newRun.inches || newRun.tape_type || newRun.cct || newRun.channel_type) && (
             <div className="flex items-center gap-2 text-xs text-amber-600 mt-2">
               <AlertCircle className="h-4 w-4" />
               <span>Please fill in all required fields (length, output, CCT, housing)</span>
