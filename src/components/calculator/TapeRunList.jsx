@@ -131,11 +131,6 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
             <div className="flex-1 min-w-0 text-xs text-slate-500">Lens</div>
             <div className="flex-1 min-w-0 text-xs text-slate-500">Finish</div>
             <div className="flex-1 min-w-0 text-xs text-slate-500">Driver</div>
-            <div className="w-14 shrink-0 text-xs text-slate-500">Cost</div>
-            <div className="flex shrink-0 gap-0">
-              <div className="h-8 w-8" />
-              <div className="h-8 w-8" />
-            </div>
           </div>
           {/* Input row */}
           <div className="flex items-center gap-3 w-full">
