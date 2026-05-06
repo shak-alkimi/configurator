@@ -207,8 +207,6 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 </SelectContent>
               </Select>
             </div>
-            {/* Cost placeholder */}
-            <div className="w-14 shrink-0" />
             {/* Add + placeholder to match [edit][delete] */}
             <div className="flex items-center shrink-0">
               <Button onClick={handleAdd} size="icon" variant="ghost" className="h-8 w-8" disabled={!isFormValid()}>
