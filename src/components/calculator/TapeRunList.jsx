@@ -175,7 +175,6 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                   <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="corner">Corner</SelectItem>
-                    <SelectItem value="recessed">Recessed Flange</SelectItem>
                     <SelectItem value="surface">Surface</SelectItem>
                     <SelectItem value="none">None</SelectItem>
                   </SelectContent>
@@ -297,7 +296,6 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                                 <SelectTrigger className="h-8 w-24 text-xs"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="corner">Corner</SelectItem>
-                                  <SelectItem value="recessed">Recessed Flange</SelectItem>
                                   <SelectItem value="surface">Surface</SelectItem>
                                   <SelectItem value="none">None</SelectItem>
                                 </SelectContent>
