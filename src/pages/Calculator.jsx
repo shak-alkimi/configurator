@@ -351,7 +351,7 @@ export default function Calculator() {
     <TooltipProvider>
       <div className="h-screen flex gap-0 bg-white">
       {/* Sidebar - Projects List */}
-      <div className={`hidden md:flex flex-col py-6 transition-all duration-300 ${sidebarCollapsed ? 'w-20 px-2' : 'w-64 lg:w-80 px-4 lg:px-6'}`}>
+      <div className={`hidden md:flex flex-col py-6 transition-all duration-300 ${sidebarCollapsed ? 'w-14 px-2' : 'w-64 lg:w-80 px-4 lg:px-6'}`}>
         <Card className="h-full flex flex-col overflow-hidden">
           {sidebarCollapsed ? (
             <div className="flex flex-col items-center pt-4 gap-3">
