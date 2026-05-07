@@ -1,6 +1,6 @@
 import React from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, AlertTriangle, Plus } from "lucide-react";
 import { calculateDriverGroups } from "@/components/calculator/calculations";
 
@@ -39,14 +39,15 @@ export default function DriverManager({ drivers, runs, onDriversChange }) {
             <span className="text-xs font-medium w-24 shrink-0">{driver.name}</span>
             {/* Max Watts */}
             <div className="flex items-center gap-1 shrink-0">
-              <Input
-                type="number"
-                min="1"
-                value={driver.maxWatts}
-                onChange={e => updateDriver(driver.id, 'maxWatts', parseFloat(e.target.value) || 0)}
-                className="h-7 w-16 text-xs"
-              />
-              <span className="text-xs text-slate-400">W</span>
+              <Select value={String(driver.maxWatts)} onValueChange={v => updateDriver(driver.id, 'maxWatts', parseFloat(v))}>
+                <SelectTrigger className="h-7 w-20 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="96">96W</SelectItem>
+                  <SelectItem value="60">60W</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             {/* Load text */}
             <span className="text-xs text-slate-600 shrink-0 w-28">
