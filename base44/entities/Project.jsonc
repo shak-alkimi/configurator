@@ -1,0 +1,143 @@
+{
+  "name": "Project",
+  "type": "object",
+  "properties": {
+    "quote_number": {
+      "type": "string",
+      "description": "Unique quote number for the project"
+    },
+    "project_name": {
+      "type": "string",
+      "description": "Name of the project"
+    },
+    "customer_name": {
+      "type": "string",
+      "description": "Name of the customer"
+    },
+    "customer_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Customer email address"
+    },
+    "customer_phone": {
+      "type": "string",
+      "description": "Customer phone number"
+    },
+    "street": {
+      "type": "string",
+      "description": "Street address"
+    },
+    "city": {
+      "type": "string",
+      "description": "City"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "AL",
+        "AK",
+        "AZ",
+        "AR",
+        "CA",
+        "CO",
+        "CT",
+        "DE",
+        "FL",
+        "GA",
+        "HI",
+        "ID",
+        "IL",
+        "IN",
+        "IA",
+        "KS",
+        "KY",
+        "LA",
+        "ME",
+        "MD",
+        "MA",
+        "MI",
+        "MN",
+        "MS",
+        "MO",
+        "MT",
+        "NE",
+        "NV",
+        "NH",
+        "NJ",
+        "NM",
+        "NY",
+        "NC",
+        "ND",
+        "OH",
+        "OK",
+        "OR",
+        "PA",
+        "RI",
+        "SC",
+        "SD",
+        "TN",
+        "TX",
+        "UT",
+        "VT",
+        "VA",
+        "WA",
+        "WV",
+        "WI",
+        "WY"
+      ],
+      "description": "State"
+    },
+    "sector": {
+      "type": "string",
+      "enum": [
+        "Commercial",
+        "Education",
+        "Healthcare",
+        "Hospitality",
+        "Residential",
+        "Other"
+      ],
+      "description": "Project sector"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Project notes"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "submitted",
+        "approved"
+      ],
+      "default": "draft",
+      "description": "Project status"
+    },
+    "total_price": {
+      "type": "number",
+      "description": "Total project price"
+    },
+    "drivers": {
+      "type": "array",
+      "description": "Driver configuration for this project",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "maxWatts": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "project_name",
+    "customer_name"
+  ]
+}

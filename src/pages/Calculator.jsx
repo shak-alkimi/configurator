@@ -26,9 +26,8 @@ import TapeRunList from "../components/calculator/TapeRunList";
 import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
 
 export default function Calculator() {
-  const [drivers, setDrivers] = useState([
-    { id: '1', name: 'Driver 1', maxWatts: 96 }
-  ]);
+  const DEFAULT_DRIVERS = [{ id: '1', name: 'Driver 1', maxWatts: 96 }];
+  const [drivers, setDrivers] = useState(DEFAULT_DRIVERS);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({ status: 'all', dateFrom: null, dateTo: null });
@@ -155,6 +154,14 @@ export default function Calculator() {
     reorderTapeRunsMutation.mutate(reorderedRuns);
   };
 
+  // Auto-save drivers to project whenever they change
+  const handleDriversChange = (newDrivers) => {
+    setDrivers(newDrivers);
+    if (selectedProjectId) {
+      base44.entities.Project.update(selectedProjectId, { drivers: newDrivers });
+    }
+  };
+
   // Delete project mutation
   const deleteProjectMutation = useMutation({
     mutationFn: (projectId) => base44.entities.Project.delete(projectId),
@@ -168,12 +175,13 @@ export default function Calculator() {
     },
   });
 
-  // Load selected project
+  // Load selected project (including drivers)
   useEffect(() => {
     if (selectedProjectId && !isNewProject) {
       const project = projects.find(p => p.id === selectedProjectId);
       if (project) {
         setProjectData(project);
+        setDrivers(project.drivers?.length ? project.drivers : DEFAULT_DRIVERS);
       }
     }
   }, [selectedProjectId, projects, isNewProject]);
@@ -192,6 +200,7 @@ export default function Calculator() {
       notes: '',
       status: 'draft'
     });
+    setDrivers(DEFAULT_DRIVERS);
     setFormResetKey(prev => prev + 1);
   };
 
@@ -223,6 +232,7 @@ export default function Calculator() {
 
     await saveProjectMutation.mutateAsync({
       ...projectData,
+      drivers,
       total_price: totalPrice
     });
   };
@@ -236,7 +246,7 @@ export default function Calculator() {
           toast.error('Please save project details first');
           return;
         }
-        const result = await saveProjectMutation.mutateAsync(projectData);
+        const result = await saveProjectMutation.mutateAsync({ ...projectData, drivers });
         setSelectedProjectId(result.id);
         setIsNewProject(false);
         
@@ -290,6 +300,7 @@ export default function Calculator() {
     try {
       await saveProjectMutation.mutateAsync({
         ...projectData,
+        drivers,
         status: 'submitted',
         total_price: totalPrice
       });
@@ -487,7 +498,7 @@ export default function Calculator() {
                  key={selectedProjectId || `new-${formResetKey}`}
                  runs={tapeRuns}
                  drivers={drivers}
-                 onDriversChange={setDrivers}
+                 onDriversChange={handleDriversChange}
                  onAdd={handleAddTapeRun}
                  onUpdate={(id, data) => updateTapeRunMutation.mutate({ id, data })}
                  onDelete={(id) => deleteTapeRunMutation.mutate(id)}
