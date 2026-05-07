@@ -24,14 +24,11 @@ export default function DriverManager({ drivers, runs, onDriversChange }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between pt-6 pb-1">
+      <div className="pt-6 pb-1">
         <h3 className="text-sm font-semibold" style={{ color: '#35790B' }}>Drivers</h3>
-        <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={addDriver}>
-          <Plus className="h-3 w-3" /> Add Driver
-        </Button>
       </div>
 
-      {drivers.map(driver => {
+      {drivers.map((driver, index) => {
         const group = groupMap[driver.name];
         const effectiveCapacity = driver.maxWatts * 0.8;
         const usedWatts = group?.totalWatts ?? 0;
@@ -88,6 +85,12 @@ export default function DriverManager({ drivers, runs, onDriversChange }) {
             >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
+            {/* Add Driver — shown on the last row */}
+            {index === drivers.length - 1 && (
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1 shrink-0" onClick={addDriver}>
+                <Plus className="h-3 w-3" /> Add Driver
+              </Button>
+            )}
           </div>
         );
       })}
