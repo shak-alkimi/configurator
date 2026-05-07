@@ -44,8 +44,8 @@ export default function DriverManager({ drivers, runs, onDriversChange }) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="96">96W</SelectItem>
                   <SelectItem value="60">60W</SelectItem>
+                  <SelectItem value="96">96W</SelectItem>
                 </SelectContent>
               </Select>
             </div>
