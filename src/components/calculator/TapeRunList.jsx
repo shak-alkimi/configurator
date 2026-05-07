@@ -137,7 +137,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <div className="w-16 shrink-0" />
             </div>
             {/* Input row */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 justify-center">
               <div className="w-6 shrink-0" />
               <div className="w-16 shrink-0">
                 <Input value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} className="h-9 w-full" />
