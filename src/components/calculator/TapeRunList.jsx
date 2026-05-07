@@ -105,7 +105,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between pt-6">
-        <h3 className="text-sm font-semibold" style={{ color: '#35790B' }}>Configure</h3>
+        <h3 className="text-sm font-semibold" style={{ color: '#252320' }}>Alkiline</h3>
         <span className="text-xs text-slate-500">
           Total: {(() => {
             const totalFeet = localRuns.reduce((sum, r) => sum + r.length_feet, 0);
