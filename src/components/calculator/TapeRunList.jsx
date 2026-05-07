@@ -124,7 +124,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
             <div className="flex items-center gap-2 mb-1.5">
               <div className="w-6 shrink-0" />
               <div className="w-10 shrink-0 text-xs text-slate-500">Type</div>
-              <div className="w-16 shrink-0 text-xs text-slate-500">Location</div>
+              <div className="w-28 shrink-0 text-xs text-slate-500">Location</div>
               <div className="w-32 shrink-0 text-xs text-slate-500">Length</div>
               <div className="w-28 shrink-0 text-xs text-slate-500">Output</div>
               <div className="w-20 shrink-0 text-xs text-slate-500">CCT</div>
@@ -142,7 +142,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <div className="w-10 shrink-0">
                 <Input value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} className="h-9 w-full" />
               </div>
-              <div className="w-16 shrink-0">
+              <div className="w-28 shrink-0">
                 <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} className="h-9 w-full" />
               </div>
               <div className="w-32 shrink-0 flex gap-1">
