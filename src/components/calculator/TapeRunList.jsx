@@ -261,12 +261,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
             </div>
           </div>
           </div>
-          {!isFormValid() && (newRun.feet || newRun.inches || newRun.tape_type || newRun.cct || newRun.channel_type) && (
-            <div className="flex items-center gap-2 text-xs text-amber-600 mt-2">
-              <AlertCircle className="h-4 w-4" />
-              <span>Please fill in all required fields (length, output, CCT, housing)</span>
-            </div>
-          )}
+
         </CardContent>
       </Card>
 
