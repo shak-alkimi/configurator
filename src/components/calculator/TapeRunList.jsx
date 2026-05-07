@@ -99,6 +99,28 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
     return totalFeet > 0 && newRun.cct && newRun.tape_type && newRun.channel_type;
   };
 
+  // Preview wattage from the new run input
+  const previewWatts = (() => {
+    const feet = parseFloat(newRun.feet) || 0;
+    const inches = parseFloat(newRun.inches) || 0;
+    const totalFeet = feet + (inches / 12);
+    const spec = TAPE_SPECS[newRun.tape_type];
+    if (!spec || totalFeet <= 0) return 0;
+    return totalFeet * spec.watts_per_foot;
+  })();
+
+  // Check if the preview run would overload its assigned driver
+  const previewDriverOverloaded = (() => {
+    if (!newRun.driver_group || previewWatts === 0) return false;
+    const driver = (drivers || []).find(d => d.name === newRun.driver_group);
+    if (!driver) return false;
+    const capacity = driver.maxWatts * 0.8;
+    const driverGroupData = calculateDriverGroups(localRuns, drivers);
+    const group = driverGroupData.find(g => g.name === newRun.driver_group);
+    const currentWatts = group?.totalWatts ?? 0;
+    return (currentWatts + previewWatts) > capacity;
+  })();
+
   const driverGroupData = calculateDriverGroups(localRuns, drivers);
   const driverGroupMap = Object.fromEntries(driverGroupData.map(g => [g.name, g]));
 
@@ -114,7 +136,13 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
         </span>
       </div>
 
-      <DriverManager drivers={drivers || []} runs={localRuns} onDriversChange={onDriversChange} />
+      <DriverManager
+        drivers={drivers || []}
+        runs={localRuns}
+        onDriversChange={onDriversChange}
+        previewDriverGroup={newRun.driver_group}
+        previewWatts={previewWatts}
+      />
 
       {/* Add New Run */}
       <Card className="border-dashed">
@@ -215,7 +243,18 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 </Select>
               </div>
               <div className="shrink-0">
-                <Button onClick={handleAdd} size="icon" className={`h-9 w-9 ${isFormValid() ? 'bg-[#3A5F3A] text-white hover:bg-[#2d4a2d]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'} rounded`} disabled={!isFormValid()}>
+                <Button
+                  onClick={handleAdd}
+                  size="icon"
+                  className={`h-9 w-9 rounded ${
+                    !isFormValid()
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : previewDriverOverloaded
+                        ? 'bg-red-500 text-white hover:bg-red-600 cursor-not-allowed'
+                        : 'bg-[#3A5F3A] text-white hover:bg-[#2d4a2d]'
+                  }`}
+                  disabled={!isFormValid() || previewDriverOverloaded}
+                >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
