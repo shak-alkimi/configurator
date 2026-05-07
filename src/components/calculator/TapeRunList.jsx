@@ -127,7 +127,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <div className="w-16 shrink-0 text-xs text-slate-500">Location</div>
               <div className="w-32 shrink-0 text-xs text-slate-500">Length</div>
               <div className="w-28 shrink-0 text-xs text-slate-500">Output</div>
-              <div className="w-36 shrink-0 text-xs text-slate-500">CCT</div>
+              <div className="w-20 shrink-0 text-xs text-slate-500">CCT</div>
 
               <div className="w-24 shrink-0 text-xs text-slate-500">Housing</div>
               <div className="w-24 shrink-0 text-xs text-slate-500">Lens</div>
@@ -158,11 +158,11 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-36 shrink-0">
+              <div className="w-20 shrink-0">
                 <Select value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value })}>
                   <SelectTrigger className="h-9 w-full">
                     <SelectValue>
-                      {newRun.cct === 'Warm Dim (22-30k)' ? 'Warm Dim' : newRun.cct === 'Tunable White (18-40k)' ? 'Tunable White' : newRun.cct || ''}
+                      {newRun.cct === 'Warm Dim (22-30k)' ? 'WD' : newRun.cct === 'Tunable White (18-40k)' ? 'TW' : newRun.cct || ''}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
