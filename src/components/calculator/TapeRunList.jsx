@@ -120,7 +120,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
       <Card className="border-dashed">
         <CardContent className="pt-4 pb-4 overflow-x-auto">
           <div className="flex justify-center">
-          <div className="min-w-0">
+          <div className="min-w-max">
             {/* Column headers */}
             <div className="flex items-center gap-2 mb-1.5">
               <div className="w-6 shrink-0" />
