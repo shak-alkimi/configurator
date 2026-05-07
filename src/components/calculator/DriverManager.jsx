@@ -41,7 +41,12 @@ export default function DriverManager({ drivers, runs, onDriversChange, previewD
         return (
           <div key={driver.id} className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-3 py-2">
             {/* Name */}
-            <span className="text-xs font-medium w-24 shrink-0">{driver.name}</span>
+            <span className="flex items-center gap-1.5 w-24 shrink-0">
+              <span className="text-xs font-medium">{driver.name}</span>
+              <span className="text-[10px] font-medium bg-slate-100 text-slate-400 rounded-full px-1.5 py-0.5 leading-none">
+                {group?.runs?.length ?? 0}
+              </span>
+            </span>
             {/* Max Watts */}
             <div className="flex items-center gap-1 shrink-0">
               <Select value={String(driver.maxWatts)} onValueChange={v => updateDriver(driver.id, 'maxWatts', parseFloat(v))}>
