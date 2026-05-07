@@ -119,7 +119,8 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
       {/* Add New Run */}
       <Card className="border-dashed">
         <CardContent className="pt-4 pb-4 overflow-x-auto">
-          <div className="min-w-max">
+          <div className="flex justify-center">
+          <div className="min-w-0">
             {/* Column headers */}
             <div className="flex items-center gap-2 mb-1.5">
               <div className="w-6 shrink-0" />
@@ -222,6 +223,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 <div className="h-8 w-8" />
               </div>
             </div>
+          </div>
           </div>
           {!isFormValid() && (newRun.feet || newRun.inches || newRun.tape_type || newRun.cct || newRun.channel_type) && (
             <div className="flex items-center gap-2 text-xs text-amber-600 mt-2">
