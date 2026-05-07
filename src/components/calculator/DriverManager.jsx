@@ -24,9 +24,6 @@ export default function DriverManager({ drivers, runs, onDriversChange }) {
 
   return (
     <div className="space-y-2">
-      <div className="pt-6 pb-1">
-        <h3 className="text-sm font-semibold" style={{ color: '#35790B' }}>Drivers</h3>
-      </div>
 
       {drivers.map((driver, index) => {
         const group = groupMap[driver.name];
