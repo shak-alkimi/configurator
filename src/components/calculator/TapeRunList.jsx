@@ -393,11 +393,11 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                               })()}
                             </div>
                           </div>
-                          <div className="w-36 shrink-0">
+                          <div className="w-20 shrink-0">
                             <div className="text-xs text-slate-500">CCT</div>
                             <div className="text-sm truncate">{run.cct || '—'}</div>
                           </div>
-                          <div className="w-32 shrink-0">
+                          <div className="w-24 shrink-0">
                             <div className="text-xs text-slate-500">Housing</div>
                             <div className="text-sm truncate">{formatChannelType(run.channel_type)}</div>
                           </div>
@@ -405,11 +405,11 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             <div className="text-xs text-slate-500">Lens</div>
                             <div className="text-sm truncate">{run.lens || '—'}</div>
                           </div>
-                          <div className="w-24 shrink-0">
+                          <div className="w-28 shrink-0">
                             <div className="text-xs text-slate-500">Finish</div>
                             <div className="text-sm truncate">{run.finish || '—'}</div>
                           </div>
-                          <div className="w-28 shrink-0">
+                          <div className="w-24 shrink-0">
                             <div className="text-xs text-slate-500">Driver</div>
                             <div className="flex items-center gap-1">
                               <span className="text-sm">{run.driver_group || '—'}</span>
