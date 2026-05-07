@@ -81,7 +81,7 @@ export default function DriverManager({ drivers, runs, onDriversChange }) {
             {/* Add Driver — shown on the last row */}
             {index === drivers.length - 1 && (
               <Button variant="outline" size="sm" className="h-7 text-xs gap-1 shrink-0" onClick={addDriver}>
-                <Plus className="h-3 w-3" /> Add Driver
+                <Plus className="h-3 w-3" /> Driver
               </Button>
             )}
           </div>
