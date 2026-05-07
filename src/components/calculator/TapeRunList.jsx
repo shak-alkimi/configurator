@@ -134,8 +134,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <div className="w-24 shrink-0 text-xs text-slate-500">Lens</div>
               <div className="w-28 shrink-0 text-xs text-slate-500">Finish</div>
               <div className="w-24 shrink-0 text-xs text-slate-500">Driver</div>
-              <div className="w-14 shrink-0" />
-              <div className="w-16 shrink-0" />
+              <div className="w-9 shrink-0" />
             </div>
             {/* Input row */}
             <div className="flex items-center gap-2">
@@ -215,12 +214,10 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-14 shrink-0" />
-              <div className="flex items-center shrink-0 w-16">
-                <Button onClick={handleAdd} size="icon" className={`h-8 w-8 ${isFormValid() ? 'bg-[#3A5F3A] text-white hover:bg-[#2d4a2d]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'} rounded`} disabled={!isFormValid()}>
+              <div className="shrink-0">
+                <Button onClick={handleAdd} size="icon" className={`h-9 w-9 ${isFormValid() ? 'bg-[#3A5F3A] text-white hover:bg-[#2d4a2d]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'} rounded`} disabled={!isFormValid()}>
                   <Plus className="h-4 w-4" />
                 </Button>
-                <div className="h-8 w-8" />
               </div>
             </div>
           </div>
