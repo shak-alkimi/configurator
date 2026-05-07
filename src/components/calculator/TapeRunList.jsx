@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import TabSelect from "@/components/calculator/TabSelect";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2, Ruler, GripVertical, AlertCircle, Pencil, Check, X } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
@@ -184,69 +185,47 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 <Input type="number" min="0" max="11" step="0.5" placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
               </div>
               <div className="w-28 shrink-0">
-                <Select value={newRun.tape_type} onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })}>
-                  <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
-                    <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <TabSelect value={newRun.tape_type} onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })} triggerClassName="h-9 w-full">
+                  <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
+                  <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
+                </TabSelect>
               </div>
               <div className="w-20 shrink-0">
-                <Select value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value })}>
-                  <SelectTrigger className="h-9 w-full">
-                    <SelectValue>
-                      {newRun.cct === 'Warm Dim (22-30k)' ? 'WD' : newRun.cct === 'Tunable White (18-40k)' ? 'TW' : newRun.cct || ''}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="2400k">2400k</SelectItem>
-                    <SelectItem value="2700k">2700k</SelectItem>
-                    <SelectItem value="3000k">3000k</SelectItem>
-                    <SelectItem value="3500k">3500k</SelectItem>
-                    <SelectItem value="Warm Dim (22-30k)">Warm Dim (22-30k)</SelectItem>
-                    <SelectItem value="Tunable White (18-40k)">Tunable White (18-40k)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value })} triggerClassName="h-9 w-full">
+                  <SelectItem value="2400k">2400k</SelectItem>
+                  <SelectItem value="2700k">2700k</SelectItem>
+                  <SelectItem value="3000k">3000k</SelectItem>
+                  <SelectItem value="3500k">3500k</SelectItem>
+                  <SelectItem value="Warm Dim (22-30k)">Warm Dim (22-30k)</SelectItem>
+                  <SelectItem value="Tunable White (18-40k)">Tunable White (18-40k)</SelectItem>
+                </TabSelect>
               </div>
               <div className="w-24 shrink-0">
-                <Select value={newRun.channel_type} onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })}>
-                  <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="corner">Corner</SelectItem>
-                    <SelectItem value="surface">Surface</SelectItem>
-                    <SelectItem value="none">None</SelectItem>
-                  </SelectContent>
-                </Select>
+                <TabSelect value={newRun.channel_type} onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })} triggerClassName="h-9 w-full">
+                  <SelectItem value="corner">Corner</SelectItem>
+                  <SelectItem value="surface">Surface</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
+                </TabSelect>
               </div>
               <div className="w-24 shrink-0">
-                <Select value={newRun.lens} onValueChange={(value) => setNewRun({ ...newRun, lens: value })}>
-                  <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Clear">Clear</SelectItem>
-                    <SelectItem value="Frosted">Frosted</SelectItem>
-                  </SelectContent>
-                </Select>
+                <TabSelect value={newRun.lens} onValueChange={(value) => setNewRun({ ...newRun, lens: value })} triggerClassName="h-9 w-full">
+                  <SelectItem value="Clear">Clear</SelectItem>
+                  <SelectItem value="Frosted">Frosted</SelectItem>
+                </TabSelect>
               </div>
               <div className="w-28 shrink-0">
-                <Select value={newRun.finish} onValueChange={(value) => setNewRun({ ...newRun, finish: value })}>
-                  <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Aluminum">Aluminum</SelectItem>
-                    <SelectItem value="Black">Black</SelectItem>
-                    <SelectItem value="White">White</SelectItem>
-                  </SelectContent>
-                </Select>
+                <TabSelect value={newRun.finish} onValueChange={(value) => setNewRun({ ...newRun, finish: value })} triggerClassName="h-9 w-full">
+                  <SelectItem value="Aluminum">Aluminum</SelectItem>
+                  <SelectItem value="Black">Black</SelectItem>
+                  <SelectItem value="White">White</SelectItem>
+                </TabSelect>
               </div>
               <div className="w-24 shrink-0">
-                <Select value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })}>
-                  <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {(drivers || []).map(d => (
-                      <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <TabSelect value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 w-full">
+                  {(drivers || []).map(d => (
+                    <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
+                  ))}
+                </TabSelect>
               </div>
               <div className="shrink-0">
                 <Button
