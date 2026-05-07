@@ -32,6 +32,12 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
     setLocalRuns(runs);
   }, [runs]);
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && isFormValid() && !previewDriverOverloaded) {
+      handleAdd();
+    }
+  };
+
   const handleAdd = () => {
     const feet = parseFloat(newRun.feet) || 0;
     const inches = parseFloat(newRun.inches) || 0;
@@ -168,14 +174,14 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
             <div className="flex items-center gap-2">
               <div className="w-6 shrink-0" />
               <div className="w-16 shrink-0">
-                <Input value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} className="h-9 w-full" />
+                <Input value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
               </div>
               <div className="w-28 shrink-0">
-                <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} className="h-9 w-full" />
+                <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
               </div>
               <div className="w-32 shrink-0 flex gap-1">
-                <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} className="h-9 w-0 flex-1" />
-                <Input type="number" min="0" max="11" step="0.5" placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} className="h-9 w-0 flex-1" />
+                <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
+                <Input type="number" min="0" max="11" step="0.5" placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
               </div>
               <div className="w-28 shrink-0">
                 <Select value={newRun.tape_type} onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })}>
