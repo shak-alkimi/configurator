@@ -103,6 +103,18 @@ export default function Calculator() {
     },
   });
 
+  // Update tape run mutation
+  const updateTapeRunMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.TapeRun.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
+      toast.success('Tape run updated');
+    },
+    onError: () => {
+      toast.error('Failed to update tape run');
+    },
+  });
+
   // Delete tape run mutation
   const deleteTapeRunMutation = useMutation({
     mutationFn: (runId) => base44.entities.TapeRun.delete(runId),
@@ -477,7 +489,7 @@ export default function Calculator() {
                  drivers={drivers}
                  onDriversChange={setDrivers}
                  onAdd={handleAddTapeRun}
-                 onUpdate={() => {}}
+                 onUpdate={(id, data) => updateTapeRunMutation.mutate({ id, data })}
                  onDelete={(id) => deleteTapeRunMutation.mutate(id)}
                  onReorder={handleReorderRuns}
                 />
