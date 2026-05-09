@@ -1,22 +1,16 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-/**
- * A Select wrapper that:
- * 1. When the dropdown is OPEN and Tab is pressed: confirms the highlighted option and moves focus to next field.
- * 2. When the trigger is FOCUSED (closed) and Tab is pressed: lets Tab naturally move to the next field.
- */
 export default function TabSelect({ value, onValueChange, children, triggerClassName, placeholder }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef(null);
 
-  // Build a label->value map from children
+  // Build value map from children (label -> value and value -> value)
   const optionMap = useMemo(() => {
     const map = {};
     React.Children.forEach(children, (child) => {
       if (child?.props?.value !== undefined) {
-        const label = String(child.props.children);
-        map[label] = child.props.value;
+        map[String(child.props.children)] = child.props.value;
         map[child.props.value] = child.props.value;
       }
     });
@@ -26,7 +20,6 @@ export default function TabSelect({ value, onValueChange, children, triggerClass
   const focusNext = () => {
     const trigger = triggerRef.current;
     if (!trigger) return;
-    // Find all focusable elements in the document
     const focusable = Array.from(
       document.querySelectorAll(
         'input, button, [href], select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -38,9 +31,17 @@ export default function TabSelect({ value, onValueChange, children, triggerClass
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Tab" && open) {
+  // Attach a capture-phase keydown listener on the document while open.
+  // Capture phase fires before Radix can intercept Tab.
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key !== "Tab") return;
       e.preventDefault();
+      e.stopPropagation();
+
+      // Pick the highlighted option if one exists
       const highlighted = document.querySelector('[role="option"][data-highlighted]');
       if (highlighted) {
         const label = highlighted.textContent?.trim();
@@ -49,18 +50,21 @@ export default function TabSelect({ value, onValueChange, children, triggerClass
           onValueChange(matched);
         }
       }
+
       setOpen(false);
-      // Move focus to next field after a tick (let Radix close fully)
       setTimeout(focusNext, 0);
-    }
-  };
+    };
+
+    document.addEventListener("keydown", handleKeyDown, true); // capture phase
+    return () => document.removeEventListener("keydown", handleKeyDown, true);
+  }, [open, optionMap, onValueChange]);
 
   return (
     <Select value={value} onValueChange={onValueChange} open={open} onOpenChange={setOpen}>
       <SelectTrigger ref={triggerRef} className={triggerClassName}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent onKeyDown={handleKeyDown}>
+      <SelectContent>
         {children}
       </SelectContent>
     </Select>
