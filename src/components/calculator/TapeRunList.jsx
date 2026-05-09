@@ -160,13 +160,13 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 <Input type="number" min="0" max="11" step="0.5" placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
               </div>
               <div className="w-28 shrink-0">
-                <TabSelect value={newRun.tape_type} onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })} triggerClassName="h-9 w-full">
+                <TabSelect value={newRun.tape_type} onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })} triggerClassName="h-9 w-full" triggerId="new-tape-type" nextFieldId="new-cct">
                   <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
                   <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
                 </TabSelect>
               </div>
               <div className="w-20 shrink-0">
-                <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value })} triggerClassName="h-9 w-full">
+                <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value })} triggerClassName="h-9 w-full" triggerId="new-cct" nextFieldId="new-channel-type">
                   <SelectItem value="2400k">2400k</SelectItem>
                   <SelectItem value="2700k">2700k</SelectItem>
                   <SelectItem value="3000k">3000k</SelectItem>
@@ -176,27 +176,27 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 </TabSelect>
               </div>
               <div className="w-24 shrink-0">
-                <TabSelect value={newRun.channel_type} onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })} triggerClassName="h-9 w-full">
+                <TabSelect value={newRun.channel_type} onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })} triggerClassName="h-9 w-full" triggerId="new-channel-type" nextFieldId="new-lens">
                   <SelectItem value="corner">Corner</SelectItem>
                   <SelectItem value="surface">Surface</SelectItem>
                   <SelectItem value="none">None</SelectItem>
                 </TabSelect>
               </div>
               <div className="w-24 shrink-0">
-                <TabSelect value={newRun.lens} onValueChange={(value) => setNewRun({ ...newRun, lens: value })} triggerClassName="h-9 w-full">
+                <TabSelect value={newRun.lens} onValueChange={(value) => setNewRun({ ...newRun, lens: value })} triggerClassName="h-9 w-full" triggerId="new-lens" nextFieldId="new-finish">
                   <SelectItem value="Clear">Clear</SelectItem>
                   <SelectItem value="Frosted">Frosted</SelectItem>
                 </TabSelect>
               </div>
               <div className="w-28 shrink-0">
-                <TabSelect value={newRun.finish} onValueChange={(value) => setNewRun({ ...newRun, finish: value })} triggerClassName="h-9 w-full">
+                <TabSelect value={newRun.finish} onValueChange={(value) => setNewRun({ ...newRun, finish: value })} triggerClassName="h-9 w-full" triggerId="new-finish" nextFieldId="new-driver-group">
                   <SelectItem value="Aluminum">Aluminum</SelectItem>
                   <SelectItem value="Black">Black</SelectItem>
                   <SelectItem value="White">White</SelectItem>
                 </TabSelect>
               </div>
               <div className="w-24 shrink-0">
-                <TabSelect value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 w-full">
+                <TabSelect value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 w-full" triggerId="new-driver-group">
                   {(drivers || []).map(d => (
                     <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
                   ))}
