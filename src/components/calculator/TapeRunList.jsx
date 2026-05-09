@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SelectItem } from "@/components/ui/select";
 import TabSelect from "@/components/calculator/TabSelect";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2, GripVertical, Pencil, Check, X } from "lucide-react";
@@ -261,70 +261,52 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Output</Label>
-                              <Select value={editValues.tape_type} onValueChange={v => setEditValues({...editValues, tape_type: v})}>
-                                <SelectTrigger className="h-8 w-24 text-xs"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
-                                  <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <TabSelect value={editValues.tape_type} onValueChange={v => setEditValues({...editValues, tape_type: v})} triggerClassName="h-8 w-24 text-xs">
+                                <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
+                                <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
+                              </TabSelect>
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">CCT</Label>
-                              <Select value={editValues.cct} onValueChange={v => setEditValues({...editValues, cct: v})}>
-                                <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="2400k">2400k</SelectItem>
-                                  <SelectItem value="2700k">2700k</SelectItem>
-                                  <SelectItem value="3000k">3000k</SelectItem>
-                                  <SelectItem value="3500k">3500k</SelectItem>
-                                  <SelectItem value="Warm Dim (22-30k)">Warm Dim (22-30k)</SelectItem>
-                                  <SelectItem value="Tunable White (18-40k)">Tunable White (18-40k)</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <TabSelect value={editValues.cct} onValueChange={v => setEditValues({...editValues, cct: v})} triggerClassName="h-8 w-36 text-xs">
+                                <SelectItem value="2400k">2400k</SelectItem>
+                                <SelectItem value="2700k">2700k</SelectItem>
+                                <SelectItem value="3000k">3000k</SelectItem>
+                                <SelectItem value="3500k">3500k</SelectItem>
+                                <SelectItem value="Warm Dim (22-30k)">Warm Dim (22-30k)</SelectItem>
+                                <SelectItem value="Tunable White (18-40k)">Tunable White (18-40k)</SelectItem>
+                              </TabSelect>
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Housing</Label>
-                              <Select value={editValues.channel_type} onValueChange={v => setEditValues({...editValues, channel_type: v})}>
-                                <SelectTrigger className="h-8 w-24 text-xs"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="corner">Corner</SelectItem>
-                                  <SelectItem value="surface">Surface</SelectItem>
-                                  <SelectItem value="none">None</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <TabSelect value={editValues.channel_type} onValueChange={v => setEditValues({...editValues, channel_type: v})} triggerClassName="h-8 w-24 text-xs">
+                                <SelectItem value="corner">Corner</SelectItem>
+                                <SelectItem value="surface">Surface</SelectItem>
+                                <SelectItem value="none">None</SelectItem>
+                              </TabSelect>
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Lens</Label>
-                              <Select value={editValues.lens} onValueChange={v => setEditValues({...editValues, lens: v})}>
-                                <SelectTrigger className="h-8 w-24 text-xs"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Clear">Clear</SelectItem>
-                                  <SelectItem value="Frosted">Frosted</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <TabSelect value={editValues.lens} onValueChange={v => setEditValues({...editValues, lens: v})} triggerClassName="h-8 w-24 text-xs">
+                                <SelectItem value="Clear">Clear</SelectItem>
+                                <SelectItem value="Frosted">Frosted</SelectItem>
+                              </TabSelect>
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Finish</Label>
-                              <Select value={editValues.finish} onValueChange={v => setEditValues({...editValues, finish: v})}>
-                                <SelectTrigger className="h-8 w-24 text-xs"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Aluminum">Aluminum</SelectItem>
-                                  <SelectItem value="Black">Black</SelectItem>
-                                  <SelectItem value="White">White</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <TabSelect value={editValues.finish} onValueChange={v => setEditValues({...editValues, finish: v})} triggerClassName="h-8 w-24 text-xs">
+                                <SelectItem value="Aluminum">Aluminum</SelectItem>
+                                <SelectItem value="Black">Black</SelectItem>
+                                <SelectItem value="White">White</SelectItem>
+                              </TabSelect>
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Driver</Label>
-                              <Select value={editValues.driver_group} onValueChange={v => setEditValues({...editValues, driver_group: v})}>
-                                <SelectTrigger className="h-8 w-28 text-xs"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  {(drivers || []).map(d => (
-                                    <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <TabSelect value={editValues.driver_group} onValueChange={v => setEditValues({...editValues, driver_group: v})} triggerClassName="h-8 w-28 text-xs">
+                                {(drivers || []).map(d => (
+                                  <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
+                                ))}
+                              </TabSelect>
                             </div>
                             <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:text-green-700" onClick={() => {
                               onUpdate(run.id, {
