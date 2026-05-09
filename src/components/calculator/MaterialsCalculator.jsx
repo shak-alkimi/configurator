@@ -2,7 +2,6 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { TAPE_SPECS, CHANNEL_SPECS, DRIVER_SPECS, SPOOL_LENGTH_FEET, DRIVER_LOAD_FACTOR, CLIPS_PER_SECTION, CLIPS_PER_SET, CLIP_SET_PRICE, SHIPPING_RATE } from "@/components/calculator/constants";
-import { calculateDriverGroups } from "@/components/calculator/calculations";
 
 const MaterialsCalculator = React.memo(({ runs }) => {
 
@@ -97,8 +96,6 @@ const MaterialsCalculator = React.memo(({ runs }) => {
       tapeToTapeConnectors,
     };
   }, [runs]);
-
-  const driverGroups = calculateDriverGroups(runs);
 
   if (runs.length === 0) {
     return (
@@ -196,41 +193,6 @@ const MaterialsCalculator = React.memo(({ runs }) => {
               </div>
             </div>
           </div>
-
-          {/* Driver Load */}
-          {driverGroups.some(g => g.name !== 'Unassigned') && (
-            <div>
-              <h4 className="text-sm font-semibold text-slate-700 mb-2">Driver Load</h4>
-              <div className="space-y-3">
-                {driverGroups
-                  .filter(g => g.name !== 'Unassigned')
-                  .map(group => {
-                    const barColor = group.loadPercent < 70
-                      ? 'bg-green-500'
-                      : group.loadPercent <= 90
-                        ? 'bg-yellow-400'
-                        : 'bg-red-500';
-                    return (
-                      <div key={group.name}>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-slate-600">{group.name}</span>
-                          <span className="font-medium">{group.totalWatts.toFixed(1)}W / {group.capacity.toFixed(1)}W</span>
-                        </div>
-                        <div className="w-full bg-slate-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full ${barColor}`}
-                            style={{ width: `${Math.min(group.loadPercent, 100)}%` }}
-                          />
-                        </div>
-                        {group.overloaded && (
-                          <p className="text-xs text-red-500 mt-0.5">Overloaded!</p>
-                        )}
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
 
           {/* Mounting Hardware */}
           <div>

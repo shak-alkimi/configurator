@@ -5,10 +5,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import TabSelect from "@/components/calculator/TabSelect";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Trash2, Ruler, GripVertical, AlertCircle, Pencil, Check, X } from "lucide-react";
+import { Plus, Trash2, GripVertical, Pencil, Check, X } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { TAPE_SPECS, CHANNEL_SPECS } from "@/components/calculator/constants";
-import { calculateRunCost, calculateDriverGroups } from "@/components/calculator/calculations";
+import { calculateRunCost } from "@/components/calculator/calculations";
 import DriverManager from "@/components/calculator/DriverManager";
 
 export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onUpdate, onDelete, onReorder }) {
@@ -34,7 +34,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
   }, [runs]);
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && isFormValid() && !previewDriverOverloaded) {
+    if (e.key === 'Enter' && isFormValid()) {
       handleAdd();
     }
   };
@@ -106,29 +106,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
     return totalFeet > 0 && newRun.cct && newRun.tape_type && newRun.channel_type;
   };
 
-  // Preview wattage from the new run input
-  const previewWatts = (() => {
-    const feet = parseFloat(newRun.feet) || 0;
-    const inches = parseFloat(newRun.inches) || 0;
-    const totalFeet = Math.round((feet + (inches / 12)) * 100) / 100;
-    const spec = TAPE_SPECS[newRun.tape_type];
-    if (!spec || totalFeet <= 0) return 0;
-    return parseFloat((totalFeet * spec.watts_per_foot).toFixed(1));
-  })();
 
-  // Check if the preview run would overload its assigned driver
-  const previewDriverOverloaded = (() => {
-    if (!newRun.driver_group || previewWatts === 0) return false;
-    const driver = (drivers || []).find(d => d.name === newRun.driver_group);
-    if (!driver) return false;
-    const driverGroupData = calculateDriverGroups(localRuns, drivers);
-    const group = driverGroupData.find(g => g.name === newRun.driver_group);
-    const currentWatts = group?.totalWatts ?? 0;
-    return (currentWatts + previewWatts) > driver.maxWatts;
-  })();
-
-  const driverGroupData = calculateDriverGroups(localRuns, drivers);
-  const driverGroupMap = Object.fromEntries(driverGroupData.map(g => [g.name, g]));
 
   return (
     <div className="space-y-4">
@@ -146,8 +124,6 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
         drivers={drivers || []}
         runs={localRuns}
         onDriversChange={onDriversChange}
-        previewDriverGroup={newRun.driver_group}
-        previewWatts={previewWatts}
       />
 
       {/* Add New Run */}
@@ -230,14 +206,8 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 <Button
                   onClick={handleAdd}
                   size="icon"
-                  className={`h-9 w-9 rounded ${
-                    !isFormValid()
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : previewDriverOverloaded
-                        ? 'bg-red-500 text-white hover:bg-red-600 cursor-not-allowed'
-                        : 'bg-[#3A5F3A] text-white hover:bg-[#2d4a2d]'
-                  }`}
-                  disabled={!isFormValid() || previewDriverOverloaded}
+                  className={`h-9 w-9 rounded ${!isFormValid() ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#3A5F3A] text-white hover:bg-[#2d4a2d]'}`}
+                  disabled={!isFormValid()}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -426,12 +396,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                           </div>
                           <div className="w-24 shrink-0">
                             <div className="text-xs text-slate-500">Driver</div>
-                            <div className="flex items-center gap-1">
-                              <span className="text-sm">{run.driver_group || '—'}</span>
-                              {run.driver_group && driverGroupMap[run.driver_group]?.overloaded && (
-                                <AlertCircle className="h-4 w-4 text-orange-500 flex-shrink-0" />
-                              )}
-                            </div>
+                            <div className="text-sm">{run.driver_group || '—'}</div>
                           </div>
                           <div className="w-14 shrink-0 text-right">
                             <div className="text-xs text-slate-500">Cost</div>

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Save, Trash2, Send, Download, Plus, Search } from "lucide-react";
-import { calculateTotalPrice, calculateDriverGroups } from "@/components/calculator/calculations";
+import { calculateTotalPrice } from "@/components/calculator/calculations";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -296,14 +296,6 @@ export default function Calculator() {
   };
 
   const handleSubmitProject = async () => {
-    // Block submission if any driver is over capacity
-    const driverGroups = calculateDriverGroups(tapeRuns, drivers);
-    const overCapacityDrivers = driverGroups.filter(g => g.name !== 'Unassigned' && g.totalWatts > (drivers.find(d => d.name === g.name)?.maxWatts ?? Infinity));
-    if (overCapacityDrivers.length > 0) {
-      toast.error(`Cannot submit: ${overCapacityDrivers.map(g => g.name).join(', ')} ${overCapacityDrivers.length === 1 ? 'is' : 'are'} over capacity`);
-      return;
-    }
-
     const totalPrice = calculateTotalPrice(tapeRuns);
     try {
       await saveProjectMutation.mutateAsync({

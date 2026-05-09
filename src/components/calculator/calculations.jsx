@@ -45,42 +45,6 @@ export function calculateTotalPrice(runs) {
   return subtotal + shippingCost;
 }
 
-export function calculateDriverGroups(runs, drivers) {
-  try {
-    const driverMaxWattsMap = {};
-    if (drivers && drivers.length > 0) {
-      drivers.forEach(d => {
-        if (d && d.name != null) driverMaxWattsMap[d.name] = d.maxWatts;
-      });
-    }
-
-    const groups = {};
-    (runs || []).forEach(run => {
-      if (!run || !run.length_feet || !run.tape_type) return;
-      const group = run.driver_group || 'Unassigned';
-      if (!groups[group]) groups[group] = { runs: [], totalWatts: 0 };
-      groups[group].runs.push(run);
-      const spec = TAPE_SPECS[run.tape_type];
-      if (spec) groups[group].totalWatts += run.length_feet * spec.watts_per_foot;
-    });
-
-    return Object.entries(groups).map(([name, data]) => {
-      const maxWatts = driverMaxWattsMap[name] ?? DRIVER_SPECS[0].max_watts;
-      const totalWatts = parseFloat(data.totalWatts.toFixed(1));
-      return {
-        name,
-        totalWatts,
-        maxWatts,
-        loadPercent: maxWatts > 0 ? Math.round((totalWatts / maxWatts) * 100) : 0,
-        overloaded: totalWatts > maxWatts,
-        runs: data.runs,
-      };
-    });
-  } catch (e) {
-    console.error('calculateDriverGroups error:', e);
-    return [];
-  }
-}
 
 export function calculateRunCost(run) {
   if (!run || !run.length_feet || !run.tape_type) return 0;
