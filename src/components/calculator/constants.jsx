@@ -1,15 +1,14 @@
-
 // Shared constants for tape light calculations
 
 export const TAPE_SPECS = {
   "2w": { 
     price_per_foot: 10, 
-    watts_per_foot: 2.0, 
+    watts_per_foot: 2.5, 
     lumens_per_foot: 200 
   },
   "4w": { 
     price_per_foot: 12, 
-    watts_per_foot: 4.0, 
+    watts_per_foot: 5.0, 
     lumens_per_foot: 400 
   }
 };

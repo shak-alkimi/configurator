@@ -55,12 +55,11 @@ export function calculateTotalPrice(runs) {
 }
 
 export function calculateDriverGroups(runs, drivers) {
-  // Build a lookup from driver name -> effective capacity (maxWatts * 0.8)
-  const driverCapacityMap = {};
-  const defaultCapacity = DRIVER_SPECS[0].max_watts * DRIVER_LOAD_FACTOR;
+  // Build a lookup from driver name -> maxWatts
+  const driverMaxWattsMap = {};
   if (drivers && drivers.length > 0) {
     drivers.forEach(d => {
-      driverCapacityMap[d.name] = d.maxWatts * DRIVER_LOAD_FACTOR;
+      driverMaxWattsMap[d.name] = d.maxWatts;
     });
   }
 
@@ -73,13 +72,14 @@ export function calculateDriverGroups(runs, drivers) {
     if (spec) groups[group].totalWatts += run.length_feet * spec.watts_per_foot;
   });
   return Object.entries(groups).map(([name, data]) => {
-    const capacity = driverCapacityMap[name] ?? defaultCapacity;
+    const maxWatts = driverMaxWattsMap[name] ?? DRIVER_SPECS[0].max_watts;
+    const totalWatts = parseFloat(data.totalWatts.toFixed(1));
     return {
       name,
-      totalWatts: parseFloat(data.totalWatts.toFixed(1)),
-      capacity,
-      loadPercent: Math.round((data.totalWatts / capacity) * 100),
-      overloaded: data.totalWatts > capacity,
+      totalWatts,
+      maxWatts,
+      loadPercent: maxWatts > 0 ? Math.round((totalWatts / maxWatts) * 100) : 0,
+      overloaded: totalWatts > maxWatts,
       runs: data.runs,
     };
   });

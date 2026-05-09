@@ -27,16 +27,17 @@ export default function DriverManager({ drivers, runs, onDriversChange, previewD
 
       {drivers.map((driver, index) => {
         const group = groupMap[driver.name];
-        const effectiveCapacity = driver.maxWatts * 0.8;
         const usedWatts = group?.totalWatts ?? 0;
-        const loadPercent = group?.loadPercent ?? 0;
-        const overloaded = group?.overloaded ?? false;
-        const barColor = loadPercent > 90 ? 'bg-red-500' : loadPercent > 70 ? 'bg-yellow-400' : 'bg-green-500';
+        const maxWatts = driver.maxWatts;
+        const loadPercent = maxWatts > 0 ? Math.round((usedWatts / maxWatts) * 100) : 0;
+        const overCapacity = usedWatts > maxWatts;
+        const nearCapacity = !overCapacity && loadPercent >= 80;
+        const barColor = overCapacity ? 'bg-red-500' : nearCapacity ? 'bg-yellow-400' : 'bg-green-500';
 
         // Preview segment for this driver
         const isPreviewDriver = previewDriverGroup && driver.name === previewDriverGroup && previewWatts > 0;
-        const previewPercent = isPreviewDriver ? Math.min((previewWatts / effectiveCapacity) * 100, 100 - Math.min(loadPercent, 100)) : 0;
-        const wouldOverload = isPreviewDriver && (usedWatts + previewWatts) > effectiveCapacity;
+        const previewPercent = isPreviewDriver ? Math.min((previewWatts / maxWatts) * 100, 100 - Math.min(loadPercent, 100)) : 0;
+        const wouldOverload = isPreviewDriver && (usedWatts + previewWatts) > maxWatts;
 
         return (
           <div key={driver.id} className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-3 py-2">
@@ -60,8 +61,8 @@ export default function DriverManager({ drivers, runs, onDriversChange, previewD
               </Select>
             </div>
             {/* Load text */}
-            <span className="text-xs text-slate-600 shrink-0 w-28">
-              {usedWatts.toFixed(1)}W / {effectiveCapacity.toFixed(1)}W
+            <span className={`text-xs shrink-0 w-28 ${overCapacity ? 'text-red-600 font-medium' : nearCapacity ? 'text-yellow-600 font-medium' : 'text-slate-600'}`}>
+              {usedWatts.toFixed(1)}W / {maxWatts}W
             </span>
             {/* Progress bar */}
             <div className="flex-1 min-w-0">
@@ -79,14 +80,14 @@ export default function DriverManager({ drivers, runs, onDriversChange, previewD
               </div>
             </div>
             {/* Percent */}
-            <span className={`text-xs shrink-0 w-9 text-right font-medium ${overloaded || wouldOverload ? 'text-red-600' : 'text-slate-500'}`}>
+            <span className={`text-xs shrink-0 w-9 text-right font-medium ${overCapacity || wouldOverload ? 'text-red-600' : nearCapacity ? 'text-yellow-600' : 'text-slate-500'}`}>
               {isPreviewDriver
-                ? `${Math.round(Math.min(((usedWatts + previewWatts) / effectiveCapacity) * 100, 100))}%`
-                : `${Math.round(loadPercent)}%`
+                ? `${Math.round(((usedWatts + previewWatts) / maxWatts) * 100)}%`
+                : `${loadPercent}%`
               }
             </span>
-            {/* Overload warning */}
-            {overloaded && (
+            {/* Over-capacity warning */}
+            {overCapacity && (
               <AlertTriangle className="h-4 w-4 text-red-500 shrink-0" />
             )}
             {/* Remove */}

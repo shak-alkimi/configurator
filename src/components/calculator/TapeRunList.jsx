@@ -110,10 +110,10 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
   const previewWatts = (() => {
     const feet = parseFloat(newRun.feet) || 0;
     const inches = parseFloat(newRun.inches) || 0;
-    const totalFeet = feet + (inches / 12);
+    const totalFeet = Math.round((feet + (inches / 12)) * 100) / 100;
     const spec = TAPE_SPECS[newRun.tape_type];
     if (!spec || totalFeet <= 0) return 0;
-    return totalFeet * spec.watts_per_foot;
+    return parseFloat((totalFeet * spec.watts_per_foot).toFixed(1));
   })();
 
   // Check if the preview run would overload its assigned driver
@@ -121,11 +121,10 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
     if (!newRun.driver_group || previewWatts === 0) return false;
     const driver = (drivers || []).find(d => d.name === newRun.driver_group);
     if (!driver) return false;
-    const capacity = driver.maxWatts * 0.8;
     const driverGroupData = calculateDriverGroups(localRuns, drivers);
     const group = driverGroupData.find(g => g.name === newRun.driver_group);
     const currentWatts = group?.totalWatts ?? 0;
-    return (currentWatts + previewWatts) > capacity;
+    return (currentWatts + previewWatts) > driver.maxWatts;
   })();
 
   const driverGroupData = calculateDriverGroups(localRuns, drivers);
