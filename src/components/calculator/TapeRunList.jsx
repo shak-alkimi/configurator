@@ -42,7 +42,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
   const handleAdd = () => {
     const feet = parseFloat(newRun.feet) || 0;
     const inches = parseFloat(newRun.inches) || 0;
-    const totalFeet = feet + (inches / 12);
+    const totalFeet = Math.round((feet + (inches / 12)) * 100) / 100;
     
     // Validation: all required fields must be filled
     if (!newRun.cct || !newRun.tape_type || !newRun.channel_type || totalFeet <= 0) {
@@ -361,7 +361,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                               onUpdate(run.id, {
                                 run_name: editValues.run_name,
                                 location: editValues.location,
-                                length_feet: (parseFloat(editValues.feet) || 0) + (parseFloat(editValues.inches) || 0) / 12,
+                                length_feet: Math.round(((parseFloat(editValues.feet) || 0) + (parseFloat(editValues.inches) || 0) / 12) * 100) / 100,
                                 tape_type: editValues.tape_type,
                                 cct: editValues.cct,
                                 channel_type: editValues.channel_type,
