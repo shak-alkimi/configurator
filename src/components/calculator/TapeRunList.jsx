@@ -10,6 +10,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { TAPE_SPECS, CHANNEL_SPECS } from "@/components/calculator/constants";
 import { calculateRunCost } from "@/components/calculator/calculations";
 import DriverManager from "@/components/calculator/DriverManager";
+import { base44 } from "@/api/base44Client";
 
 const TAPE_INCH_OPTIONS = ['0', '2.5', '5', '7.5', '10'];
 
@@ -36,10 +37,11 @@ function extractInchesOption(lengthFeet) {
   return TAPE_INCH_OPTIONS.find(o => parseFloat(o) === clamped) ?? '0';
 }
 
-export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onUpdate, onDelete, onReorder }) {
+export default function TapeRunList({ runs, drivers, projectId, onDriversChange, onAdd, onUpdate, onDelete, onReorder }) {
   const [localRuns, setLocalRuns] = useState(runs);
   const [editingId, setEditingId] = useState(null);
   const [editValues, setEditValues] = useState({});
+  const [queriedDrivers, setQueriedDrivers] = useState([]);
   const [newRun, setNewRun] = useState({
     run_name: '',
     feet: '',
@@ -58,6 +60,24 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
   useEffect(() => {
     setLocalRuns(runs);
   }, [runs]);
+
+  // Query drivers by project_id when projectId changes
+  useEffect(() => {
+    const fetchDrivers = async () => {
+      if (!projectId) {
+        setQueriedDrivers([]);
+        return;
+      }
+      try {
+        const result = await base44.entities.Driver.filter({ project_id: projectId });
+        setQueriedDrivers(result || []);
+      } catch (err) {
+        console.error('Failed to fetch drivers:', err);
+        setQueriedDrivers([]);
+      }
+    };
+    fetchDrivers();
+  }, [projectId]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && isFormValid()) {
@@ -206,7 +226,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <SelectItem value="White">White</SelectItem>
             </TabSelect>
             <TabSelect value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 truncate">
-              {(drivers || []).map((d, idx) => (
+              {queriedDrivers.map((d, idx) => (
                 <SelectItem key={d.id || `driver-${idx}`} value={d.name}>{d.name}</SelectItem>
               ))}
             </TabSelect>
@@ -314,7 +334,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             <div className="space-y-1">
                               <Label className="text-xs">Driver</Label>
                               <TabSelect value={editValues.driver_group} onValueChange={v => setEditValues({...editValues, driver_group: v})} triggerClassName="h-8 w-28 text-xs">
-                                {(drivers || []).map((d, idx) => (
+                                {queriedDrivers.map((d, idx) => (
                                   <SelectItem key={d.id || `driver-${idx}`} value={d.name}>{d.name}</SelectItem>
                                 ))}
                               </TabSelect>
