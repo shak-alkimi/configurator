@@ -30,7 +30,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
             <Input
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search projects..."
+              placeholder=""
               className="h-9 text-sm pl-9"
             />
           </div>
