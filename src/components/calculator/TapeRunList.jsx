@@ -154,8 +154,8 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               </div>
               <div className="w-24 shrink-0">
                 <TabSelect value={newRun.product_type} onValueChange={(value) => setNewRun({ ...newRun, product_type: value })} triggerClassName="h-9 w-full">
-                  <SelectItem value="Tape">Tape</SelectItem>
                   <SelectItem value="Flex">Flex</SelectItem>
+                  <SelectItem value="Tape">Tape</SelectItem>
                 </TabSelect>
               </div>
               <div className="w-32 shrink-0 flex gap-1">
@@ -256,8 +256,8 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             <div className="space-y-1">
                               <Label className="text-xs">Product</Label>
                               <TabSelect value={editValues.product_type} onValueChange={v => setEditValues({...editValues, product_type: v})} triggerClassName="h-8 w-20 text-xs">
-                                <SelectItem value="Tape">Tape</SelectItem>
                                 <SelectItem value="Flex">Flex</SelectItem>
+                                <SelectItem value="Tape">Tape</SelectItem>
                               </TabSelect>
                             </div>
                             <div className="space-y-1">
