@@ -128,7 +128,6 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
         ) : projects.length === 0 ? (
           <div className="text-center py-8 text-slate-400 text-sm">
             <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
-            No projects yet.<br />Create your first project.
           </div>
         ) : (
           projects.map((project) => (
