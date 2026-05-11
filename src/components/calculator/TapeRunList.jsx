@@ -203,9 +203,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                     <Input type="number" min="0" max="11" step="0.5" placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
                   )}
                 </div>
-                {newRunSnappedPreview && (
-                  <div className="text-xs text-green-700 mt-0.5 font-medium">{newRunSnappedPreview}</div>
-                )}
+
               </div>
               <div className="w-20 shrink-0">
                 <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value, tape_type: value === 'Warm Dim (30k-18k)' ? '360lm (3.6w/ft)' : newRun.tape_type })} triggerClassName="h-9 w-full" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
