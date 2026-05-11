@@ -102,40 +102,40 @@ export default function Calculator() {
   });
 
   // Create tape run mutation
-  const createTapeRunMutation = useMutation({
-    mutationFn: (runData) => base44.entities.TapeRun.create(runData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
-      toast.success('Tape run added');
-    },
-    onError: () => {
-      toast.error('Failed to add tape run');
-    },
-  });
+   const createTapeRunMutation = useMutation({
+     mutationFn: (runData) => base44.entities.TapeRun.create(runData),
+     onSuccess: async () => {
+       await queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
+       toast.success('Tape run added');
+     },
+     onError: () => {
+       toast.error('Failed to add tape run');
+     },
+   });
 
   // Update tape run mutation
-  const updateTapeRunMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.TapeRun.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
-      toast.success('Tape run updated');
-    },
-    onError: () => {
-      toast.error('Failed to update tape run');
-    },
-  });
+   const updateTapeRunMutation = useMutation({
+     mutationFn: ({ id, data }) => base44.entities.TapeRun.update(id, data),
+     onSuccess: async () => {
+       await queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
+       toast.success('Tape run updated');
+     },
+     onError: () => {
+       toast.error('Failed to update tape run');
+     },
+   });
 
-  // Delete tape run mutation
-  const deleteTapeRunMutation = useMutation({
-    mutationFn: (runId) => base44.entities.TapeRun.delete(runId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
-      toast.success('Tape run deleted');
-    },
-    onError: () => {
-      toast.error('Failed to delete tape run');
-    },
-  });
+   // Delete tape run mutation
+   const deleteTapeRunMutation = useMutation({
+     mutationFn: (runId) => base44.entities.TapeRun.delete(runId),
+     onSuccess: async () => {
+       await queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
+       toast.success('Tape run deleted');
+     },
+     onError: () => {
+       toast.error('Failed to delete tape run');
+     },
+   });
 
   // Reorder tape runs — now just optimistic local reorder, no DB writes
   const handleReorderRuns = (reorderedRuns) => {
