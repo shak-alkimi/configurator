@@ -163,7 +163,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 <Input type="number" min="0" max="11" step="0.5" placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
               </div>
               <div className="w-20 shrink-0">
-                <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value })} triggerClassName="h-9 w-full" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
+                <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value, tape_type: value === 'Warm Dim (30k-18k)' ? '360lm (3.6w/ft)' : newRun.tape_type })} triggerClassName="h-9 w-full" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
                   <SelectItem value="2400k">2400k</SelectItem>
                   <SelectItem value="2700k">2700k</SelectItem>
                   <SelectItem value="3000k">3000k</SelectItem>
@@ -174,9 +174,9 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               </div>
               <div className="w-20 shrink-0">
                 <TabSelect value={newRun.tape_type} onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })} triggerClassName="h-9 w-full" displayMap={{"300lm (3.0w/ft)": "300lm", "360lm (3.6w/ft)": "360lm", "600lm (6.0w/ft)": "600lm"}}>
-                  <SelectItem value="300lm (3.0w/ft)">300lm (3.0w/ft)</SelectItem>
+                  <SelectItem value="300lm (3.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>300lm (3.0w/ft)</SelectItem>
                   <SelectItem value="360lm (3.6w/ft)">360lm (3.6w/ft)</SelectItem>
-                  <SelectItem value="600lm (6.0w/ft)">600lm (6.0w/ft)</SelectItem>
+                  <SelectItem value="600lm (6.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>600lm (6.0w/ft)</SelectItem>
                 </TabSelect>
               </div>
               <div className="w-20 shrink-0">
@@ -272,14 +272,14 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             <div className="space-y-1">
                               <Label className="text-xs">Output</Label>
                               <TabSelect value={editValues.tape_type} onValueChange={v => setEditValues({...editValues, tape_type: v})} triggerClassName="h-8 w-24 text-xs">
-                                <SelectItem value="300lm (3.0w/ft)">300lm (3.0w/ft)</SelectItem>
+                                <SelectItem value="300lm (3.0w/ft)" disabled={editValues.cct === 'Warm Dim (30k-18k)'} className={editValues.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>300lm (3.0w/ft)</SelectItem>
                                 <SelectItem value="360lm (3.6w/ft)">360lm (3.6w/ft)</SelectItem>
-                                <SelectItem value="600lm (6.0w/ft)">600lm (6.0w/ft)</SelectItem>
+                                <SelectItem value="600lm (6.0w/ft)" disabled={editValues.cct === 'Warm Dim (30k-18k)'} className={editValues.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>600lm (6.0w/ft)</SelectItem>
                               </TabSelect>
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">CCT</Label>
-                              <TabSelect value={editValues.cct} onValueChange={v => setEditValues({...editValues, cct: v})} triggerClassName="h-8 w-36 text-xs" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
+                              <TabSelect value={editValues.cct} onValueChange={v => setEditValues({...editValues, cct: v, tape_type: v === 'Warm Dim (30k-18k)' ? '360lm (3.6w/ft)' : editValues.tape_type})} triggerClassName="h-8 w-36 text-xs" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
                                 <SelectItem value="2400k">2400k</SelectItem>
                                 <SelectItem value="2700k">2700k</SelectItem>
                                 <SelectItem value="3000k">3000k</SelectItem>
