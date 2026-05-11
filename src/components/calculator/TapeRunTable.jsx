@@ -152,29 +152,31 @@ export default function TapeRunTable({ tapeRuns, drivers, onRunUpdated, onRunDel
           ) : (
             // View mode
             <>
-              <div className="grid grid-cols-12 gap-2 text-xs mb-2">
-                <div className="col-span-2">
-                  <span className="font-medium">{run.location}</span>
+              <div className="space-y-1">
+                <div className="grid grid-cols-12 gap-2 text-xs">
+                  <div className="col-span-2">
+                    <span className="font-medium">{run.location}</span>
+                  </div>
+                  <div className="col-span-1">{run.product_type}</div>
+                  <div className="col-span-1">{Math.floor(run.length_feet)}'</div>
+                  <div className="col-span-1">{((run.length_feet % 1) * 12).toFixed(1)}"</div>
+                  <div className="col-span-1">{run.cct}</div>
+                  <div className="col-span-1">{run.tape_output}</div>
+                  <div className="col-span-1">{run.channel_type}</div>
+                  <div className="col-span-1">{run.lens}</div>
+                  <div className="col-span-1">{run.finish}</div>
+                  <div className="col-span-1">{run.driver_group}</div>
+                  <div className="col-span-1 flex gap-1 justify-end">
+                    <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => startEdit(run)}>
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-6 w-6 text-red-600 hover:text-red-700" onClick={() => deleteRun(run.id)}>
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="col-span-1">{run.product_type}</div>
-                <div className="col-span-1">{Math.floor(run.length_feet)}'</div>
-                <div className="col-span-1">{((run.length_feet % 1) * 12).toFixed(1)}"</div>
-                <div className="col-span-1">{run.cct}</div>
-                <div className="col-span-1">{run.tape_output}</div>
-                <div className="col-span-1">{run.channel_type}</div>
-                <div className="col-span-1">{run.lens}</div>
-                <div className="col-span-1">{run.finish}</div>
-                <div className="col-span-1">{run.driver_group}</div>
-                <div className="col-span-1 flex gap-1 justify-end">
-                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => startEdit(run)}>
-                    <Pencil className="h-3 w-3" />
-                  </Button>
-                  <Button size="icon" variant="ghost" className="h-6 w-6 text-red-600 hover:text-red-700" onClick={() => deleteRun(run.id)}>
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
+                {run.notes && <div className="text-xs text-slate-500">Notes: {run.notes}</div>}
               </div>
-              {run.notes && <div className="text-xs text-slate-500">Notes: {run.notes}</div>}
             </>
           )}
         </div>
