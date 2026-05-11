@@ -164,16 +164,16 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
             {/* Column headers */}
             <div className="flex items-center gap-2 mb-1.5">
               <div className="w-6 shrink-0" />
-              <div className="w-16 shrink-0 text-xs text-slate-500">Type</div>
-              <div className="w-28 shrink-0 text-xs text-slate-500">Location</div>
-              <div className="w-24 shrink-0 text-xs text-slate-500">Product</div>
-              <div className="w-32 shrink-0 text-xs text-slate-500">Length</div>
-              <div className="w-20 shrink-0 text-xs text-slate-500">CCT</div>
-              <div className="w-20 shrink-0 text-xs text-slate-500">Output</div>
-              <div className="w-20 shrink-0 text-xs text-slate-500">Housing</div>
-              <div className="w-16 shrink-0 text-xs text-slate-500">Lens</div>
-              <div className="w-20 shrink-0 text-xs text-slate-500">Finish</div>
-              <div className="w-20 shrink-0 text-xs text-slate-500">Driver</div>
+              <div className="w-16 shrink-0 text-xs text-slate-500 text-left">Type</div>
+              <div className="w-28 shrink-0 text-xs text-slate-500 text-left">Location</div>
+              <div className="w-24 shrink-0 text-xs text-slate-500 text-left">Product</div>
+              <div className="w-32 shrink-0 text-xs text-slate-500 text-left">Length</div>
+              <div className="w-20 shrink-0 text-xs text-slate-500 text-left">CCT</div>
+              <div className="w-20 shrink-0 text-xs text-slate-500 text-left">Output</div>
+              <div className="w-20 shrink-0 text-xs text-slate-500 text-left">Housing</div>
+              <div className="w-16 shrink-0 text-xs text-slate-500 text-left">Lens</div>
+              <div className="w-20 shrink-0 text-xs text-slate-500 text-left">Finish</div>
+              <div className="w-20 shrink-0 text-xs text-slate-500 text-left">Driver</div>
               <div className="w-9 shrink-0" />
             </div>
             {/* Input row */}
