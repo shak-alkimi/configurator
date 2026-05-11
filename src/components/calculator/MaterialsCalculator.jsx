@@ -109,6 +109,8 @@ const MaterialsCalculator = React.memo(({ runs }) => {
 
   const formatType = (type) => {
     if (type === 'recessed') return 'Recessed Flange';
+    if (type === '300lm (3w/ft)') return '300lm (3w/ft)';
+    if (type === '600lm (6w/ft)') return '600lm (6w/ft)';
     return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 

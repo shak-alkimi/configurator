@@ -27,8 +27,8 @@ Deno.serve(async (req) => {
         // Pricing constants — keep in sync with src/components/calculator/constants.jsx
         const CONSTANTS = {
             TAPE_SPECS: {
-                "2w": { price_per_foot: 10, watts_per_foot: 2.0, lumens_per_foot: 200 },
-                "4w": { price_per_foot: 12, watts_per_foot: 4.0, lumens_per_foot: 400 }
+                "300lm (3w/ft)": { price_per_foot: 10, watts_per_foot: 3.0, lumens_per_foot: 300 },
+                "600lm (6w/ft)": { price_per_foot: 12, watts_per_foot: 6.0, lumens_per_foot: 600 }
             },
             CHANNEL_SPECS: {
                 corner: { price_per_foot: 10 },
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
             const lengthDisplay = runData.length_feet.toFixed(2);
             const tapeSpec = TAPE_SPECS[runData.tape_type];
             const channelSpec = CHANNEL_SPECS[runData.channel_type];
-            const outputDisplay = tapeSpec ? `${tapeSpec.watts_per_foot}w/ft (${tapeSpec.lumens_per_foot}lm/ft)` : runData.tape_type;
+            const outputDisplay = runData.tape_type || '';
             
             // Calculate cost with rounded channel sections
             let cost = 0;
