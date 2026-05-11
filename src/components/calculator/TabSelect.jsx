@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef } from "react";
 import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export default function TabSelect({ value, onValueChange, children, triggerClassName, triggerStyle, placeholder, displayMap }) {
+export default function TabSelect({ value, onValueChange, children, triggerClassName, placeholder }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef(null);
 
@@ -49,10 +49,8 @@ export default function TabSelect({ value, onValueChange, children, triggerClass
 
   return (
     <Select value={value} onValueChange={onValueChange} open={open} onOpenChange={setOpen}>
-      <SelectTrigger ref={triggerRef} className={triggerClassName} style={triggerStyle}>
-        {displayMap && value && displayMap[value]
-          ? <span>{displayMap[value]}</span>
-          : <SelectValue placeholder={placeholder} />}
+      <SelectTrigger ref={triggerRef} className={triggerClassName}>
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent onKeyDown={handleKeyDown}>
         {children}

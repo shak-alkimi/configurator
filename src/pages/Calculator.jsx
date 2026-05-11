@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -20,15 +19,15 @@ import {
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 
+
 import ProjectsList from "../components/calculator/ProjectsList";
 import ProjectForm from "../components/calculator/ProjectForm";
 import TapeRunList from "../components/calculator/TapeRunList";
 import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
 
-const DEFAULT_DRIVER = { name: 'Driver 1', max_watts: 96 };
-
 export default function Calculator() {
-  const navigate = useNavigate();
+  const DEFAULT_DRIVERS = [{ id: '1', name: 'Driver 1', maxWatts: 96 }];
+  const [drivers, setDrivers] = useState(DEFAULT_DRIVERS);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({ status: 'all', dateFrom: null, dateTo: null });
@@ -57,22 +56,13 @@ export default function Calculator() {
     queryFn: () => base44.entities.Project.list('-updated_date'),
   });
 
-  // Fetch tape runs for selected project — ordered by created_date ascending
+  // Fetch tape runs for selected project
   const { data: tapeRuns = [] } = useQuery({
     queryKey: ['tapeRuns', selectedProjectId],
     queryFn: async () => {
       if (!selectedProjectId) return [];
-      return base44.entities.TapeRun.filter({ project_id: selectedProjectId }, 'created_date');
-    },
-    enabled: !!selectedProjectId,
-  });
-
-  // Fetch drivers for selected project
-  const { data: drivers = [] } = useQuery({
-    queryKey: ['drivers', selectedProjectId],
-    queryFn: async () => {
-      if (!selectedProjectId) return [];
-      return base44.entities.Driver.filter({ project_id: selectedProjectId }, 'created_date');
+      const runs = await base44.entities.TapeRun.filter({ project_id: selectedProjectId });
+      return runs.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
     },
     enabled: !!selectedProjectId,
   });
@@ -86,79 +76,90 @@ export default function Calculator() {
         return await base44.entities.Project.update(selectedProjectId, data);
       }
     },
-    onSuccess: async (result) => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       setProjectData(result);
       if (isNewProject) {
         setSelectedProjectId(result.id);
         setIsNewProject(false);
-        // Create a default driver for the new project
-        await base44.entities.Driver.create({ project_id: result.id, ...DEFAULT_DRIVER });
-        queryClient.invalidateQueries({ queryKey: ['drivers', result.id] });
       }
       toast.success('Project saved successfully');
     },
-    onError: () => {
+    onError: (error) => {
       toast.error('Failed to save project');
     },
   });
 
   // Create tape run mutation
-   const createTapeRunMutation = useMutation({
-     mutationFn: (runData) => base44.entities.TapeRun.create(runData),
-     onSuccess: async () => {
-       await queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
-       toast.success('Tape run added');
-     },
-     onError: () => {
-       toast.error('Failed to add tape run');
-     },
-   });
+  const createTapeRunMutation = useMutation({
+    mutationFn: (runData) => base44.entities.TapeRun.create(runData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
+      toast.success('Tape run added');
+    },
+    onError: (error) => {
+      toast.error('Failed to add tape run');
+    },
+  });
 
   // Update tape run mutation
-   const updateTapeRunMutation = useMutation({
-     mutationFn: ({ id, data }) => base44.entities.TapeRun.update(id, data),
-     onSuccess: async () => {
-       await queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
-       toast.success('Tape run updated');
-     },
-     onError: () => {
-       toast.error('Failed to update tape run');
-     },
-   });
+  const updateTapeRunMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.TapeRun.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
+      toast.success('Tape run updated');
+    },
+    onError: () => {
+      toast.error('Failed to update tape run');
+    },
+  });
 
-   // Delete tape run mutation
-   const deleteTapeRunMutation = useMutation({
-     mutationFn: (runId) => base44.entities.TapeRun.delete(runId),
-     onSuccess: async () => {
-       await queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
-       toast.success('Tape run deleted');
-     },
-     onError: () => {
-       toast.error('Failed to delete tape run');
-     },
-   });
+  // Delete tape run mutation
+  const deleteTapeRunMutation = useMutation({
+    mutationFn: (runId) => base44.entities.TapeRun.delete(runId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
+      toast.success('Tape run deleted');
+    },
+    onError: (error) => {
+      toast.error('Failed to delete tape run');
+    },
+  });
 
-  // Reorder tape runs — now just optimistic local reorder, no DB writes
+  // Reorder tape runs mutation
+  const reorderTapeRunsMutation = useMutation({
+    mutationFn: async (reorderedRuns) => {
+      const updates = reorderedRuns.map((run, index) =>
+        base44.entities.TapeRun.update(run.id, { order: index })
+      );
+      await Promise.all(updates);
+    },
+    onMutate: async (newReorderedRuns) => {
+      await queryClient.cancelQueries({ queryKey: ['tapeRuns', selectedProjectId] });
+      const previousTapeRuns = queryClient.getQueryData(['tapeRuns', selectedProjectId]);
+      const runsWithUpdatedOrder = newReorderedRuns.map((run, index) => ({ ...run, order: index }));
+      queryClient.setQueryData(['tapeRuns', selectedProjectId], runsWithUpdatedOrder);
+      return { previousTapeRuns };
+    },
+    onError: (err, newReorderedRuns, context) => {
+      queryClient.setQueryData(['tapeRuns', selectedProjectId], context.previousTapeRuns);
+      toast.error('Failed to reorder');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
+    },
+  });
+
   const handleReorderRuns = (reorderedRuns) => {
-    queryClient.setQueryData(['tapeRuns', selectedProjectId], reorderedRuns);
+    reorderTapeRunsMutation.mutate(reorderedRuns);
   };
 
-  // Driver mutations
-  const handleDriversChange = async (newDrivers) => {
-    if (!selectedProjectId) return;
-
-    const existing = drivers;
-    const toDelete = existing.filter(d => !newDrivers.find(nd => nd.id === d.id));
-    const toCreate = newDrivers.filter(nd => !nd.id || !existing.find(d => d.id === nd.id));
-    const toUpdate = newDrivers.filter(nd => nd.id && existing.find(d => d.id === nd.id));
-
-    await Promise.all([
-      ...toDelete.map(d => base44.entities.Driver.delete(d.id)),
-      ...toCreate.map(d => base44.entities.Driver.create({ project_id: selectedProjectId, name: d.name, max_watts: d.max_watts ?? 96 })),
-      ...toUpdate.map(d => base44.entities.Driver.update(d.id, { name: d.name, max_watts: d.max_watts })),
-    ]);
-    queryClient.invalidateQueries({ queryKey: ['drivers', selectedProjectId] });
+  // Auto-save drivers to project whenever they change
+  const handleDriversChange = (newDrivers) => {
+    setDrivers(newDrivers);
+    if (selectedProjectId) {
+      base44.entities.Project.update(selectedProjectId, { drivers: newDrivers });
+    }
   };
 
   // Delete project mutation
@@ -169,17 +170,18 @@ export default function Calculator() {
       handleNewProject();
       toast.success('Project deleted');
     },
-    onError: () => {
+    onError: (error) => {
       toast.error('Failed to delete project');
     },
   });
 
-  // Load selected project
+  // Load selected project (including drivers)
   useEffect(() => {
     if (selectedProjectId && !isNewProject) {
       const project = projects.find(p => p.id === selectedProjectId);
       if (project) {
         setProjectData(project);
+        setDrivers(project.drivers?.length ? project.drivers : DEFAULT_DRIVERS);
       }
     }
   }, [selectedProjectId, projects, isNewProject]);
@@ -198,11 +200,13 @@ export default function Calculator() {
       notes: '',
       status: 'draft'
     });
+    setDrivers(DEFAULT_DRIVERS);
     setFormResetKey(prev => prev + 1);
   };
 
   const handleSelectProject = (projectId) => {
-    navigate(`/project/${projectId}`);
+    setSelectedProjectId(projectId);
+    setIsNewProject(false);
   };
 
   const generateQuoteNumber = async () => {
@@ -212,6 +216,7 @@ export default function Calculator() {
       .filter(qn => qn && qn.startsWith('QUOTE-'))
       .map(qn => parseInt(qn.replace('QUOTE-', '')))
       .filter(n => !isNaN(n));
+    
     const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
     return `QUOTE-${String(nextNumber).padStart(3, '0')}`;
   };
@@ -221,21 +226,48 @@ export default function Calculator() {
       toast.error('Please fill in required fields');
       return;
     }
-    await saveProjectMutation.mutateAsync({ ...projectData });
+
+    // Calculate total price from tape runs using shared function
+    const totalPrice = calculateTotalPrice(tapeRuns);
+
+    await saveProjectMutation.mutateAsync({
+      ...projectData,
+      drivers,
+      total_price: totalPrice
+    });
   };
 
   const handleAddTapeRun = async (runData) => {
-    if (!selectedProjectId && isNewProject) {
-      if (!projectData.project_name || !projectData.customer_name) {
-        toast.error('Please save project details first');
-        return;
+    try {
+      const nextOrder = tapeRuns.length;
+      if (!selectedProjectId && isNewProject) {
+        // Save project first
+        if (!projectData.project_name || !projectData.customer_name) {
+          toast.error('Please save project details first');
+          return;
+        }
+        const result = await saveProjectMutation.mutateAsync({ ...projectData, drivers });
+        setSelectedProjectId(result.id);
+        setIsNewProject(false);
+        
+        // Now add the tape run
+        await createTapeRunMutation.mutateAsync({
+          ...runData,
+          project_id: result.id,
+          order: nextOrder
+        });
+      } else {
+        await createTapeRunMutation.mutateAsync({
+          ...runData,
+          project_id: selectedProjectId,
+          order: nextOrder
+        });
       }
-      const result = await saveProjectMutation.mutateAsync({ ...projectData });
-      await createTapeRunMutation.mutateAsync({ ...runData, project_id: result.id });
-    } else {
-      await createTapeRunMutation.mutateAsync({ ...runData, project_id: selectedProjectId });
+    } catch (error) {
+      toast.error('Failed to add tape run');
     }
   };
+
 
   const handleDeleteProject = () => {
     if (selectedProjectId) {
@@ -244,27 +276,51 @@ export default function Calculator() {
   };
 
   const handleUpdateStatus = async (projectId, newStatus) => {
-    const updateData = { status: newStatus };
-    if (newStatus === 'approved') {
-      const project = projects.find(p => p.id === projectId);
-      if (!project.quote_number) {
-        updateData.quote_number = await generateQuoteNumber();
+    try {
+      const updateData = { status: newStatus };
+      
+      // Generate quote number when project is approved
+      if (newStatus === 'approved') {
+        const project = projects.find(p => p.id === projectId);
+        if (!project.quote_number) {
+          updateData.quote_number = await generateQuoteNumber();
+        }
       }
+      
+      await base44.entities.Project.update(projectId, updateData);
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success(`Project ${newStatus === 'approved' ? 'approved' : 'reverted to ' + newStatus}`);
+    } catch (error) {
+      toast.error('Failed to update project status');
     }
-    await base44.entities.Project.update(projectId, updateData);
-    queryClient.invalidateQueries({ queryKey: ['projects'] });
-    toast.success(`Project ${newStatus === 'approved' ? 'approved' : 'reverted to ' + newStatus}`);
   };
 
   const handleSubmitProject = async () => {
-    await saveProjectMutation.mutateAsync({ ...projectData, status: 'submitted' });
+    const totalPrice = calculateTotalPrice(tapeRuns);
+    try {
+      await saveProjectMutation.mutateAsync({
+        ...projectData,
+        drivers,
+        status: 'submitted',
+        total_price: totalPrice
+      });
+    } catch (error) {
+      toast.error('Failed to submit project');
+    }
   };
 
   const handleExportPDF = async () => {
-    if (!selectedProjectId) { toast.error('Please save the project first'); return; }
+    if (!selectedProjectId) {
+      toast.error('Please save the project first');
+      return;
+    }
+    
     setIsExporting(true);
     try {
-      const response = await base44.functions.invoke('exportProjectPDF', { project_id: selectedProjectId });
+      const response = await base44.functions.invoke('exportProjectPDF', {
+        project_id: selectedProjectId
+      });
+      
       const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -275,7 +331,7 @@ export default function Calculator() {
       window.URL.revokeObjectURL(url);
       a.remove();
       toast.success('PDF exported successfully');
-    } catch {
+    } catch (error) {
       toast.error('Failed to export PDF');
     } finally {
       setIsExporting(false);
@@ -283,10 +339,18 @@ export default function Calculator() {
   };
 
   const handleExportCSV = async () => {
-    if (!selectedProjectId) { toast.error('Please save the project first'); return; }
+    if (!selectedProjectId) {
+      toast.error('Please save the project first');
+      return;
+    }
+    
     setIsExporting(true);
     try {
-      const response = await base44.functions.invoke('exportProjectCSV', { project_id: selectedProjectId });
+      const response = await base44.functions.invoke('exportProjectCSV', {
+        project_id: selectedProjectId
+      });
+      
+      // response.data is the CSV text string
       const csvData = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
       const blob = new Blob([csvData], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
@@ -298,15 +362,12 @@ export default function Calculator() {
       window.URL.revokeObjectURL(url);
       a.remove();
       toast.success('CSV exported successfully');
-    } catch {
+    } catch (error) {
       toast.error('Failed to export CSV');
     } finally {
       setIsExporting(false);
     }
   };
-
-  // Computed total price — derived from runs, never stored
-  const computedTotalPrice = calculateTotalPrice(tapeRuns);
 
   return (
     <TooltipProvider>
@@ -336,8 +397,6 @@ export default function Calculator() {
               onUpdateStatus={handleUpdateStatus}
               filters={filters}
               onFiltersChange={setFilters}
-              computedTotals={{ [selectedProjectId]: computedTotalPrice }}
-              tapeRuns={tapeRuns}
             />
           </CardContent>
         </Card>
@@ -450,7 +509,7 @@ export default function Calculator() {
           </div>
         </div>
 
-        {/* Right Column - Materials & Quote */}
+        {/* Right Column - Materials & Quote (matches left sidebar width) */}
         <div className="hidden md:flex flex-col py-6 w-64 lg:w-80 px-4 lg:px-6 shrink-0">
           <div className="sticky top-6">
             <MaterialsCalculator runs={tapeRuns} />

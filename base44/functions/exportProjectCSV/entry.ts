@@ -27,14 +27,14 @@ Deno.serve(async (req) => {
         // Pricing constants — keep in sync with src/components/calculator/constants.jsx
         const CONSTANTS = {
             TAPE_SPECS: {
-                "300lm (3.0w/ft)": { price_per_foot: 10, watts_per_foot: 3.0, lumens_per_foot: 300 },
-                "360lm (3.6w/ft)": { price_per_foot: 11, watts_per_foot: 3.6, lumens_per_foot: 360 },
-                "600lm (6.0w/ft)": { price_per_foot: 12, watts_per_foot: 6.0, lumens_per_foot: 600 }
+                "2w": { price_per_foot: 10, watts_per_foot: 2.0, lumens_per_foot: 200 },
+                "4w": { price_per_foot: 12, watts_per_foot: 4.0, lumens_per_foot: 400 }
             },
             CHANNEL_SPECS: {
                 corner: { price_per_foot: 10 },
                 recessed: { price_per_foot: 12 },
-                surface: { price_per_foot: 8 }
+                surface: { price_per_foot: 8 },
+                none: { price_per_foot: 0 }
             },
             DRIVER_MAX_WATTS: 96,
             DRIVER_LOAD_FACTOR: 0.8,
@@ -68,21 +68,20 @@ Deno.serve(async (req) => {
         tapeRuns.forEach((run) => {
             const runData = run.data || run;
             const lengthDisplay = runData.length_feet.toFixed(2);
-            const tapeSpec = TAPE_SPECS[runData.tape_output];
-            const channelSpec = runData.channel_type ? CHANNEL_SPECS[runData.channel_type] : null;
-            const outputDisplay = runData.tape_output || '';
+            const tapeSpec = TAPE_SPECS[runData.tape_type];
+            const channelSpec = CHANNEL_SPECS[runData.channel_type];
+            const outputDisplay = tapeSpec ? `${tapeSpec.watts_per_foot}w/ft (${tapeSpec.lumens_per_foot}lm/ft)` : runData.tape_type;
             
             // Calculate cost with rounded channel sections
             let cost = 0;
             if (tapeSpec) cost += runData.length_feet * tapeSpec.price_per_foot;
-            if (channelSpec) {
+            if (channelSpec && runData.channel_type !== 'none') {
                 const sections = Math.ceil(runData.length_feet / 4);
                 const actualFeet = sections * 4;
                 cost += actualFeet * channelSpec.price_per_foot;
             }
             
-            const channelDisplay = !runData.channel_type ? 'None' :
-                                   runData.channel_type === 'recessed' ? 'Recessed Flange' : 
+            const channelDisplay = runData.channel_type === 'recessed' ? 'Recessed Flange' : 
                                    runData.channel_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             
             csv += `${escapeCSV(runData.run_name || '')},${lengthDisplay},${escapeCSV(outputDisplay)},${escapeCSV(runData.cct || '')},${escapeCSV(channelDisplay)},${escapeCSV(runData.notes || '')},${escapeCSV(runData.driver_group || '')},${cost.toFixed(2)}\n`;
@@ -105,16 +104,15 @@ Deno.serve(async (req) => {
         }, 0);
         const totalTapeCost = tapeRuns.reduce((sum, run) => {
             const runData = run.data || run;
-            const spec = TAPE_SPECS[runData.tape_output];
+            const spec = TAPE_SPECS[runData.tape_type];
             return sum + (spec ? runData.length_feet * spec.price_per_foot : 0);
         }, 0);
         
         // Calculate channel cost with rounded 4' sections
         const totalChannelCost = tapeRuns.reduce((sum, run) => {
             const runData = run.data || run;
-            if (!runData.channel_type) return sum;
             const spec = CHANNEL_SPECS[runData.channel_type];
-            if (spec) {
+            if (spec && runData.channel_type !== 'none') {
                 const sections = Math.ceil(runData.length_feet / 4);
                 const actualFeet = sections * 4;
                 return sum + actualFeet * spec.price_per_foot;
@@ -124,7 +122,7 @@ Deno.serve(async (req) => {
 
         const totalWattage = tapeRuns.reduce((sum, run) => {
             const runData = run.data || run;
-            const spec = TAPE_SPECS[runData.tape_output];
+            const spec = TAPE_SPECS[runData.tape_type];
             return sum + (spec ? runData.length_feet * spec.watts_per_foot : 0);
         }, 0);
 
@@ -134,7 +132,7 @@ Deno.serve(async (req) => {
         // Calculate clips
         const totalSections = tapeRuns.reduce((sum, run) => {
             const runData = run.data || run;
-            if (runData.channel_type) {
+            if (runData.channel_type !== 'none') {
                 return sum + Math.ceil(runData.length_feet / 4);
             }
             return sum;

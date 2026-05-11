@@ -14,23 +14,14 @@
       "type": "number",
       "description": "Length of the tape run in feet"
     },
-    "tape_output": {
+    "tape_type": {
       "type": "string",
       "enum": [
-        "300lm (3.0w/ft)",
-        "360lm (3.6w/ft)",
-        "600lm (6.0w/ft)"
+        "2w",
+        "4w"
       ],
-      "default": "300lm (3.0w/ft)",
+      "default": "4w",
       "description": "Output type of LED tape light"
-    },
-    "product_type": {
-      "type": "string",
-      "enum": [
-        "Tape",
-        "Flex"
-      ],
-      "description": "Product type"
     },
     "location": {
       "type": "string",
@@ -43,8 +34,8 @@
         "2700k",
         "3000k",
         "3500k",
-        "Warm Dim (30k-18k)",
-        "Tunable White (18k-40k)"
+        "Warm Dim (22-30k)",
+        "Tunable White (18-40k)"
       ],
       "description": "Correlated Color Temperature"
     },
@@ -53,10 +44,11 @@
       "enum": [
         "corner",
         "recessed",
-        "surface"
+        "surface",
+        "none"
       ],
       "default": "corner",
-      "description": "Type of channel for mounting (optional)"
+      "description": "Type of channel for mounting"
     },
     "notes": {
       "type": "string",
@@ -64,23 +56,15 @@
     },
     "driver_group": {
       "type": "string",
-      "description": "Driver group assignment (e.g. Driver 1, Driver 2)."
+      "description": "Driver group assignment (e.g. Driver 1, Driver 2). Runs sharing the same driver get the same label."
     },
-    "lens": {
-      "type": "string",
-      "description": "Lens type"
-    },
-    "finish": {
-      "type": "string",
-      "description": "Finish type"
+    "order": {
+      "type": "number",
+      "description": "Display order of the run"
     }
   },
   "required": [
     "project_id",
     "length_feet"
-  ],
-  "rls": {
-    "read": "created_by == current_user OR current_user_role == 'admin'",
-    "write": "created_by == current_user OR current_user_role == 'admin'"
-  }
+  ]
 }

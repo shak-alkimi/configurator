@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Plus, FileText, Search, RotateCcw, Filter, X, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 
-export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading, searchQuery, onSearchChange, onUpdateStatus, filters, onFiltersChange, computedTotals = {}, tapeRuns = [] }) {
+export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading, searchQuery, onSearchChange, onUpdateStatus, filters, onFiltersChange }) {
   const [hoveredId, setHoveredId] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const statusColors = {
@@ -30,7 +30,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
             <Input
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder=""
+              placeholder="Search projects..."
               className="h-9 text-sm pl-9"
             />
           </div>
@@ -128,6 +128,7 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
         ) : projects.length === 0 ? (
           <div className="text-center py-8 text-slate-400 text-sm">
             <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
+            No projects yet.<br />Create your first project.
           </div>
         ) : (
           projects.map((project) => (
@@ -167,9 +168,9 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
                 </div>
                 <div className="text-xs text-slate-600 space-y-1">
                   <div>{project.customer_name}</div>
-                  {computedTotals[project.id] != null && computedTotals[project.id] > 0 && (
+                  {project.total_price && (
                     <div className="font-semibold text-slate-900">
-                      ${computedTotals[project.id].toFixed(2)}
+                      ${project.total_price.toFixed(2)}
                     </div>
                   )}
                   <div className="flex items-center justify-between">

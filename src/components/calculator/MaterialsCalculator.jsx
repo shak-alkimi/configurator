@@ -11,7 +11,7 @@ const MaterialsCalculator = React.memo(({ runs }) => {
     let totalWatts = 0;
     
     runs.forEach(run => {
-      const type = run.tape_output;
+      const type = run.tape_type;
       const cct = run.cct || 'No CCT';
       const key = `${type}-${cct}`;
       const specs = TAPE_SPECS[type];
@@ -31,10 +31,9 @@ const MaterialsCalculator = React.memo(({ runs }) => {
     const channelByType = {};
     runs.forEach(run => {
       const type = run.channel_type;
-      if (!type) return;
       const specs = CHANNEL_SPECS[type];
       
-      if (specs) {
+      if (type !== 'none' && specs) {
         if (!channelByType[type]) {
           channelByType[type] = { feet: 0, cost: 0, sections: 0 };
         }
@@ -110,14 +109,12 @@ const MaterialsCalculator = React.memo(({ runs }) => {
 
   const formatType = (type) => {
     if (type === 'recessed') return 'Recessed Flange';
-    if (type === '300lm (3w/ft)') return '300lm (3w/ft)';
-    if (type === '600lm (6w/ft)') return '600lm (6w/ft)';
     return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
   const formatCCT = (cct) => {
-    if (cct === 'Warm Dim (30k-18k)') return 'DtW (3000-1800K)';
-    if (cct === 'Tunable White (18k-40k)') return 'TW (18-40k)';
+    if (cct === 'Warm Dim (22-30k)') return 'WD (22-30k)';
+    if (cct === 'Tunable White (18-40k)') return 'TW (18-40k)';
     return cct;
   };
 
@@ -128,7 +125,7 @@ const MaterialsCalculator = React.memo(({ runs }) => {
     "3000k": 3,
     "3500k": 4,
     "Warm Dim (22-30k)": 5,
-    "Tunable White (18k-40k)": 6
+    "Tunable White (18-40k)": 6
   };
 
   // Sort tape light entries by output (2w before 4w) and then by CCT
@@ -172,7 +169,7 @@ const MaterialsCalculator = React.memo(({ runs }) => {
                 <div className="space-y-2">
                   {Object.entries(calculations.channelByType)
                     .sort(([typeA], [typeB]) => {
-                      const order = ['corner', 'recessed', 'surface'];
+                      const order = ['corner', 'recessed', 'surface', 'none'];
                       return order.indexOf(typeA) - order.indexOf(typeB);
                     })
                     .map(([type, data]) => (

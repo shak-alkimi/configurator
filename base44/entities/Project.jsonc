@@ -112,14 +112,32 @@
       ],
       "default": "draft",
       "description": "Project status"
+    },
+    "total_price": {
+      "type": "number",
+      "description": "Total project price"
+    },
+    "drivers": {
+      "type": "array",
+      "description": "Driver configuration for this project",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "maxWatts": {
+            "type": "number"
+          }
+        }
+      }
     }
   },
   "required": [
     "project_name",
     "customer_name"
-  ],
-  "rls": {
-    "read": "created_by == current_user OR current_user_role == 'admin'",
-    "write": "created_by == current_user OR current_user_role == 'admin'"
-  }
+  ]
 }
