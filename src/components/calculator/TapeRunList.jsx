@@ -11,6 +11,30 @@ import { TAPE_SPECS, CHANNEL_SPECS } from "@/components/calculator/constants";
 import { calculateRunCost } from "@/components/calculator/calculations";
 import DriverManager from "@/components/calculator/DriverManager";
 
+// Snap total inches to nearest 2.5" increment
+function snapToTape(totalInches) {
+  return Math.round(totalInches / 2.5) * 2.5;
+}
+
+// Format snapped inches as "Xft Y.Zin"
+function formatSnapped(snappedInches) {
+  const ft = Math.floor(snappedInches / 12);
+  const inches = snappedInches % 12;
+  const inDisplay = Number.isInteger(inches) ? `${inches}` : inches.toFixed(1);
+  return `${ft}ft ${inDisplay}in`;
+}
+
+// Given raw feet + inches strings and product_type, return snapped total feet
+function getSnappedFeet(feetStr, inchesStr, productType) {
+  const totalInches = (parseFloat(feetStr) || 0) * 12 + (parseFloat(inchesStr) || 0);
+  if (!totalInches) return 0;
+  if (productType === 'Tape') {
+    const snapped = snapToTape(totalInches);
+    return snapped / 12;
+  }
+  return Math.round(((parseFloat(feetStr) || 0) + (parseFloat(inchesStr) || 0) / 12) * 100) / 100;
+}
+
 export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onUpdate, onDelete, onReorder }) {
   const [localRuns, setLocalRuns] = useState(runs);
   const [editingId, setEditingId] = useState(null);
@@ -40,10 +64,14 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
     }
   };
 
+  // Compute snapped preview for new run
+  const newRunSnappedFeet = getSnappedFeet(newRun.feet, newRun.inches, newRun.product_type);
+  const newRunSnappedPreview = newRun.product_type === 'Tape' && newRunSnappedFeet > 0
+    ? formatSnapped(newRunSnappedFeet * 12)
+    : null;
+
   const handleAdd = () => {
-    const feet = parseFloat(newRun.feet) || 0;
-    const inches = parseFloat(newRun.inches) || 0;
-    const totalFeet = Math.round((feet + (inches / 12)) * 100) / 100;
+    const totalFeet = getSnappedFeet(newRun.feet, newRun.inches, newRun.product_type);
     
     if (!newRun.cct || !newRun.tape_type || !newRun.channel_type || totalFeet <= 0) {
       return;
@@ -158,9 +186,14 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                   <SelectItem value="Tape">Tape</SelectItem>
                 </TabSelect>
               </div>
-              <div className="w-32 shrink-0 flex gap-1">
-                <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
-                <Input type="number" min="0" max="11" step="0.5" placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
+              <div className="w-32 shrink-0">
+                <div className="flex gap-1">
+                  <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
+                  <Input type="number" min="0" max="11" step={newRun.product_type === 'Tape' ? '2.5' : '0.5'} placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
+                </div>
+                {newRunSnappedPreview && (
+                  <div className="text-xs text-green-700 mt-0.5 font-medium">{newRunSnappedPreview}</div>
+                )}
               </div>
               <div className="w-20 shrink-0">
                 <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value, tape_type: value === 'Warm Dim (30k-18k)' ? '360lm (3.6w/ft)' : newRun.tape_type })} triggerClassName="h-9 w-full" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
@@ -267,7 +300,11 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Inches</Label>
-                              <Input type="number" min="0" max="11" step="0.5" value={editValues.inches} onChange={e => setEditValues({...editValues, inches: e.target.value})} className="h-8 w-14 text-xs" />
+                              <Input type="number" min="0" max="11" step={editValues.product_type === 'Tape' ? '2.5' : '0.5'} value={editValues.inches} onChange={e => setEditValues({...editValues, inches: e.target.value})} className="h-8 w-14 text-xs" />
+                              {editValues.product_type === 'Tape' && (() => {
+                                const snapped = getSnappedFeet(editValues.feet, editValues.inches, 'Tape');
+                                return snapped > 0 ? <div className="text-xs text-green-700 font-medium">{formatSnapped(snapped * 12)}</div> : null;
+                              })()}
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Output</Label>
@@ -323,7 +360,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                               onUpdate(run.id, {
                                 run_name: editValues.run_name,
                                 location: editValues.location,
-                                length_feet: Math.round(((parseFloat(editValues.feet) || 0) + (parseFloat(editValues.inches) || 0) / 12) * 100) / 100,
+                                length_feet: getSnappedFeet(editValues.feet, editValues.inches, editValues.product_type),
                                 tape_type: editValues.tape_type,
                                 product_type: editValues.product_type,
                                 cct: editValues.cct,
@@ -363,7 +400,9 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                           <div className="w-32 shrink-0">
                             <div className="text-xs text-slate-500">Length</div>
                             <div className="text-sm whitespace-nowrap">
-                              {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
+                              {run.product_type === 'Tape'
+                                ? formatSnapped(run.length_feet * 12)
+                                : `${Math.floor(run.length_feet)}' ${Math.round((run.length_feet % 1) * 12)}"`}
                             </div>
                           </div>
                           <div className="w-20 shrink-0">
