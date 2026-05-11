@@ -11,7 +11,7 @@ const MaterialsCalculator = React.memo(({ runs }) => {
     let totalWatts = 0;
     
     runs.forEach(run => {
-      const type = run.tape_type;
+      const type = run.tape_output;
       const cct = run.cct || 'No CCT';
       const key = `${type}-${cct}`;
       const specs = TAPE_SPECS[type];

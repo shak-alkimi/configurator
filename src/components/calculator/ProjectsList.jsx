@@ -166,13 +166,8 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
                   </div>
                 </div>
                 <div className="text-xs text-slate-600 space-y-1">
-                  <div>{project.customer_name}</div>
-                  {project.total_price && (
-                    <div className="font-semibold text-slate-900">
-                      ${project.total_price.toFixed(2)}
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between">
+                   <div>{project.customer_name}</div>
+                   <div className="flex items-center justify-between">
                     <div className="text-slate-400">
                       {format(new Date(project.created_date), 'MMM d, yyyy')}
                     </div>

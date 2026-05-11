@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Save, Trash2, Send, Download, Plus, Search } from "lucide-react";
-import { calculateTotalPrice } from "@/components/calculator/calculations";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -225,13 +225,7 @@ export default function Calculator() {
       return;
     }
 
-    // Calculate total price from tape runs using shared function
-    const totalPrice = calculateTotalPrice(tapeRuns);
-
-    await saveProjectMutation.mutateAsync({
-      ...projectData,
-      total_price: totalPrice
-    });
+    await saveProjectMutation.mutateAsync(projectData);
   };
 
   const handleAddTapeRun = async (runData) => {
@@ -293,12 +287,10 @@ export default function Calculator() {
   };
 
   const handleSubmitProject = async () => {
-    const totalPrice = calculateTotalPrice(tapeRuns);
     try {
       await saveProjectMutation.mutateAsync({
         ...projectData,
-        status: 'submitted',
-        total_price: totalPrice
+        status: 'submitted'
       });
     } catch (error) {
       toast.error('Failed to submit project');
