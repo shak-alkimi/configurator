@@ -165,7 +165,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                   <SelectItem value="3000k">3000k</SelectItem>
                   <SelectItem value="3500k">3500k</SelectItem>
                   <SelectItem value="Warm Dim (30k-18k)">Warm Dim (30k-18k)</SelectItem>
-                  <SelectItem value="Tunable White (18-40k)">Tunable White (18-40k)</SelectItem>
+                  <SelectItem value="Tunable White (18-40k)" disabled className="text-slate-400">Tunable White (18-40k)</SelectItem>
                 </TabSelect>
               </div>
               <div className="w-24 shrink-0">
@@ -266,8 +266,8 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                                 <SelectItem value="3000k">3000k</SelectItem>
                                 <SelectItem value="3500k">3500k</SelectItem>
                                 <SelectItem value="Warm Dim (30k-18k)">Warm Dim (30k-18k)</SelectItem>
-                                <SelectItem value="Tunable White (18-40k)">Tunable White (18-40k)</SelectItem>
-                              </TabSelect>
+                                <SelectItem value="Tunable White (18-40k)" disabled className="text-slate-400">Tunable White (18-40k)</SelectItem>
+                                </TabSelect>
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Housing</Label>
