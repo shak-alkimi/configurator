@@ -151,17 +151,17 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
         <CardContent className="pt-4 pb-4 overflow-x-auto">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(11, 1fr)', gap: '8px', width: '100%' }}>
             {/* Header row */}
-            <div className="text-xs text-slate-500 text-center">Type</div>
-            <div className="text-xs text-slate-500 text-center">Location</div>
-            <div className="text-xs text-slate-500 text-center">Product</div>
-            <div className="text-xs text-slate-500 text-center">Length</div>
-            <div className="text-xs text-slate-500 text-center">CCT</div>
-            <div className="text-xs text-slate-500 text-center">Output</div>
-            <div className="text-xs text-slate-500 text-center">Housing</div>
-            <div className="text-xs text-slate-500 text-center">Lens</div>
-            <div className="text-xs text-slate-500 text-center">Finish</div>
-            <div className="text-xs text-slate-500 text-center">Driver</div>
-            <div className="text-xs text-slate-500 text-center">Add</div>
+            <div className="text-xs text-slate-500 text-left">Type</div>
+            <div className="text-xs text-slate-500 text-left">Location</div>
+            <div className="text-xs text-slate-500 text-left">Product</div>
+            <div className="text-xs text-slate-500 text-left">Length</div>
+            <div className="text-xs text-slate-500 text-left">CCT</div>
+            <div className="text-xs text-slate-500 text-left">Output</div>
+            <div className="text-xs text-slate-500 text-left">Housing</div>
+            <div className="text-xs text-slate-500 text-left">Lens</div>
+            <div className="text-xs text-slate-500 text-left">Finish</div>
+            <div className="text-xs text-slate-500 text-left">Driver</div>
+            <div className="text-xs text-slate-500 text-left">Add</div>
             {/* Input row */}
             <Input value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} onKeyDown={handleKeyDown} className="h-9" />
             <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} onKeyDown={handleKeyDown} className="h-9" />
