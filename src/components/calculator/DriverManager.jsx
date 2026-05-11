@@ -7,9 +7,8 @@ const WATTS_PER_FOOT = { "300lm (3.0w/ft)": 3.0, "360lm (3.6w/ft)": 3.6, "600lm 
 
 function getDriverWatts(driver, runs) {
   let total = 0;
-  const assignedIds = new Set(driver.assigned_runs || []);
   for (const run of (runs || [])) {
-    if (!assignedIds.has(run.id)) continue;
+    if (run.driver_group !== driver.name) continue;
     if (!run.tape_output || !run.length_feet) continue;
     const wpf = WATTS_PER_FOOT[run.tape_output];
     if (wpf == null) continue;
