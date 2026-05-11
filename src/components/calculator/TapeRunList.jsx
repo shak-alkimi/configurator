@@ -136,7 +136,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <div className="w-24 shrink-0 text-xs text-slate-500">Product</div>
               <div className="w-32 shrink-0 text-xs text-slate-500">Length</div>
               <div className="w-20 shrink-0 text-xs text-slate-500">CCT</div>
-              <div className="w-16 shrink-0 text-xs text-slate-500">Output</div>
+              <div className="w-20 shrink-0 text-xs text-slate-500">Output</div>
               <div className="w-20 shrink-0 text-xs text-slate-500">Housing</div>
               <div className="w-16 shrink-0 text-xs text-slate-500">Lens</div>
               <div className="w-20 shrink-0 text-xs text-slate-500">Finish</div>
@@ -172,7 +172,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                   <SelectItem value="Tunable White (18k-40k)" disabled className="text-slate-400">Tunable White (18k-40k)</SelectItem>
                 </TabSelect>
               </div>
-              <div className="w-16 shrink-0">
+              <div className="w-20 shrink-0">
                 <TabSelect value={newRun.tape_type} onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })} triggerClassName="h-9 w-full" displayMap={{"3w": "300lm", "6w": "600lm", "2w": "200lm", "4w": "400lm"}}>
                   {newRun.product_type === 'Tape' ? (
                     <>
@@ -386,7 +386,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             <div className="text-xs text-slate-500">CCT</div>
                             <div className="text-sm truncate">{run.cct === 'Warm Dim (30k-18k)' ? 'WD' : run.cct === 'Tunable White (18k-40k)' ? 'TW' : run.cct || '—'}</div>
                           </div>
-                          <div className="w-16 shrink-0">
+                          <div className="w-20 shrink-0">
                             <div className="text-xs text-slate-500">Output</div>
                             <div className="text-sm whitespace-nowrap">
                               {(() => {
