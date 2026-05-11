@@ -10,6 +10,15 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { TAPE_SPECS, CHANNEL_SPECS } from "@/components/calculator/constants";
 import { calculateRunCost } from "@/components/calculator/calculations";
 import DriverManager from "@/components/calculator/DriverManager";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const TAPE_INCH_OPTIONS = ['0', '2.5', '5', '7.5', '10'];
 
@@ -40,6 +49,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
   const [localRuns, setLocalRuns] = useState(runs);
   const [editingId, setEditingId] = useState(null);
   const [editValues, setEditValues] = useState({});
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [newRun, setNewRun] = useState({
     run_name: '',
     feet: '',
@@ -453,13 +463,13 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                               <Pencil className="h-4 w-4" />
                             </Button>
                             <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => onDelete(run.id)}
-                              className="h-8 w-8 text-slate-400 hover:text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                               variant="ghost"
+                               size="icon"
+                               onClick={() => setDeleteConfirmId(run.id)}
+                               className="h-8 w-8 text-slate-400 hover:text-red-600"
+                             >
+                               <Trash2 className="h-4 w-4" />
+                             </Button>
                           </div>
                         </div>
                         )}
@@ -473,6 +483,27 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
           )}
         </Droppable>
       </DragDropContext>
+
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete tape run?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The tape run will be permanently deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogAction
+            onClick={() => {
+              onDelete(deleteConfirmId);
+              setDeleteConfirmId(null);
+            }}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Delete
+          </AlertDialogAction>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
