@@ -187,8 +187,8 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <div className="flex flex-col gap-1 flex-1 min-w-0">
                 <span className="text-xs text-gray-500 text-left">Length</span>
                 <div className="flex gap-1">
-                  <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
-                  <TabSelect value={newRun.inches} onValueChange={(v) => setNewRun({ ...newRun, inches: v })} triggerClassName="h-9 w-full" placeholder="in">
+                  <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="w-10 flex-none" />
+                  <TabSelect value={newRun.inches} onValueChange={(v) => setNewRun({ ...newRun, inches: v })} triggerClassName="flex-1 h-9" placeholder="in">
                     {TAPE_INCH_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}"</SelectItem>)}
                   </TabSelect>
                 </div>
