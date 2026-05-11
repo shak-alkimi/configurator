@@ -140,12 +140,6 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
         </span>
       </div>
 
-      <DriverManager
-        drivers={drivers || []}
-        runs={localRuns}
-        onDriversChange={onDriversChange}
-      />
-
       {/* Add New Run */}
       <Card className="border-dashed">
         <CardContent className="pt-4 pb-4 overflow-x-auto">
@@ -205,9 +199,13 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <SelectItem value="White">White</SelectItem>
             </TabSelect>
             <TabSelect value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 truncate">
-              {(drivers || []).map(d => (
-                <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
-              ))}
+              {(drivers || []).length > 0 ? (
+                (drivers || []).map(d => (
+                  <SelectItem key={d.id || d.name} value={d.name}>{d.name}</SelectItem>
+                ))
+              ) : (
+                <SelectItem value={null} disabled>No drivers</SelectItem>
+              )}
             </TabSelect>
             <Button
               onClick={handleAdd}
@@ -219,6 +217,15 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
           </div>
         </CardContent>
       </Card>
+
+      {/* Driver Gauge */}
+      {drivers && drivers.length > 0 && (
+        <DriverManager
+          drivers={drivers}
+          runs={localRuns}
+          onDriversChange={onDriversChange}
+        />
+      )}
 
       {/* Existing Runs */}
       <DragDropContext onDragEnd={handleDragEnd}>
@@ -313,9 +320,13 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             <div className="space-y-1">
                               <Label className="text-xs">Driver</Label>
                               <TabSelect value={editValues.driver_group} onValueChange={v => setEditValues({...editValues, driver_group: v})} triggerClassName="h-8 w-28 text-xs">
-                                {(drivers || []).map(d => (
-                                  <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
-                                ))}
+                                {(drivers || []).length > 0 ? (
+                                  (drivers || []).map(d => (
+                                    <SelectItem key={d.id || d.name} value={d.name}>{d.name}</SelectItem>
+                                  ))
+                                ) : (
+                                  <SelectItem value={null} disabled>No drivers</SelectItem>
+                                )}
                               </TabSelect>
                             </div>
                             <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:text-green-700" onClick={() => {
