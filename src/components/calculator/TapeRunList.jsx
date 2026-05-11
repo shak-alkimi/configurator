@@ -170,7 +170,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <SelectItem value="Tape">Tape</SelectItem>
             </TabSelect>
             <div className="flex gap-1 items-center">
-              <div className="flex items-center border border-input rounded-md h-9 px-2 bg-background" style={{width: '60px'}}>
+              <div className="flex items-center border border-input rounded-md h-9 px-2 bg-background w-fit">
                 <input type="number" min="0" max="999" step="1" placeholder="0" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="w-12 bg-transparent text-sm appearance-none [&::-webkit-outer-spin-button]:hidden [&::-webkit-inner-spin-button]:hidden outline-none" style={{MozAppearance: 'textfield'}} />
                 <span className="text-sm text-slate-600">ft</span>
               </div>
