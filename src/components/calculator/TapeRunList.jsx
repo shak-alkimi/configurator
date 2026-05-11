@@ -170,10 +170,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <SelectItem value="Tape">Tape</SelectItem>
             </TabSelect>
             <div className="flex gap-1 items-center">
-              <div className="flex gap-0.5 items-center">
-                <Input type="number" min="0" step="1" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-14 appearance-none [&::-webkit-outer-spin-button]:hidden [&::-webkit-inner-spin-button]:hidden" style={{MozAppearance: 'textfield'}} />
-                <span className="text-sm text-slate-600">′</span>
-              </div>
+              <Input type="number" min="0" step="1" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-14 appearance-none [&::-webkit-outer-spin-button]:hidden [&::-webkit-inner-spin-button]:hidden" style={{MozAppearance: 'textfield'}} />
               <TabSelect value={newRun.inches} onValueChange={(v) => setNewRun({ ...newRun, inches: v })} triggerClassName="h-9 flex-1" placeholder="in">
                 {TAPE_INCH_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}"</SelectItem>)}
               </TabSelect>
