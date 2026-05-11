@@ -11,6 +11,31 @@ import { TAPE_SPECS, CHANNEL_SPECS } from "@/components/calculator/constants";
 import { calculateRunCost } from "@/components/calculator/calculations";
 import DriverManager from "@/components/calculator/DriverManager";
 
+const TAPE_INCH_OPTIONS = ['0', '2.5', '5', '7.5', '10'];
+
+// Format total inches as "Xft Y.Zin"
+function formatSnapped(totalInches) {
+  const ft = Math.floor(totalInches / 12);
+  const inches = totalInches % 12;
+  const inDisplay = Number.isInteger(inches) ? `${inches}` : inches.toFixed(1);
+  return `${ft}ft ${inDisplay}in`;
+}
+
+// Given feet + inches strings, return total feet
+function getSnappedFeet(feetStr, inchesStr) {
+  const ft = parseFloat(feetStr) || 0;
+  const inches = parseFloat(inchesStr) || 0;
+  return ft + inches / 12;
+}
+
+// Extract the nearest valid inches option string from a length_feet value
+function extractInchesOption(lengthFeet) {
+  const rawInches = (lengthFeet % 1) * 12;
+  const snapped = Math.round(rawInches / 2.5) * 2.5;
+  const clamped = Math.min(snapped, 10);
+  return TAPE_INCH_OPTIONS.find(o => parseFloat(o) === clamped) ?? '0';
+}
+
 export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onUpdate, onDelete, onReorder }) {
   const [localRuns, setLocalRuns] = useState(runs);
   const [editingId, setEditingId] = useState(null);
@@ -20,6 +45,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
     feet: '',
     inches: '',
     tape_type: '',
+    product_type: '',
     location: '',
     cct: '',
     channel_type: '',
@@ -39,10 +65,11 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
     }
   };
 
+  // Compute snapped preview for new run
+  const newRunSnappedFeet = getSnappedFeet(newRun.feet, newRun.inches);
+
   const handleAdd = () => {
-    const feet = parseFloat(newRun.feet) || 0;
-    const inches = parseFloat(newRun.inches) || 0;
-    const totalFeet = Math.round((feet + (inches / 12)) * 100) / 100;
+    const totalFeet = getSnappedFeet(newRun.feet, newRun.inches);
     
     if (!newRun.cct || !newRun.tape_type || !newRun.channel_type || totalFeet <= 0) {
       return;
@@ -52,6 +79,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
       run_name: newRun.run_name,
       length_feet: totalFeet,
       tape_type: newRun.tape_type,
+      product_type: newRun.product_type,
       location: newRun.location,
       cct: newRun.cct,
       channel_type: newRun.channel_type,
@@ -65,6 +93,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
       feet: '',
       inches: '',
       tape_type: '',
+      product_type: '',
       location: '',
       cct: '',
       channel_type: '',
@@ -96,10 +125,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
   };
 
   const isFormValid = () => {
-    const feet = parseFloat(newRun.feet) || 0;
-    const inches = parseFloat(newRun.inches) || 0;
-    const totalFeet = feet + (inches / 12);
-    return totalFeet > 0 && newRun.cct && newRun.tape_type && newRun.channel_type;
+    return newRunSnappedFeet > 0 && newRun.cct && newRun.tape_type && newRun.channel_type;
   };
 
   return (
@@ -130,13 +156,14 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <div className="w-6 shrink-0" />
               <div className="w-16 shrink-0 text-xs text-slate-500">Type</div>
               <div className="w-28 shrink-0 text-xs text-slate-500">Location</div>
+              <div className="w-24 shrink-0 text-xs text-slate-500">Product</div>
               <div className="w-32 shrink-0 text-xs text-slate-500">Length</div>
-              <div className="w-28 shrink-0 text-xs text-slate-500">Output</div>
               <div className="w-20 shrink-0 text-xs text-slate-500">CCT</div>
-              <div className="w-24 shrink-0 text-xs text-slate-500">Housing</div>
-              <div className="w-24 shrink-0 text-xs text-slate-500">Lens</div>
-              <div className="w-28 shrink-0 text-xs text-slate-500">Finish</div>
-              <div className="w-24 shrink-0 text-xs text-slate-500">Driver</div>
+              <div className="w-20 shrink-0 text-xs text-slate-500">Output</div>
+              <div className="w-20 shrink-0 text-xs text-slate-500">Housing</div>
+              <div className="w-16 shrink-0 text-xs text-slate-500">Lens</div>
+              <div className="w-20 shrink-0 text-xs text-slate-500">Finish</div>
+              <div className="w-20 shrink-0 text-xs text-slate-500">Driver</div>
               <div className="w-9 shrink-0" />
             </div>
             {/* Input row */}
@@ -148,47 +175,59 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <div className="w-28 shrink-0">
                 <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
               </div>
-              <div className="w-32 shrink-0 flex gap-1">
-                <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
-                <Input type="number" min="0" max="11" step="0.5" placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
-              </div>
-              <div className="w-28 shrink-0">
-                <TabSelect value={newRun.tape_type} onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })} triggerClassName="h-9 w-full">
-                  <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
-                  <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
+              <div className="w-24 shrink-0">
+                <TabSelect value={newRun.product_type} onValueChange={(value) => setNewRun({ ...newRun, product_type: value, tape_type: '' })} triggerClassName="h-9 w-full">
+                  <SelectItem value="Flex">Flex</SelectItem>
+                  <SelectItem value="Tape">Tape</SelectItem>
                 </TabSelect>
               </div>
+              <div className="w-32 shrink-0">
+                <div className="flex gap-1">
+                  <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
+                  <TabSelect value={newRun.inches} onValueChange={(v) => setNewRun({ ...newRun, inches: v })} triggerClassName="h-9 w-16" placeholder="in">
+                    {TAPE_INCH_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}"</SelectItem>)}
+                  </TabSelect>
+                </div>
+
+              </div>
               <div className="w-20 shrink-0">
-                <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value })} triggerClassName="h-9 w-full">
+                <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value, tape_type: value === 'Warm Dim (30k-18k)' ? '360lm (3.6w/ft)' : newRun.tape_type })} triggerClassName="h-9 w-full" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
                   <SelectItem value="2400k">2400k</SelectItem>
                   <SelectItem value="2700k">2700k</SelectItem>
                   <SelectItem value="3000k">3000k</SelectItem>
                   <SelectItem value="3500k">3500k</SelectItem>
-                  <SelectItem value="Warm Dim (22-30k)">Warm Dim (22-30k)</SelectItem>
-                  <SelectItem value="Tunable White (18-40k)">Tunable White (18-40k)</SelectItem>
+                  <SelectItem value="Warm Dim (30k-18k)">Warm Dim (30k-18k)</SelectItem>
+                  <SelectItem value="Tunable White (18k-40k)" disabled className="text-slate-400">Tunable White (18k-40k)</SelectItem>
                 </TabSelect>
               </div>
-              <div className="w-24 shrink-0">
+              <div className="w-20 shrink-0">
+                <TabSelect value={newRun.tape_type} onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })} triggerClassName="h-9 w-full" displayMap={{"300lm (3.0w/ft)": "300lm", "360lm (3.6w/ft)": "360lm", "600lm (6.0w/ft)": "600lm"}}>
+                  <SelectItem value="300lm (3.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>300lm (3.0w/ft)</SelectItem>
+                  <SelectItem value="360lm (3.6w/ft)">360lm (3.6w/ft)</SelectItem>
+                  <SelectItem value="600lm (6.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>600lm (6.0w/ft)</SelectItem>
+                </TabSelect>
+              </div>
+              <div className="w-20 shrink-0">
                 <TabSelect value={newRun.channel_type} onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })} triggerClassName="h-9 w-full">
                   <SelectItem value="corner">Corner</SelectItem>
                   <SelectItem value="surface">Surface</SelectItem>
                   <SelectItem value="none">None</SelectItem>
                 </TabSelect>
               </div>
-              <div className="w-24 shrink-0">
+              <div className="w-16 shrink-0">
                 <TabSelect value={newRun.lens} onValueChange={(value) => setNewRun({ ...newRun, lens: value })} triggerClassName="h-9 w-full">
                   <SelectItem value="Clear">Clear</SelectItem>
                   <SelectItem value="Frosted">Frosted</SelectItem>
                 </TabSelect>
               </div>
-              <div className="w-28 shrink-0">
+              <div className="w-20 shrink-0">
                 <TabSelect value={newRun.finish} onValueChange={(value) => setNewRun({ ...newRun, finish: value })} triggerClassName="h-9 w-full">
                   <SelectItem value="Aluminum">Aluminum</SelectItem>
                   <SelectItem value="Black">Black</SelectItem>
                   <SelectItem value="White">White</SelectItem>
                 </TabSelect>
               </div>
-              <div className="w-24 shrink-0">
+              <div className="w-20 shrink-0">
                 <TabSelect value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 w-full">
                   {(drivers || []).map(d => (
                     <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
@@ -244,30 +283,40 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                               <Input value={editValues.location} onChange={e => setEditValues({...editValues, location: e.target.value})} className="h-8 w-20 text-xs" />
                             </div>
                             <div className="space-y-1">
+                              <Label className="text-xs">Product</Label>
+                              <TabSelect value={editValues.product_type} onValueChange={v => setEditValues({...editValues, product_type: v})} triggerClassName="h-8 w-20 text-xs">
+                                <SelectItem value="Flex">Flex</SelectItem>
+                                <SelectItem value="Tape">Tape</SelectItem>
+                              </TabSelect>
+                            </div>
+                            <div className="space-y-1">
                               <Label className="text-xs">Feet</Label>
                               <Input type="number" min="0" value={editValues.feet} onChange={e => setEditValues({...editValues, feet: e.target.value})} className="h-8 w-14 text-xs" />
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Inches</Label>
-                              <Input type="number" min="0" max="11" step="0.5" value={editValues.inches} onChange={e => setEditValues({...editValues, inches: e.target.value})} className="h-8 w-14 text-xs" />
+                              <TabSelect value={editValues.inches} onValueChange={v => setEditValues({...editValues, inches: v})} triggerClassName="h-8 w-16 text-xs">
+                                {TAPE_INCH_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}"</SelectItem>)}
+                              </TabSelect>
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Output</Label>
                               <TabSelect value={editValues.tape_type} onValueChange={v => setEditValues({...editValues, tape_type: v})} triggerClassName="h-8 w-24 text-xs">
-                                <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
-                                <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
+                                <SelectItem value="300lm (3.0w/ft)" disabled={editValues.cct === 'Warm Dim (30k-18k)'} className={editValues.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>300lm (3.0w/ft)</SelectItem>
+                                <SelectItem value="360lm (3.6w/ft)">360lm (3.6w/ft)</SelectItem>
+                                <SelectItem value="600lm (6.0w/ft)" disabled={editValues.cct === 'Warm Dim (30k-18k)'} className={editValues.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>600lm (6.0w/ft)</SelectItem>
                               </TabSelect>
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">CCT</Label>
-                              <TabSelect value={editValues.cct} onValueChange={v => setEditValues({...editValues, cct: v})} triggerClassName="h-8 w-36 text-xs">
+                              <TabSelect value={editValues.cct} onValueChange={v => setEditValues({...editValues, cct: v, tape_type: v === 'Warm Dim (30k-18k)' ? '360lm (3.6w/ft)' : editValues.tape_type})} triggerClassName="h-8 w-36 text-xs" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
                                 <SelectItem value="2400k">2400k</SelectItem>
                                 <SelectItem value="2700k">2700k</SelectItem>
                                 <SelectItem value="3000k">3000k</SelectItem>
                                 <SelectItem value="3500k">3500k</SelectItem>
-                                <SelectItem value="Warm Dim (22-30k)">Warm Dim (22-30k)</SelectItem>
-                                <SelectItem value="Tunable White (18-40k)">Tunable White (18-40k)</SelectItem>
-                              </TabSelect>
+                                <SelectItem value="Warm Dim (30k-18k)">Warm Dim (30k-18k)</SelectItem>
+                                <SelectItem value="Tunable White (18k-40k)" disabled className="text-slate-400">Tunable White (18k-40k)</SelectItem>
+                                </TabSelect>
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Housing</Label>
@@ -304,8 +353,9 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                               onUpdate(run.id, {
                                 run_name: editValues.run_name,
                                 location: editValues.location,
-                                length_feet: Math.round(((parseFloat(editValues.feet) || 0) + (parseFloat(editValues.inches) || 0) / 12) * 100) / 100,
+                                length_feet: getSnappedFeet(editValues.feet, editValues.inches),
                                 tape_type: editValues.tape_type,
+                                product_type: editValues.product_type,
                                 cct: editValues.cct,
                                 channel_type: editValues.channel_type,
                                 lens: editValues.lens,
@@ -336,39 +386,41 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             <div className="text-xs text-slate-500">Location</div>
                             <div className="text-sm truncate">{run.location || '—'}</div>
                           </div>
+                          <div className="w-24 shrink-0">
+                            <div className="text-xs text-slate-500">Product</div>
+                            <div className="text-sm truncate">{run.product_type || '—'}</div>
+                          </div>
                           <div className="w-32 shrink-0">
                             <div className="text-xs text-slate-500">Length</div>
                             <div className="text-sm whitespace-nowrap">
-                              {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
-                            </div>
-                          </div>
-                          <div className="w-28 shrink-0">
-                            <div className="text-xs text-slate-500">Output</div>
-                            <div className="text-sm whitespace-nowrap">
-                              {(() => {
-                                const specs = TAPE_SPECS[run.tape_type];
-                                if (!specs) return '—';
-                                return `${specs.watts_per_foot}w/ft`;
-                              })()}
+                              {run.product_type === 'Tape'
+                                ? formatSnapped(run.length_feet * 12)
+                                : `${Math.floor(run.length_feet)}' ${Math.round((run.length_feet % 1) * 12)}"`}
                             </div>
                           </div>
                           <div className="w-20 shrink-0">
                             <div className="text-xs text-slate-500">CCT</div>
-                            <div className="text-sm truncate">{run.cct || '—'}</div>
+                            <div className="text-sm truncate">{run.cct === 'Warm Dim (30k-18k)' ? 'WD' : run.cct === 'Tunable White (18k-40k)' ? 'TW' : run.cct || '—'}</div>
                           </div>
-                          <div className="w-24 shrink-0">
+                          <div className="w-20 shrink-0">
+                            <div className="text-xs text-slate-500">Output</div>
+                            <div className="text-sm whitespace-nowrap">
+                               {run.tape_type === '300lm (3.0w/ft)' ? '300lm' : run.tape_type === '360lm (3.6w/ft)' ? '360lm' : run.tape_type === '600lm (6.0w/ft)' ? '600lm' : run.tape_type || '—'}
+                            </div>
+                          </div>
+                          <div className="w-20 shrink-0">
                             <div className="text-xs text-slate-500">Housing</div>
                             <div className="text-sm truncate">{formatChannelType(run.channel_type)}</div>
                           </div>
-                          <div className="w-24 shrink-0">
+                          <div className="w-16 shrink-0">
                             <div className="text-xs text-slate-500">Lens</div>
                             <div className="text-sm truncate">{run.lens || '—'}</div>
                           </div>
-                          <div className="w-28 shrink-0">
+                          <div className="w-20 shrink-0">
                             <div className="text-xs text-slate-500">Finish</div>
                             <div className="text-sm truncate">{run.finish || '—'}</div>
                           </div>
-                          <div className="w-24 shrink-0">
+                          <div className="w-20 shrink-0">
                             <div className="text-xs text-slate-500">Driver</div>
                             <div className="text-sm">{run.driver_group || '—'}</div>
                           </div>
@@ -386,8 +438,9 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                                   run_name: run.run_name || '',
                                   location: run.location || '',
                                   feet: Math.floor(run.length_feet),
-                                  inches: Math.round((run.length_feet % 1) * 12),
+                                  inches: extractInchesOption(run.length_feet),
                                   tape_type: run.tape_type,
+                                  product_type: run.product_type || '',
                                   cct: run.cct,
                                   channel_type: run.channel_type,
                                   lens: run.lens || '',

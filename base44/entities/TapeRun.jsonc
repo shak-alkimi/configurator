@@ -17,11 +17,20 @@
     "tape_type": {
       "type": "string",
       "enum": [
-        "2w",
-        "4w"
+        "300lm (3.0w/ft)",
+        "360lm (3.6w/ft)",
+        "600lm (6.0w/ft)"
       ],
-      "default": "4w",
+      "default": "300lm (3.0w/ft)",
       "description": "Output type of LED tape light"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "Tape",
+        "Flex"
+      ],
+      "description": "Product type"
     },
     "location": {
       "type": "string",
@@ -34,8 +43,8 @@
         "2700k",
         "3000k",
         "3500k",
-        "Warm Dim (22-30k)",
-        "Tunable White (18-40k)"
+        "Warm Dim (30k-18k)",
+        "Tunable White (18k-40k)"
       ],
       "description": "Correlated Color Temperature"
     },

@@ -109,12 +109,14 @@ const MaterialsCalculator = React.memo(({ runs }) => {
 
   const formatType = (type) => {
     if (type === 'recessed') return 'Recessed Flange';
+    if (type === '300lm (3w/ft)') return '300lm (3w/ft)';
+    if (type === '600lm (6w/ft)') return '600lm (6w/ft)';
     return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
   const formatCCT = (cct) => {
-    if (cct === 'Warm Dim (22-30k)') return 'WD (22-30k)';
-    if (cct === 'Tunable White (18-40k)') return 'TW (18-40k)';
+    if (cct === 'Warm Dim (30k-18k)') return 'DtW (3000-1800K)';
+    if (cct === 'Tunable White (18k-40k)') return 'TW (18-40k)';
     return cct;
   };
 
@@ -125,7 +127,7 @@ const MaterialsCalculator = React.memo(({ runs }) => {
     "3000k": 3,
     "3500k": 4,
     "Warm Dim (22-30k)": 5,
-    "Tunable White (18-40k)": 6
+    "Tunable White (18k-40k)": 6
   };
 
   // Sort tape light entries by output (2w before 4w) and then by CCT
