@@ -149,102 +149,70 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
       {/* Add New Run */}
       <Card className="border-dashed">
         <CardContent className="pt-4 pb-4 overflow-x-auto">
-          <div className="flex justify-center">
-          <div className="min-w-max">
-            {/* Column headers */}
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className="w-6 shrink-0" />
-              <div className="w-16 shrink-0 text-xs text-slate-500">Type</div>
-              <div className="w-28 shrink-0 text-xs text-slate-500">Location</div>
-              <div className="w-24 shrink-0 text-xs text-slate-500">Product</div>
-              <div className="w-32 shrink-0 text-xs text-slate-500">Length</div>
-              <div className="w-20 shrink-0 text-xs text-slate-500">CCT</div>
-              <div className="w-20 shrink-0 text-xs text-slate-500">Output</div>
-              <div className="w-20 shrink-0 text-xs text-slate-500">Housing</div>
-              <div className="w-16 shrink-0 text-xs text-slate-500">Lens</div>
-              <div className="w-20 shrink-0 text-xs text-slate-500">Finish</div>
-              <div className="w-20 shrink-0 text-xs text-slate-500">Driver</div>
-              <div className="w-9 shrink-0" />
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(11, 1fr)', gap: '8px', width: '100%' }}>
+            {/* Header row */}
+            <div className="text-xs text-slate-500 text-center">Type</div>
+            <div className="text-xs text-slate-500 text-center">Location</div>
+            <div className="text-xs text-slate-500 text-center">Product</div>
+            <div className="text-xs text-slate-500 text-center">Length</div>
+            <div className="text-xs text-slate-500 text-center">CCT</div>
+            <div className="text-xs text-slate-500 text-center">Output</div>
+            <div className="text-xs text-slate-500 text-center">Housing</div>
+            <div className="text-xs text-slate-500 text-center">Lens</div>
+            <div className="text-xs text-slate-500 text-center">Finish</div>
+            <div className="text-xs text-slate-500 text-center">Driver</div>
+            <div className="text-xs text-slate-500 text-center">Add</div>
             {/* Input row */}
-            <div className="flex items-center gap-2">
-              <div className="w-6 shrink-0" />
-              <div className="w-16 shrink-0">
-                <Input value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
-              </div>
-              <div className="w-28 shrink-0">
-                <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
-              </div>
-              <div className="w-24 shrink-0">
-                <TabSelect value={newRun.product_type} onValueChange={(value) => setNewRun({ ...newRun, product_type: value, tape_type: '' })} triggerClassName="h-9 w-full">
-                  <SelectItem value="Flex">Flex</SelectItem>
-                  <SelectItem value="Tape">Tape</SelectItem>
-                </TabSelect>
-              </div>
-              <div className="w-32 shrink-0">
-                <div className="flex gap-1">
-                  <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-16" />
-                  <TabSelect value={newRun.inches} onValueChange={(v) => setNewRun({ ...newRun, inches: v })} triggerClassName="h-9" triggerStyle={{ width: '72px', minWidth: '72px' }} placeholder="in">
-                    {TAPE_INCH_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}"</SelectItem>)}
-                  </TabSelect>
-                </div>
-
-              </div>
-              <div className="w-20 shrink-0">
-                <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value, tape_output: value === 'Warm Dim (30k-18k)' ? '360lm (3.6w/ft)' : newRun.tape_output })} triggerClassName="h-9 w-full" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
-                  <SelectItem value="2400k">2400k</SelectItem>
-                  <SelectItem value="2700k">2700k</SelectItem>
-                  <SelectItem value="3000k">3000k</SelectItem>
-                  <SelectItem value="3500k">3500k</SelectItem>
-                  <SelectItem value="Warm Dim (30k-18k)">Warm Dim (30k-18k)</SelectItem>
-                  <SelectItem value="Tunable White (18k-40k)" disabled className="text-slate-400">Tunable White (18k-40k)</SelectItem>
-                </TabSelect>
-              </div>
-              <div className="w-20 shrink-0">
-                <TabSelect value={newRun.tape_output} onValueChange={(value) => setNewRun({ ...newRun, tape_output: value })} triggerClassName="h-9 w-full" displayMap={{"300lm (3.0w/ft)": "300lm", "360lm (3.6w/ft)": "360lm", "600lm (6.0w/ft)": "600lm"}}>
-                  <SelectItem value="300lm (3.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>300lm (3.0w/ft)</SelectItem>
-                  <SelectItem value="360lm (3.6w/ft)">360lm (3.6w/ft)</SelectItem>
-                  <SelectItem value="600lm (6.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>600lm (6.0w/ft)</SelectItem>
-                </TabSelect>
-              </div>
-              <div className="w-20 shrink-0">
-                <TabSelect value={newRun.channel_type} onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })} triggerClassName="h-9 w-full">
-                  <SelectItem value="corner">Corner</SelectItem>
-                  <SelectItem value="surface">Surface</SelectItem>
-                </TabSelect>
-              </div>
-              <div className="w-16 shrink-0">
-                <TabSelect value={newRun.lens} onValueChange={(value) => setNewRun({ ...newRun, lens: value })} triggerClassName="h-9 w-full">
-                  <SelectItem value="Clear">Clear</SelectItem>
-                  <SelectItem value="Frosted">Frosted</SelectItem>
-                </TabSelect>
-              </div>
-              <div className="w-20 shrink-0">
-                <TabSelect value={newRun.finish} onValueChange={(value) => setNewRun({ ...newRun, finish: value })} triggerClassName="h-9 w-full">
-                  <SelectItem value="Aluminum">Aluminum</SelectItem>
-                  <SelectItem value="Black">Black</SelectItem>
-                  <SelectItem value="White">White</SelectItem>
-                </TabSelect>
-              </div>
-              <div className="w-20 shrink-0">
-                <TabSelect value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 w-full">
-                  {(drivers || []).map(d => (
-                    <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
-                  ))}
-                </TabSelect>
-              </div>
-              <div className="shrink-0">
-                <Button
-                  onClick={handleAdd}
-                  size="icon"
-                  className={`h-9 w-9 rounded ${!isFormValid() ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#3A5F3A] text-white hover:bg-[#2d4a2d]'}`}
-                  disabled={!isFormValid()}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+            <Input value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} onKeyDown={handleKeyDown} className="h-9" />
+            <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} onKeyDown={handleKeyDown} className="h-9" />
+            <TabSelect value={newRun.product_type} onValueChange={(value) => setNewRun({ ...newRun, product_type: value, tape_type: '' })} triggerClassName="h-9 w-full">
+              <SelectItem value="Flex">Flex</SelectItem>
+              <SelectItem value="Tape">Tape</SelectItem>
+            </TabSelect>
+            <div className="flex gap-1 items-center">
+              <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 flex-1" />
+              <TabSelect value={newRun.inches} onValueChange={(v) => setNewRun({ ...newRun, inches: v })} triggerClassName="h-9 flex-1" placeholder="in">
+                {TAPE_INCH_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}"</SelectItem>)}
+              </TabSelect>
             </div>
-          </div>
+            <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value, tape_output: value === 'Warm Dim (30k-18k)' ? '360lm (3.6w/ft)' : newRun.tape_output })} triggerClassName="h-9 w-full" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
+              <SelectItem value="2400k">2400k</SelectItem>
+              <SelectItem value="2700k">2700k</SelectItem>
+              <SelectItem value="3000k">3000k</SelectItem>
+              <SelectItem value="3500k">3500k</SelectItem>
+              <SelectItem value="Warm Dim (30k-18k)">Warm Dim (30k-18k)</SelectItem>
+              <SelectItem value="Tunable White (18k-40k)" disabled className="text-slate-400">Tunable White (18k-40k)</SelectItem>
+            </TabSelect>
+            <TabSelect value={newRun.tape_output} onValueChange={(value) => setNewRun({ ...newRun, tape_output: value })} triggerClassName="h-9 w-full" displayMap={{"300lm (3.0w/ft)": "300lm", "360lm (3.6w/ft)": "360lm", "600lm (6.0w/ft)": "600lm"}}>
+              <SelectItem value="300lm (3.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>300lm (3.0w/ft)</SelectItem>
+              <SelectItem value="360lm (3.6w/ft)">360lm (3.6w/ft)</SelectItem>
+              <SelectItem value="600lm (6.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>600lm (6.0w/ft)</SelectItem>
+            </TabSelect>
+            <TabSelect value={newRun.channel_type} onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })} triggerClassName="h-9 w-full">
+              <SelectItem value="corner">Corner</SelectItem>
+              <SelectItem value="surface">Surface</SelectItem>
+            </TabSelect>
+            <TabSelect value={newRun.lens} onValueChange={(value) => setNewRun({ ...newRun, lens: value })} triggerClassName="h-9 w-full">
+              <SelectItem value="Clear">Clear</SelectItem>
+              <SelectItem value="Frosted">Frosted</SelectItem>
+            </TabSelect>
+            <TabSelect value={newRun.finish} onValueChange={(value) => setNewRun({ ...newRun, finish: value })} triggerClassName="h-9 w-full">
+              <SelectItem value="Aluminum">Aluminum</SelectItem>
+              <SelectItem value="Black">Black</SelectItem>
+              <SelectItem value="White">White</SelectItem>
+            </TabSelect>
+            <TabSelect value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 w-full">
+              {(drivers || []).map(d => (
+                <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
+              ))}
+            </TabSelect>
+            <Button
+              onClick={handleAdd}
+              className={`h-9 rounded ${!isFormValid() ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#3A5F3A] text-white hover:bg-[#2d4a2d]'}`}
+              disabled={!isFormValid()}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -369,26 +337,26 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             </Button>
                           </div>
                         ) : (
-                        <div className="flex items-center gap-2 overflow-x-auto">
+                        <div style={{ display: 'grid', gridTemplateColumns: 'auto repeat(10, 1fr) auto', gap: '8px', alignItems: 'center', width: '100%' }}>
                           <div 
                             {...provided.dragHandleProps}
-                            className="w-6 shrink-0 cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600"
+                            className="cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600"
                           >
                             <GripVertical className="h-5 w-5" />
                           </div>
-                          <div className="w-16 shrink-0">
+                          <div className="text-center">
                             <div className="text-xs text-slate-500">Type</div>
                             <div className="text-sm font-medium truncate">{run.run_name || 'Unnamed'}</div>
                           </div>
-                          <div className="w-28 shrink-0">
+                          <div className="text-center">
                             <div className="text-xs text-slate-500">Location</div>
                             <div className="text-sm truncate">{run.location || '—'}</div>
                           </div>
-                          <div className="w-24 shrink-0">
+                          <div className="text-center">
                             <div className="text-xs text-slate-500">Product</div>
                             <div className="text-sm truncate">{run.product_type || '—'}</div>
                           </div>
-                          <div className="w-32 shrink-0">
+                          <div className="text-center">
                             <div className="text-xs text-slate-500">Length</div>
                             <div className="text-sm whitespace-nowrap">
                               {run.product_type === 'Tape'
@@ -396,37 +364,33 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                                 : `${Math.floor(run.length_feet)}' ${Math.round((run.length_feet % 1) * 12)}"`}
                             </div>
                           </div>
-                          <div className="w-20 shrink-0">
+                          <div className="text-center">
                             <div className="text-xs text-slate-500">CCT</div>
                             <div className="text-sm truncate">{run.cct === 'Warm Dim (30k-18k)' ? 'WD' : run.cct === 'Tunable White (18k-40k)' ? 'TW' : run.cct || '—'}</div>
                           </div>
-                          <div className="w-20 shrink-0">
+                          <div className="text-center">
                             <div className="text-xs text-slate-500">Output</div>
                             <div className="text-sm whitespace-nowrap">
                                {run.tape_output === '300lm (3.0w/ft)' ? '300lm' : run.tape_output === '360lm (3.6w/ft)' ? '360lm' : run.tape_output === '600lm (6.0w/ft)' ? '600lm' : run.tape_output || '—'}
                             </div>
                           </div>
-                          <div className="w-20 shrink-0">
+                          <div className="text-center">
                             <div className="text-xs text-slate-500">Housing</div>
                             <div className="text-sm truncate">{run.channel_type ? formatChannelType(run.channel_type) : '—'}</div>
                           </div>
-                          <div className="w-16 shrink-0">
+                          <div className="text-center">
                             <div className="text-xs text-slate-500">Lens</div>
                             <div className="text-sm truncate">{run.lens || '—'}</div>
                           </div>
-                          <div className="w-20 shrink-0">
+                          <div className="text-center">
                             <div className="text-xs text-slate-500">Finish</div>
                             <div className="text-sm truncate">{run.finish || '—'}</div>
                           </div>
-                          <div className="w-20 shrink-0">
+                          <div className="text-center">
                             <div className="text-xs text-slate-500">Driver</div>
                             <div className="text-sm">{run.driver_group || '—'}</div>
                           </div>
-                          <div className="w-14 shrink-0 text-right">
-                            <div className="text-xs text-slate-500">Cost</div>
-                            <div className="text-sm font-semibold whitespace-nowrap">${calculateRunCost(run).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                          </div>
-                          <div className="flex shrink-0 gap-0 items-center w-16">
+                          <div className="flex gap-0 items-center">
                             <Button
                               variant="ghost"
                               size="icon"
