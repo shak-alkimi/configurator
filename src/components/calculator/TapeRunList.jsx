@@ -461,7 +461,14 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                                   run_name: run.run_name || '',
                                   location: run.location || '',
                                   feet: Math.floor(run.length_feet),
-                                  inches: Math.round((run.length_feet % 1) * 12),
+                                  inches: (() => {
+                                   const rawInches = (run.length_feet % 1) * 12;
+                                   // Round to nearest 2.5 for Tape, else round to 0.5
+                                   if ((run.product_type || '') === 'Tape') {
+                                     return String(Math.round(rawInches / 2.5) * 2.5);
+                                   }
+                                   return Math.round(rawInches * 2) / 2;
+                                  })(),
                                   tape_type: run.tape_type,
                                   product_type: run.product_type || '',
                                   cct: run.cct,
