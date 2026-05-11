@@ -169,7 +169,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 </TabSelect>
               </div>
               <div className="w-20 shrink-0">
-                <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value })} triggerClassName="h-9 w-full">
+                <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value })} triggerClassName="h-9 w-full" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
                   <SelectItem value="2400k">2400k</SelectItem>
                   <SelectItem value="2700k">2700k</SelectItem>
                   <SelectItem value="3000k">3000k</SelectItem>
@@ -277,7 +277,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">CCT</Label>
-                              <TabSelect value={editValues.cct} onValueChange={v => setEditValues({...editValues, cct: v})} triggerClassName="h-8 w-36 text-xs">
+                              <TabSelect value={editValues.cct} onValueChange={v => setEditValues({...editValues, cct: v})} triggerClassName="h-8 w-36 text-xs" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
                                 <SelectItem value="2400k">2400k</SelectItem>
                                 <SelectItem value="2700k">2700k</SelectItem>
                                 <SelectItem value="3000k">3000k</SelectItem>
