@@ -10,6 +10,16 @@ export const TAPE_SPECS = {
     price_per_foot: 12, 
     watts_per_foot: 5.0, 
     lumens_per_foot: 400 
+  },
+  "3w": { 
+    price_per_foot: 10, 
+    watts_per_foot: 3.0, 
+    lumens_per_foot: 300 
+  },
+  "6w": { 
+    price_per_foot: 12, 
+    watts_per_foot: 6.0, 
+    lumens_per_foot: 600 
   }
 };
 

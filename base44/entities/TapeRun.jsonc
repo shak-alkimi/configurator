@@ -18,7 +18,9 @@
       "type": "string",
       "enum": [
         "2w",
-        "4w"
+        "4w",
+        "3w",
+        "6w"
       ],
       "default": "4w",
       "description": "Output type of LED tape light"

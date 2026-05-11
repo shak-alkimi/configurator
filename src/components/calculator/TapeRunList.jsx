@@ -153,7 +153,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
               </div>
               <div className="w-24 shrink-0">
-                <TabSelect value={newRun.product_type} onValueChange={(value) => setNewRun({ ...newRun, product_type: value })} triggerClassName="h-9 w-full">
+                <TabSelect value={newRun.product_type} onValueChange={(value) => setNewRun({ ...newRun, product_type: value, tape_type: '' })} triggerClassName="h-9 w-full">
                   <SelectItem value="Flex">Flex</SelectItem>
                   <SelectItem value="Tape">Tape</SelectItem>
                 </TabSelect>
@@ -174,8 +174,17 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               </div>
               <div className="w-24 shrink-0">
                 <TabSelect value={newRun.tape_type} onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })} triggerClassName="h-9 w-full">
-                  <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
-                  <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
+                  {newRun.product_type === 'Tape' ? (
+                    <>
+                      <SelectItem value="3w">300lm (3w/ft)</SelectItem>
+                      <SelectItem value="6w">600lm (6w/ft)</SelectItem>
+                    </>
+                  ) : (
+                    <>
+                      <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
+                      <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
+                    </>
+                  )}
                 </TabSelect>
               </div>
               <div className="w-20 shrink-0">
@@ -271,8 +280,17 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             <div className="space-y-1">
                               <Label className="text-xs">Output</Label>
                               <TabSelect value={editValues.tape_type} onValueChange={v => setEditValues({...editValues, tape_type: v})} triggerClassName="h-8 w-24 text-xs">
-                                <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
-                                <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
+                                {editValues.product_type === 'Tape' ? (
+                                  <>
+                                    <SelectItem value="3w">300lm (3w/ft)</SelectItem>
+                                    <SelectItem value="6w">600lm (6w/ft)</SelectItem>
+                                  </>
+                                ) : (
+                                  <>
+                                    <SelectItem value="2w">2w/ft (200lm/ft)</SelectItem>
+                                    <SelectItem value="4w">4w/ft (400lm/ft)</SelectItem>
+                                  </>
+                                )}
                               </TabSelect>
                             </div>
                             <div className="space-y-1">
@@ -372,6 +390,8 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             <div className="text-xs text-slate-500">Output</div>
                             <div className="text-sm whitespace-nowrap">
                               {(() => {
+                                if (run.tape_type === '3w') return '300lm (3w/ft)';
+                                if (run.tape_type === '6w') return '600lm (6w/ft)';
                                 const specs = TAPE_SPECS[run.tape_type];
                                 if (!specs) return '—';
                                 return `${specs.watts_per_foot}w/ft`;
