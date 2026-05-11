@@ -164,19 +164,19 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
             {/* New Run Row */}
             <div className="flex gap-2 items-end w-full">
               {/* Type */}
-              <div className="flex flex-col gap-1 flex-1 min-w-0">
+              <div className="flex flex-col gap-1 flex-none w-[72px]">
                 <span className="text-xs text-gray-500 text-left">Type</span>
                 <Input value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
               </div>
               
               {/* Location */}
-              <div className="flex flex-col gap-1 flex-1 min-w-0">
+              <div className="flex flex-col gap-1 flex-none w-[72px]">
                 <span className="text-xs text-gray-500 text-left">Location</span>
                 <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
               </div>
               
               {/* Product */}
-              <div className="flex flex-col gap-1 flex-1 min-w-0">
+              <div className="flex flex-col gap-1 flex-none w-[72px]">
                 <span className="text-xs text-gray-500 text-left">Product</span>
                 <TabSelect value={newRun.product_type} onValueChange={(value) => setNewRun({ ...newRun, product_type: value, tape_output: '' })} triggerClassName="h-9 w-full">
                   <SelectItem value="Flex">Flex</SelectItem>
@@ -185,7 +185,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               </div>
               
               {/* Length */}
-              <div className="flex flex-col gap-1 flex-1 min-w-0">
+              <div className="flex flex-col gap-1 flex-none w-[100px]">
                 <span className="text-xs text-gray-500 text-left">Length</span>
                 <div className="flex gap-1">
                   <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
@@ -196,7 +196,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               </div>
               
               {/* CCT */}
-              <div className="flex flex-col gap-1 flex-1 min-w-0">
+              <div className="flex flex-col gap-1 flex-none w-[72px]">
                 <span className="text-xs text-gray-500 text-left">CCT</span>
                 <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value, tape_output: value === 'Warm Dim (30k-18k)' ? '360lm (3.6w/ft)' : newRun.tape_output })} triggerClassName="h-9 w-full" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
                   <SelectItem value="2400k">2400k</SelectItem>
@@ -209,7 +209,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               </div>
               
               {/* Output */}
-              <div className="flex flex-col gap-1 flex-1 min-w-0">
+              <div className="flex flex-col gap-1 flex-none w-[72px]">
                 <span className="text-xs text-gray-500 text-left">Output</span>
                 <TabSelect value={newRun.tape_output} onValueChange={(value) => setNewRun({ ...newRun, tape_output: value })} triggerClassName="h-9 w-full" displayMap={{"300lm (3.0w/ft)": "300lm", "360lm (3.6w/ft)": "360lm", "600lm (6.0w/ft)": "600lm"}}>
                   <SelectItem value="300lm (3.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>300lm (3.0w/ft)</SelectItem>
@@ -219,7 +219,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               </div>
               
               {/* Housing */}
-              <div className="flex flex-col gap-1 flex-1 min-w-0">
+              <div className="flex flex-col gap-1 flex-none w-[72px]">
                 <span className="text-xs text-gray-500 text-left">Housing</span>
                 <TabSelect value={newRun.channel_type} onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })} triggerClassName="h-9 w-full">
                   <SelectItem value="corner">Corner</SelectItem>
@@ -229,7 +229,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               </div>
               
               {/* Lens */}
-              <div className="flex flex-col gap-1 flex-1 min-w-0">
+              <div className="flex flex-col gap-1 flex-none w-[72px]">
                 <span className="text-xs text-gray-500 text-left">Lens</span>
                 <TabSelect value={newRun.lens} onValueChange={(value) => setNewRun({ ...newRun, lens: value })} triggerClassName="h-9 w-full">
                   <SelectItem value="Clear">Clear</SelectItem>
@@ -238,7 +238,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               </div>
               
               {/* Finish */}
-              <div className="flex flex-col gap-1 flex-1 min-w-0">
+              <div className="flex flex-col gap-1 flex-none w-[72px]">
                 <span className="text-xs text-gray-500 text-left">Finish</span>
                 <TabSelect value={newRun.finish} onValueChange={(value) => setNewRun({ ...newRun, finish: value })} triggerClassName="h-9 w-full">
                   <SelectItem value="Aluminum">Aluminum</SelectItem>
@@ -248,7 +248,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               </div>
               
               {/* Driver */}
-              <div className="flex flex-col gap-1 flex-1 min-w-0">
+              <div className="flex flex-col gap-1 flex-none w-[72px]">
                 <span className="text-xs text-gray-500 text-left">Driver</span>
                 <TabSelect value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 w-full">
                   {(drivers || []).map(d => (
