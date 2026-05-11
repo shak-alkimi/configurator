@@ -189,7 +189,17 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <div className="w-32 shrink-0">
                 <div className="flex gap-1">
                   <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
-                  <Input type="number" min="0" max="11" step={newRun.product_type === 'Tape' ? '2.5' : '0.5'} placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
+                  {newRun.product_type === 'Tape' ? (
+                    <TabSelect value={newRun.inches === '' ? '' : String(newRun.inches)} onValueChange={(v) => setNewRun({ ...newRun, inches: v })} triggerClassName="h-9 w-0 flex-1" placeholder="in">
+                      <SelectItem value="0">0"</SelectItem>
+                      <SelectItem value="2.5">2.5"</SelectItem>
+                      <SelectItem value="5">5"</SelectItem>
+                      <SelectItem value="7.5">7.5"</SelectItem>
+                      <SelectItem value="10">10"</SelectItem>
+                    </TabSelect>
+                  ) : (
+                    <Input type="number" min="0" max="11" step="0.5" placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
+                  )}
                 </div>
                 {newRunSnappedPreview && (
                   <div className="text-xs text-green-700 mt-0.5 font-medium">{newRunSnappedPreview}</div>
@@ -300,11 +310,17 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Inches</Label>
-                              <Input type="number" min="0" max="11" step={editValues.product_type === 'Tape' ? '2.5' : '0.5'} value={editValues.inches} onChange={e => setEditValues({...editValues, inches: e.target.value})} className="h-8 w-14 text-xs" />
-                              {editValues.product_type === 'Tape' && (() => {
-                                const snapped = getSnappedFeet(editValues.feet, editValues.inches, 'Tape');
-                                return snapped > 0 ? <div className="text-xs text-green-700 font-medium">{formatSnapped(snapped * 12)}</div> : null;
-                              })()}
+                              {editValues.product_type === 'Tape' ? (
+                                <TabSelect value={editValues.inches === '' ? '' : String(editValues.inches)} onValueChange={v => setEditValues({...editValues, inches: v})} triggerClassName="h-8 w-14 text-xs">
+                                  <SelectItem value="0">0"</SelectItem>
+                                  <SelectItem value="2.5">2.5"</SelectItem>
+                                  <SelectItem value="5">5"</SelectItem>
+                                  <SelectItem value="7.5">7.5"</SelectItem>
+                                  <SelectItem value="10">10"</SelectItem>
+                                </TabSelect>
+                              ) : (
+                                <Input type="number" min="0" max="11" step="0.5" value={editValues.inches} onChange={e => setEditValues({...editValues, inches: e.target.value})} className="h-8 w-14 text-xs" />
+                              )}
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Output</Label>
