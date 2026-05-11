@@ -23,6 +23,14 @@
       "default": "4w",
       "description": "Output type of LED tape light"
     },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "Tape",
+        "Flex"
+      ],
+      "description": "Product type"
+    },
     "location": {
       "type": "string",
       "description": "Location label for this run (e.g. Kitchen, Master Bed)"

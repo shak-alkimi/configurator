@@ -20,6 +20,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
     feet: '',
     inches: '',
     tape_type: '',
+    product_type: '',
     location: '',
     cct: '',
     channel_type: '',
@@ -52,6 +53,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
       run_name: newRun.run_name,
       length_feet: totalFeet,
       tape_type: newRun.tape_type,
+      product_type: newRun.product_type,
       location: newRun.location,
       cct: newRun.cct,
       channel_type: newRun.channel_type,
@@ -65,6 +67,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
       feet: '',
       inches: '',
       tape_type: '',
+      product_type: '',
       location: '',
       cct: '',
       channel_type: '',
@@ -130,6 +133,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <div className="w-6 shrink-0" />
               <div className="w-16 shrink-0 text-xs text-slate-500">Type</div>
               <div className="w-28 shrink-0 text-xs text-slate-500">Location</div>
+              <div className="w-24 shrink-0 text-xs text-slate-500">Product</div>
               <div className="w-32 shrink-0 text-xs text-slate-500">Length</div>
               <div className="w-28 shrink-0 text-xs text-slate-500">Output</div>
               <div className="w-20 shrink-0 text-xs text-slate-500">CCT</div>
@@ -147,6 +151,12 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               </div>
               <div className="w-28 shrink-0">
                 <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
+              </div>
+              <div className="w-24 shrink-0">
+                <TabSelect value={newRun.product_type} onValueChange={(value) => setNewRun({ ...newRun, product_type: value })} triggerClassName="h-9 w-full">
+                  <SelectItem value="Tape">Tape</SelectItem>
+                  <SelectItem value="Flex">Flex</SelectItem>
+                </TabSelect>
               </div>
               <div className="w-32 shrink-0 flex gap-1">
                 <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
@@ -244,6 +254,13 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                               <Input value={editValues.location} onChange={e => setEditValues({...editValues, location: e.target.value})} className="h-8 w-20 text-xs" />
                             </div>
                             <div className="space-y-1">
+                              <Label className="text-xs">Product</Label>
+                              <TabSelect value={editValues.product_type} onValueChange={v => setEditValues({...editValues, product_type: v})} triggerClassName="h-8 w-20 text-xs">
+                                <SelectItem value="Tape">Tape</SelectItem>
+                                <SelectItem value="Flex">Flex</SelectItem>
+                              </TabSelect>
+                            </div>
+                            <div className="space-y-1">
                               <Label className="text-xs">Feet</Label>
                               <Input type="number" min="0" value={editValues.feet} onChange={e => setEditValues({...editValues, feet: e.target.value})} className="h-8 w-14 text-xs" />
                             </div>
@@ -306,6 +323,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                                 location: editValues.location,
                                 length_feet: Math.round(((parseFloat(editValues.feet) || 0) + (parseFloat(editValues.inches) || 0) / 12) * 100) / 100,
                                 tape_type: editValues.tape_type,
+                                product_type: editValues.product_type,
                                 cct: editValues.cct,
                                 channel_type: editValues.channel_type,
                                 lens: editValues.lens,
@@ -335,6 +353,10 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                           <div className="w-28 shrink-0">
                             <div className="text-xs text-slate-500">Location</div>
                             <div className="text-sm truncate">{run.location || '—'}</div>
+                          </div>
+                          <div className="w-24 shrink-0">
+                            <div className="text-xs text-slate-500">Product</div>
+                            <div className="text-sm truncate">{run.product_type || '—'}</div>
                           </div>
                           <div className="w-32 shrink-0">
                             <div className="text-xs text-slate-500">Length</div>
@@ -388,6 +410,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                                   feet: Math.floor(run.length_feet),
                                   inches: Math.round((run.length_feet % 1) * 12),
                                   tape_type: run.tape_type,
+                                  product_type: run.product_type || '',
                                   cct: run.cct,
                                   channel_type: run.channel_type,
                                   lens: run.lens || '',
