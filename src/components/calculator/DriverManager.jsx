@@ -66,11 +66,7 @@ function DriverRow({ driver, index, isLast, runs, onUpdate, onRemove, onAdd }) {
       <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-red-600 shrink-0" onClick={() => onRemove(driver.id)}>
         <Trash2 className="h-3.5 w-3.5" />
       </Button>
-      {isLast && (
-        <Button variant="outline" size="sm" className="h-7 text-xs gap-1 shrink-0" onClick={onAdd}>
-          <Plus className="h-3 w-3" /> Driver
-        </Button>
-      )}
+
     </div>
   );
 }
@@ -107,19 +103,17 @@ export default function DriverManager({ drivers, runs, onDriversChange }) {
         />
       ))}
       
-      {drivers.length === 0 && (
-        <DropdownMenu open={showAddMenu} onOpenChange={setShowAddMenu}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-7 text-xs gap-1 w-full">
-              <Plus className="h-3 w-3" /> Add Driver
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => addDriver(60)}>60W Driver</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => addDriver(96)}>96W Driver</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+      <DropdownMenu open={showAddMenu} onOpenChange={setShowAddMenu}>
+        <DropdownMenuTrigger asChild>
+          <button className="w-full text-left px-3 py-2 text-xs text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg border border-dashed border-slate-200 transition-colors flex items-center gap-1.5">
+            <Plus className="h-3.5 w-3.5" /> Add Driver
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem onClick={() => addDriver(60)}>60W Driver</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => addDriver(96)}>96W Driver</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
