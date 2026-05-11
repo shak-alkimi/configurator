@@ -26,8 +26,6 @@ import TapeRunList from "../components/calculator/TapeRunList";
 import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
 
 export default function Calculator() {
-  const DEFAULT_DRIVERS = [{ id: '1', name: 'Driver 1', maxWatts: 96 }];
-  const [drivers, setDrivers] = useState(DEFAULT_DRIVERS);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({ status: 'all', dateFrom: null, dateTo: null });
@@ -43,7 +41,8 @@ export default function Calculator() {
     city: '',
     state: '',
     notes: '',
-    status: 'draft'
+    status: 'draft',
+    drivers: []
   });
   const [isNewProject, setIsNewProject] = useState(true);
   const [formResetKey, setFormResetKey] = useState(0);
@@ -154,9 +153,9 @@ export default function Calculator() {
     reorderTapeRunsMutation.mutate(reorderedRuns);
   };
 
-  // Auto-save drivers to project whenever they change
+  // Update drivers in projectData and save to project
   const handleDriversChange = (newDrivers) => {
-    setDrivers(newDrivers);
+    setProjectData(prev => ({ ...prev, drivers: newDrivers }));
     if (selectedProjectId) {
       base44.entities.Project.update(selectedProjectId, { drivers: newDrivers });
     }
@@ -175,13 +174,12 @@ export default function Calculator() {
     },
   });
 
-  // Load selected project (including drivers)
+  // Load selected project
   useEffect(() => {
     if (selectedProjectId && !isNewProject) {
       const project = projects.find(p => p.id === selectedProjectId);
       if (project) {
         setProjectData(project);
-        setDrivers(project.drivers?.length ? project.drivers : DEFAULT_DRIVERS);
       }
     }
   }, [selectedProjectId, projects, isNewProject]);
@@ -198,9 +196,9 @@ export default function Calculator() {
       city: '',
       state: '',
       notes: '',
-      status: 'draft'
+      status: 'draft',
+      drivers: []
     });
-    setDrivers(DEFAULT_DRIVERS);
     setFormResetKey(prev => prev + 1);
   };
 
@@ -232,7 +230,6 @@ export default function Calculator() {
 
     await saveProjectMutation.mutateAsync({
       ...projectData,
-      drivers,
       total_price: totalPrice
     });
   };
@@ -246,7 +243,7 @@ export default function Calculator() {
           toast.error('Please save project details first');
           return;
         }
-        const result = await saveProjectMutation.mutateAsync({ ...projectData, drivers });
+        const result = await saveProjectMutation.mutateAsync(projectData);
         setSelectedProjectId(result.id);
         setIsNewProject(false);
         
@@ -300,7 +297,6 @@ export default function Calculator() {
     try {
       await saveProjectMutation.mutateAsync({
         ...projectData,
-        drivers,
         status: 'submitted',
         total_price: totalPrice
       });
@@ -497,7 +493,7 @@ export default function Calculator() {
                 <TapeRunList
                  key={selectedProjectId || `new-${formResetKey}`}
                  runs={tapeRuns}
-                 drivers={drivers}
+                 drivers={projectData.drivers || []}
                  onDriversChange={handleDriversChange}
                  onAdd={handleAddTapeRun}
                  onUpdate={(id, data) => updateTapeRunMutation.mutate({ id, data })}
