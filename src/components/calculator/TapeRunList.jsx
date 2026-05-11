@@ -161,47 +161,44 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
         <CardContent className="pt-4 pb-4 overflow-x-auto">
           <div className="flex justify-center">
           <div className="min-w-max">
-            {/* Column headers */}
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className="w-6 shrink-0" />
-              <div className="w-16 shrink-0 text-xs text-slate-500 text-left">Type</div>
-              <div className="w-28 shrink-0 text-xs text-slate-500 text-left">Location</div>
-              <div className="w-24 shrink-0 text-xs text-slate-500 text-left">Product</div>
-              <div className="w-32 shrink-0 text-xs text-slate-500 text-left">Length</div>
-              <div className="w-20 shrink-0 text-xs text-slate-500 text-left">CCT</div>
-              <div className="w-20 shrink-0 text-xs text-slate-500 text-left">Output</div>
-              <div className="w-20 shrink-0 text-xs text-slate-500 text-left">Housing</div>
-              <div className="w-16 shrink-0 text-xs text-slate-500 text-left">Lens</div>
-              <div className="w-20 shrink-0 text-xs text-slate-500 text-left">Finish</div>
-              <div className="w-20 shrink-0 text-xs text-slate-500 text-left">Driver</div>
-              <div className="w-9 shrink-0" />
-            </div>
-            {/* Input row */}
-            <div className="grid grid-cols-11 gap-2">
-              <div className="w-6 shrink-0" />
-              <div className="w-16 shrink-0">
+            {/* New Run Row */}
+            <div className="flex gap-3">
+              {/* Type */}
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <label className="text-xs text-slate-500">Type</label>
                 <Input value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
               </div>
-              <div className="w-28 shrink-0">
+              
+              {/* Location */}
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <label className="text-xs text-slate-500">Location</label>
                 <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
               </div>
-              <div className="w-24 shrink-0">
-                <TabSelect value={newRun.product_type} onValueChange={(value) => setNewRun({ ...newRun, product_type: value, tape_output: '' })} triggerClassName="h-9 w-20">
+              
+              {/* Product */}
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <label className="text-xs text-slate-500">Product</label>
+                <TabSelect value={newRun.product_type} onValueChange={(value) => setNewRun({ ...newRun, product_type: value, tape_output: '' })} triggerClassName="h-9 w-full">
                   <SelectItem value="Flex">Flex</SelectItem>
                   <SelectItem value="Tape">Tape</SelectItem>
                 </TabSelect>
               </div>
-              <div className="w-32 shrink-0">
-                <div className="flex gap-1">
-                  <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-16 flex-1" />
-                  <TabSelect value={newRun.inches} onValueChange={(v) => setNewRun({ ...newRun, inches: v })} triggerClassName="h-9 w-20" placeholder="in">
+              
+              {/* Length */}
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <label className="text-xs text-slate-500">Length</label>
+                <div className="flex gap-1 w-full">
+                  <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
+                  <TabSelect value={newRun.inches} onValueChange={(v) => setNewRun({ ...newRun, inches: v })} triggerClassName="h-9 w-full" placeholder="in">
                     {TAPE_INCH_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}"</SelectItem>)}
                   </TabSelect>
                 </div>
-
               </div>
-              <div className="w-20 shrink-0">
-                <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value, tape_output: value === 'Warm Dim (30k-18k)' ? '360lm (3.6w/ft)' : newRun.tape_output })} triggerClassName="h-9 w-24" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
+              
+              {/* CCT */}
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <label className="text-xs text-slate-500">CCT</label>
+                <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value, tape_output: value === 'Warm Dim (30k-18k)' ? '360lm (3.6w/ft)' : newRun.tape_output })} triggerClassName="h-9 w-full" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
                   <SelectItem value="2400k">2400k</SelectItem>
                   <SelectItem value="2700k">2700k</SelectItem>
                   <SelectItem value="3000k">3000k</SelectItem>
@@ -210,41 +207,58 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                   <SelectItem value="Tunable White (18k-40k)" disabled className="text-slate-400">Tunable White (18k-40k)</SelectItem>
                 </TabSelect>
               </div>
-              <div className="w-20 shrink-0">
-                <TabSelect value={newRun.tape_output} onValueChange={(value) => setNewRun({ ...newRun, tape_output: value })} triggerClassName="h-9 w-28" displayMap={{"300lm (3.0w/ft)": "300lm", "360lm (3.6w/ft)": "360lm", "600lm (6.0w/ft)": "600lm"}}>
+              
+              {/* Output */}
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <label className="text-xs text-slate-500">Output</label>
+                <TabSelect value={newRun.tape_output} onValueChange={(value) => setNewRun({ ...newRun, tape_output: value })} triggerClassName="h-9 w-full" displayMap={{"300lm (3.0w/ft)": "300lm", "360lm (3.6w/ft)": "360lm", "600lm (6.0w/ft)": "600lm"}}>
                   <SelectItem value="300lm (3.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>300lm (3.0w/ft)</SelectItem>
                   <SelectItem value="360lm (3.6w/ft)">360lm (3.6w/ft)</SelectItem>
                   <SelectItem value="600lm (6.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>600lm (6.0w/ft)</SelectItem>
                 </TabSelect>
               </div>
-              <div className="w-24 shrink-0">
-                <TabSelect value={newRun.channel_type} onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })} triggerClassName="h-9 w-24">
+              
+              {/* Housing */}
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <label className="text-xs text-slate-500">Housing</label>
+                <TabSelect value={newRun.channel_type} onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })} triggerClassName="h-9 w-full">
                   <SelectItem value="corner">Corner</SelectItem>
                   <SelectItem value="surface">Surface</SelectItem>
                   <SelectItem value="none">None</SelectItem>
                 </TabSelect>
               </div>
-              <div className="w-16 shrink-0">
-                <TabSelect value={newRun.lens} onValueChange={(value) => setNewRun({ ...newRun, lens: value })} triggerClassName="h-9 w-20">
+              
+              {/* Lens */}
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <label className="text-xs text-slate-500">Lens</label>
+                <TabSelect value={newRun.lens} onValueChange={(value) => setNewRun({ ...newRun, lens: value })} triggerClassName="h-9 w-full">
                   <SelectItem value="Clear">Clear</SelectItem>
                   <SelectItem value="Frosted">Frosted</SelectItem>
                 </TabSelect>
               </div>
-              <div className="w-20 shrink-0">
-                <TabSelect value={newRun.finish} onValueChange={(value) => setNewRun({ ...newRun, finish: value })} triggerClassName="h-9 w-20">
+              
+              {/* Finish */}
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <label className="text-xs text-slate-500">Finish</label>
+                <TabSelect value={newRun.finish} onValueChange={(value) => setNewRun({ ...newRun, finish: value })} triggerClassName="h-9 w-full">
                   <SelectItem value="Aluminum">Aluminum</SelectItem>
                   <SelectItem value="Black">Black</SelectItem>
                   <SelectItem value="White">White</SelectItem>
                 </TabSelect>
               </div>
-              <div className="w-20 shrink-0">
-                <TabSelect value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 w-24">
+              
+              {/* Driver */}
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <label className="text-xs text-slate-500">Driver</label>
+                <TabSelect value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 w-full">
                   {(drivers || []).map(d => (
                     <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
                   ))}
                 </TabSelect>
               </div>
-              <div className="shrink-0">
+              
+              {/* Add Button */}
+              <div className="flex items-end">
                 <Button
                   onClick={handleAdd}
                   size="icon"
