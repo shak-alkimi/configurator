@@ -158,9 +158,8 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
 
       {/* Add New Run */}
       <Card className="border-dashed">
-        <CardContent className="pt-4 pb-4 overflow-x-auto">
-          <div className="flex justify-center">
-          <div className="min-w-max">
+        <CardContent className="pt-4 pb-4">
+          <div className="w-full">
             {/* New Run Row */}
             <div className="flex gap-2 items-end w-full">
               {/* Type */}
@@ -267,7 +266,6 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-          </div>
           </div>
         </CardContent>
       </Card>
