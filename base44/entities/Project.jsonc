@@ -113,10 +113,6 @@
       "default": "draft",
       "description": "Project status"
     },
-    "total_price": {
-      "type": "number",
-      "description": "Total project price"
-    },
     "drivers": {
       "type": "array",
       "description": "Driver configuration for this project",
@@ -139,5 +135,46 @@
   "required": [
     "project_name",
     "customer_name"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }
