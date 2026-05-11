@@ -34,7 +34,7 @@
         "2700k",
         "3000k",
         "3500k",
-        "Dim to Warm (3000-1800K)",
+        "Warm Dim (30k-18k)",
         "Tunable White (18-40k)"
       ],
       "description": "Correlated Color Temperature"

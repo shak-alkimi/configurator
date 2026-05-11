@@ -164,7 +164,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                   <SelectItem value="2700k">2700k</SelectItem>
                   <SelectItem value="3000k">3000k</SelectItem>
                   <SelectItem value="3500k">3500k</SelectItem>
-                  <SelectItem value="Dim to Warm (3000-1800K)">Dim to Warm (3000-1800K)</SelectItem>
+                  <SelectItem value="Warm Dim (30k-18k)">Warm Dim (30k-18k)</SelectItem>
                   <SelectItem value="Tunable White (18-40k)">Tunable White (18-40k)</SelectItem>
                 </TabSelect>
               </div>
@@ -265,7 +265,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                                 <SelectItem value="2700k">2700k</SelectItem>
                                 <SelectItem value="3000k">3000k</SelectItem>
                                 <SelectItem value="3500k">3500k</SelectItem>
-                                <SelectItem value="Dim to Warm (3000-1800K)">Dim to Warm (3000-1800K)</SelectItem>
+                                <SelectItem value="Warm Dim (30k-18k)">Warm Dim (30k-18k)</SelectItem>
                                 <SelectItem value="Tunable White (18-40k)">Tunable White (18-40k)</SelectItem>
                               </TabSelect>
                             </div>

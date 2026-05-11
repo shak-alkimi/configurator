@@ -113,7 +113,7 @@ const MaterialsCalculator = React.memo(({ runs }) => {
   };
 
   const formatCCT = (cct) => {
-    if (cct === 'Dim to Warm (3000-1800K)') return 'DtW (3000-1800K)';
+    if (cct === 'Warm Dim (30k-18k)') return 'DtW (3000-1800K)';
     if (cct === 'Tunable White (18-40k)') return 'TW (18-40k)';
     return cct;
   };
