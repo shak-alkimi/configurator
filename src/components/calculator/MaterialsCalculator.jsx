@@ -11,7 +11,7 @@ const MaterialsCalculator = React.memo(({ runs }) => {
     let totalWatts = 0;
     
     runs.forEach(run => {
-      const type = run.tape_type;
+      const type = run.tape_output;
       const cct = run.cct || 'No CCT';
       const key = `${type}-${cct}`;
       const specs = TAPE_SPECS[type];
@@ -31,9 +31,10 @@ const MaterialsCalculator = React.memo(({ runs }) => {
     const channelByType = {};
     runs.forEach(run => {
       const type = run.channel_type;
+      if (!type) return;
       const specs = CHANNEL_SPECS[type];
       
-      if (type !== 'none' && specs) {
+      if (specs) {
         if (!channelByType[type]) {
           channelByType[type] = { feet: 0, cost: 0, sections: 0 };
         }
@@ -171,7 +172,7 @@ const MaterialsCalculator = React.memo(({ runs }) => {
                 <div className="space-y-2">
                   {Object.entries(calculations.channelByType)
                     .sort(([typeA], [typeB]) => {
-                      const order = ['corner', 'recessed', 'surface', 'none'];
+                      const order = ['corner', 'recessed', 'surface'];
                       return order.indexOf(typeA) - order.indexOf(typeB);
                     })
                     .map(([type, data]) => (

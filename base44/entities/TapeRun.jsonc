@@ -14,7 +14,7 @@
       "type": "number",
       "description": "Length of the tape run in feet"
     },
-    "tape_type": {
+    "tape_output": {
       "type": "string",
       "enum": [
         "300lm (3.0w/ft)",
@@ -53,11 +53,10 @@
       "enum": [
         "corner",
         "recessed",
-        "surface",
-        "none"
+        "surface"
       ],
       "default": "corner",
-      "description": "Type of channel for mounting"
+      "description": "Type of channel for mounting (optional)"
     },
     "notes": {
       "type": "string",
@@ -65,15 +64,23 @@
     },
     "driver_group": {
       "type": "string",
-      "description": "Driver group assignment (e.g. Driver 1, Driver 2). Runs sharing the same driver get the same label."
+      "description": "Driver group assignment (e.g. Driver 1, Driver 2)."
     },
-    "order": {
-      "type": "number",
-      "description": "Display order of the run"
+    "lens": {
+      "type": "string",
+      "description": "Lens type"
+    },
+    "finish": {
+      "type": "string",
+      "description": "Finish type"
     }
   },
   "required": [
     "project_id",
     "length_feet"
-  ]
+  ],
+  "rls": {
+    "read": "created_by == current_user OR current_user_role == 'admin'",
+    "write": "created_by == current_user OR current_user_role == 'admin'"
+  }
 }

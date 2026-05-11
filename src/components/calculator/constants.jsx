@@ -30,10 +30,6 @@ export const CHANNEL_SPECS = {
   surface: { 
     price_per_foot: 8, 
     clips_per_4ft: 4 
-  },
-  none: { 
-    price_per_foot: 0, 
-    clips_per_4ft: 0 
   }
 };
 

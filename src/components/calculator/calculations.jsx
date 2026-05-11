@@ -9,16 +9,16 @@ export function calculateTotalPrice(runs) {
   let totalWatts = 0;
   
   runs.forEach(run => {
-    if (!run || !run.length_feet || !run.tape_type) return;
-    const tapeSpec = TAPE_SPECS[run.tape_type];
-    const channelSpec = CHANNEL_SPECS[run.channel_type];
+    if (!run || !run.length_feet || !run.tape_output) return;
+    const tapeSpec = TAPE_SPECS[run.tape_output];
+    const channelSpec = run.channel_type ? CHANNEL_SPECS[run.channel_type] : null;
     
     if (tapeSpec) {
       tapeCost += run.length_feet * tapeSpec.price_per_foot;
       totalWatts += run.length_feet * tapeSpec.watts_per_foot;
     }
     
-    if (channelSpec && run.channel_type !== 'none') {
+    if (channelSpec) {
       const sections = Math.ceil(run.length_feet / 4);
       const actualFeet = sections * 4;
       channelCost += actualFeet * channelSpec.price_per_foot;
@@ -47,19 +47,20 @@ export function calculateTotalPrice(runs) {
 
 
 export function calculateRunCost(run) {
-  if (!run || !run.length_feet || !run.tape_type) return 0;
-  const tapeSpec = TAPE_SPECS[run.tape_type];
-  const channelSpec = CHANNEL_SPECS[run.channel_type];
-  
-  if (!tapeSpec || !channelSpec) return 0;
+  if (!run || !run.length_feet || !run.tape_output) return 0;
+  const tapeSpec = TAPE_SPECS[run.tape_output];
+  if (!tapeSpec) return 0;
   
   const tapeCost = run.length_feet * tapeSpec.price_per_foot;
   
   let channelCost = 0;
-  if (run.channel_type !== 'none') {
-    const sections = Math.ceil(run.length_feet / 4);
-    const actualFeet = sections * 4;
-    channelCost = actualFeet * channelSpec.price_per_foot;
+  if (run.channel_type) {
+    const channelSpec = CHANNEL_SPECS[run.channel_type];
+    if (channelSpec) {
+      const sections = Math.ceil(run.length_feet / 4);
+      const actualFeet = sections * 4;
+      channelCost = actualFeet * channelSpec.price_per_foot;
+    }
   }
   
   return tapeCost + channelCost;

@@ -6,24 +6,20 @@ import { Trash2, Plus } from "lucide-react";
 const WATTS_PER_FOOT = { "300lm (3.0w/ft)": 3.0, "360lm (3.6w/ft)": 3.6, "600lm (6.0w/ft)": 6.0 };
 
 function getDriverWatts(driver, runs) {
-  try {
-    let total = 0;
-    for (const run of (runs || [])) {
-      try {
-        if (!run.driver_group || !run.tape_type || !run.length_feet) continue;
-        if (run.driver_group !== driver.name) continue;
-        const wpf = WATTS_PER_FOOT[run.tape_type];
-        if (wpf == null) continue;
-        total += run.length_feet * wpf;
-      } catch { /* skip bad run */ }
-    }
-    return total;
-  } catch { return 0; }
+  let total = 0;
+  for (const run of (runs || [])) {
+    if (!run.driver_group || !run.tape_output || !run.length_feet) continue;
+    if (run.driver_group !== driver.name) continue;
+    const wpf = WATTS_PER_FOOT[run.tape_output];
+    if (wpf == null) continue;
+    total += run.length_feet * wpf;
+  }
+  return total;
 }
 
 function DriverRow({ driver, index, isLast, runs, onUpdate, onRemove, onAdd }) {
   const usedWatts = getDriverWatts(driver, runs);
-  const pct = driver.maxWatts > 0 ? (usedWatts / driver.maxWatts) * 100 : 0;
+  const pct = driver.max_watts > 0 ? (usedWatts / driver.max_watts) * 100 : 0;
   const barColor = pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-yellow-400' : 'bg-green-500';
   const barWidth = Math.min(pct, 100);
 
@@ -31,7 +27,7 @@ function DriverRow({ driver, index, isLast, runs, onUpdate, onRemove, onAdd }) {
     <div className="bg-white rounded-lg border border-slate-200 px-3 py-2">
       <div className="flex items-center gap-3">
         <span className="text-xs font-medium w-24 shrink-0">{driver.name}</span>
-        <Select value={String(driver.maxWatts)} onValueChange={v => onUpdate(driver.id, 'maxWatts', parseFloat(v))}>
+        <Select value={String(driver.max_watts)} onValueChange={v => onUpdate(driver.id, 'max_watts', parseFloat(v))}>
           <SelectTrigger className="h-7 w-20 text-xs shrink-0">
             <SelectValue />
           </SelectTrigger>
@@ -52,7 +48,7 @@ function DriverRow({ driver, index, isLast, runs, onUpdate, onRemove, onAdd }) {
           <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${barWidth}%` }} />
         </div>
         <span className="text-xs text-slate-500 shrink-0 w-24 text-right">
-          {Math.round(usedWatts)}W / {driver.maxWatts}W
+          {Math.round(usedWatts)}W / {driver.max_watts}W
         </span>
       </div>
     </div>
@@ -70,7 +66,7 @@ export default function DriverManager({ drivers, runs, onDriversChange }) {
 
   const addDriver = () => {
     const nextN = drivers.length + 1;
-    onDriversChange([...drivers, { id: String(Date.now()), name: `Driver ${nextN}`, maxWatts: 96 }]);
+    onDriversChange([...drivers, { name: `Driver ${nextN}`, max_watts: 96 }]);
   };
 
   return (

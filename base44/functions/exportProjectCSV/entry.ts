@@ -34,8 +34,7 @@ Deno.serve(async (req) => {
             CHANNEL_SPECS: {
                 corner: { price_per_foot: 10 },
                 recessed: { price_per_foot: 12 },
-                surface: { price_per_foot: 8 },
-                none: { price_per_foot: 0 }
+                surface: { price_per_foot: 8 }
             },
             DRIVER_MAX_WATTS: 96,
             DRIVER_LOAD_FACTOR: 0.8,
@@ -69,20 +68,21 @@ Deno.serve(async (req) => {
         tapeRuns.forEach((run) => {
             const runData = run.data || run;
             const lengthDisplay = runData.length_feet.toFixed(2);
-            const tapeSpec = TAPE_SPECS[runData.tape_type];
-            const channelSpec = CHANNEL_SPECS[runData.channel_type];
-            const outputDisplay = runData.tape_type || '';
+            const tapeSpec = TAPE_SPECS[runData.tape_output];
+            const channelSpec = runData.channel_type ? CHANNEL_SPECS[runData.channel_type] : null;
+            const outputDisplay = runData.tape_output || '';
             
             // Calculate cost with rounded channel sections
             let cost = 0;
             if (tapeSpec) cost += runData.length_feet * tapeSpec.price_per_foot;
-            if (channelSpec && runData.channel_type !== 'none') {
+            if (channelSpec) {
                 const sections = Math.ceil(runData.length_feet / 4);
                 const actualFeet = sections * 4;
                 cost += actualFeet * channelSpec.price_per_foot;
             }
             
-            const channelDisplay = runData.channel_type === 'recessed' ? 'Recessed Flange' : 
+            const channelDisplay = !runData.channel_type ? 'None' :
+                                   runData.channel_type === 'recessed' ? 'Recessed Flange' : 
                                    runData.channel_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             
             csv += `${escapeCSV(runData.run_name || '')},${lengthDisplay},${escapeCSV(outputDisplay)},${escapeCSV(runData.cct || '')},${escapeCSV(channelDisplay)},${escapeCSV(runData.notes || '')},${escapeCSV(runData.driver_group || '')},${cost.toFixed(2)}\n`;
@@ -105,15 +105,16 @@ Deno.serve(async (req) => {
         }, 0);
         const totalTapeCost = tapeRuns.reduce((sum, run) => {
             const runData = run.data || run;
-            const spec = TAPE_SPECS[runData.tape_type];
+            const spec = TAPE_SPECS[runData.tape_output];
             return sum + (spec ? runData.length_feet * spec.price_per_foot : 0);
         }, 0);
         
         // Calculate channel cost with rounded 4' sections
         const totalChannelCost = tapeRuns.reduce((sum, run) => {
             const runData = run.data || run;
+            if (!runData.channel_type) return sum;
             const spec = CHANNEL_SPECS[runData.channel_type];
-            if (spec && runData.channel_type !== 'none') {
+            if (spec) {
                 const sections = Math.ceil(runData.length_feet / 4);
                 const actualFeet = sections * 4;
                 return sum + actualFeet * spec.price_per_foot;
@@ -123,7 +124,7 @@ Deno.serve(async (req) => {
 
         const totalWattage = tapeRuns.reduce((sum, run) => {
             const runData = run.data || run;
-            const spec = TAPE_SPECS[runData.tape_type];
+            const spec = TAPE_SPECS[runData.tape_output];
             return sum + (spec ? runData.length_feet * spec.watts_per_foot : 0);
         }, 0);
 
@@ -133,7 +134,7 @@ Deno.serve(async (req) => {
         // Calculate clips
         const totalSections = tapeRuns.reduce((sum, run) => {
             const runData = run.data || run;
-            if (runData.channel_type !== 'none') {
+            if (runData.channel_type) {
                 return sum + Math.ceil(runData.length_feet / 4);
             }
             return sum;

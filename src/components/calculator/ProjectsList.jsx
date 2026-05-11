@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Plus, FileText, Search, RotateCcw, Filter, X, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 
-export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading, searchQuery, onSearchChange, onUpdateStatus, filters, onFiltersChange }) {
+export default function ProjectsList({ projects, selectedId, onSelect, onNew, isLoading, searchQuery, onSearchChange, onUpdateStatus, filters, onFiltersChange, computedTotals = {}, tapeRuns = [] }) {
   const [hoveredId, setHoveredId] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const statusColors = {
@@ -167,9 +167,9 @@ export default function ProjectsList({ projects, selectedId, onSelect, onNew, is
                 </div>
                 <div className="text-xs text-slate-600 space-y-1">
                   <div>{project.customer_name}</div>
-                  {project.total_price && (
+                  {computedTotals[project.id] != null && computedTotals[project.id] > 0 && (
                     <div className="font-semibold text-slate-900">
-                      ${project.total_price.toFixed(2)}
+                      ${computedTotals[project.id].toFixed(2)}
                     </div>
                   )}
                   <div className="flex items-center justify-between">

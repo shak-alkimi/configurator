@@ -9,8 +9,14 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'No entity_id in event' }, { status: 400 });
   }
 
-  const runs = await base44.asServiceRole.entities.TapeRun.filter({ project_id: projectId });
-  await Promise.all(runs.map(run => base44.asServiceRole.entities.TapeRun.delete(run.id)));
+  const [runs, driverRecords] = await Promise.all([
+    base44.asServiceRole.entities.TapeRun.filter({ project_id: projectId }),
+    base44.asServiceRole.entities.Driver.filter({ project_id: projectId }),
+  ]);
+  await Promise.all([
+    ...runs.map(run => base44.asServiceRole.entities.TapeRun.delete(run.id)),
+    ...driverRecords.map(d => base44.asServiceRole.entities.Driver.delete(d.id)),
+  ]);
 
-  return Response.json({ deleted: runs.length });
+  return Response.json({ deleted_runs: runs.length, deleted_drivers: driverRecords.length });
 });
