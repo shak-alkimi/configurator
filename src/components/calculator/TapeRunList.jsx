@@ -11,28 +11,34 @@ import { TAPE_SPECS, CHANNEL_SPECS } from "@/components/calculator/constants";
 import { calculateRunCost } from "@/components/calculator/calculations";
 import DriverManager from "@/components/calculator/DriverManager";
 
-// Snap total inches to nearest 2.5" increment
-function snapToTape(totalInches) {
-  return Math.round(totalInches / 2.5) * 2.5;
-}
+const TAPE_INCH_OPTIONS = ['0', '2.5', '5', '7.5', '10'];
 
-// Format snapped inches as "Xft Y.Zin"
-function formatSnapped(snappedInches) {
-  const ft = Math.floor(snappedInches / 12);
-  const inches = snappedInches % 12;
+// Format total inches as "Xft Y.Zin"
+function formatSnapped(totalInches) {
+  const ft = Math.floor(totalInches / 12);
+  const inches = totalInches % 12;
   const inDisplay = Number.isInteger(inches) ? `${inches}` : inches.toFixed(1);
   return `${ft}ft ${inDisplay}in`;
 }
 
-// Given raw feet + inches strings and product_type, return snapped total feet
+// Given feet + inches strings and product_type, return total feet
 function getSnappedFeet(feetStr, inchesStr, productType) {
-  const totalInches = (parseFloat(feetStr) || 0) * 12 + (parseFloat(inchesStr) || 0);
-  if (!totalInches) return 0;
+  const ft = parseFloat(feetStr) || 0;
+  const inches = parseFloat(inchesStr) || 0;
   if (productType === 'Tape') {
-    const snapped = snapToTape(totalInches);
-    return snapped / 12;
+    // inches is already constrained to TAPE_INCH_OPTIONS values
+    return ft + inches / 12;
   }
-  return Math.round(((parseFloat(feetStr) || 0) + (parseFloat(inchesStr) || 0) / 12) * 100) / 100;
+  return Math.round((ft + inches / 12) * 100) / 100;
+}
+
+// Extract the nearest valid tape inches option string from a length_feet value
+function extractTapeInches(lengthFeet) {
+  const rawInches = (lengthFeet % 1) * 12;
+  const snapped = Math.round(rawInches / 2.5) * 2.5;
+  // Clamp to max valid option (10) and find exact match
+  const clamped = Math.min(snapped, 10);
+  return TAPE_INCH_OPTIONS.find(o => parseFloat(o) === clamped) ?? '0';
 }
 
 export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onUpdate, onDelete, onReorder }) {
@@ -190,12 +196,8 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 <div className="flex gap-1">
                   <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
                   {newRun.product_type === 'Tape' ? (
-                    <TabSelect value={newRun.inches === '' ? '' : String(newRun.inches)} onValueChange={(v) => setNewRun({ ...newRun, inches: v })} triggerClassName="h-9 w-0 flex-1" placeholder="in">
-                      <SelectItem value="0">0"</SelectItem>
-                      <SelectItem value="2.5">2.5"</SelectItem>
-                      <SelectItem value="5">5"</SelectItem>
-                      <SelectItem value="7.5">7.5"</SelectItem>
-                      <SelectItem value="10">10"</SelectItem>
+                    <TabSelect value={newRun.inches} onValueChange={(v) => setNewRun({ ...newRun, inches: v })} triggerClassName="h-9 w-0 flex-1" placeholder="in">
+                      {TAPE_INCH_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}"</SelectItem>)}
                     </TabSelect>
                   ) : (
                     <Input type="number" min="0" max="11" step="0.5" placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
@@ -311,12 +313,8 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             <div className="space-y-1">
                               <Label className="text-xs">Inches</Label>
                               {editValues.product_type === 'Tape' ? (
-                                <TabSelect value={editValues.inches === '' ? '' : String(editValues.inches)} onValueChange={v => setEditValues({...editValues, inches: v})} triggerClassName="h-8 w-14 text-xs">
-                                  <SelectItem value="0">0"</SelectItem>
-                                  <SelectItem value="2.5">2.5"</SelectItem>
-                                  <SelectItem value="5">5"</SelectItem>
-                                  <SelectItem value="7.5">7.5"</SelectItem>
-                                  <SelectItem value="10">10"</SelectItem>
+                                <TabSelect value={editValues.inches} onValueChange={v => setEditValues({...editValues, inches: v})} triggerClassName="h-8 w-14 text-xs">
+                                  {TAPE_INCH_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}"</SelectItem>)}
                                 </TabSelect>
                               ) : (
                                 <Input type="number" min="0" max="11" step="0.5" value={editValues.inches} onChange={e => setEditValues({...editValues, inches: e.target.value})} className="h-8 w-14 text-xs" />
@@ -461,14 +459,9 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                                   run_name: run.run_name || '',
                                   location: run.location || '',
                                   feet: Math.floor(run.length_feet),
-                                  inches: (() => {
-                                   const rawInches = (run.length_feet % 1) * 12;
-                                   // Round to nearest 2.5 for Tape, else round to 0.5
-                                   if ((run.product_type || '') === 'Tape') {
-                                     return String(Math.round(rawInches / 2.5) * 2.5);
-                                   }
-                                   return Math.round(rawInches * 2) / 2;
-                                  })(),
+                                  inches: run.product_type === 'Tape'
+                                   ? extractTapeInches(run.length_feet)
+                                   : Math.round(((run.length_feet % 1) * 12) * 2) / 2,
                                   tape_type: run.tape_type,
                                   product_type: run.product_type || '',
                                   cct: run.cct,
