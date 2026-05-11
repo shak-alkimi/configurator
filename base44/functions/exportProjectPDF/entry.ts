@@ -83,9 +83,9 @@ Deno.serve(async (req) => {
         // Pricing constants — keep in sync with src/components/calculator/constants.jsx
         const CONSTANTS = {
             TAPE_SPECS: {
-                "300lm (3w/ft)": { price_per_foot: 10, watts_per_foot: 3.0, lumens_per_foot: 300 },
+                "300lm (3.0w/ft)": { price_per_foot: 10, watts_per_foot: 3.0, lumens_per_foot: 300 },
                 "360lm (3.6w/ft)": { price_per_foot: 11, watts_per_foot: 3.6, lumens_per_foot: 360 },
-                "600lm (6w/ft)": { price_per_foot: 12, watts_per_foot: 6.0, lumens_per_foot: 600 }
+                "600lm (6.0w/ft)": { price_per_foot: 12, watts_per_foot: 6.0, lumens_per_foot: 600 }
             },
             CHANNEL_SPECS: {
                 corner: { price_per_foot: 10 },

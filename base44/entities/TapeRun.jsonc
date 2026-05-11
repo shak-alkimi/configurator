@@ -17,11 +17,11 @@
     "tape_type": {
       "type": "string",
       "enum": [
-        "300lm (3w/ft)",
+        "300lm (3.0w/ft)",
         "360lm (3.6w/ft)",
-        "600lm (6w/ft)"
+        "600lm (6.0w/ft)"
       ],
-      "default": "300lm (3w/ft)",
+      "default": "300lm (3.0w/ft)",
       "description": "Output type of LED tape light"
     },
     "product_type": {

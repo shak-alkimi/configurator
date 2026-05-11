@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, Plus } from "lucide-react";
 
-const WATTS_PER_FOOT = { "300lm (3w/ft)": 3.0, "360lm (3.6w/ft)": 3.6, "600lm (6w/ft)": 6.0 };
+const WATTS_PER_FOOT = { "300lm (3.0w/ft)": 3.0, "360lm (3.6w/ft)": 3.6, "600lm (6.0w/ft)": 6.0 };
 
 function getDriverWatts(driver, runs) {
   try {

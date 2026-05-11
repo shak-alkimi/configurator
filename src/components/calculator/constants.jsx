@@ -1,7 +1,7 @@
 // Shared constants for tape light calculations
 
 export const TAPE_SPECS = {
-  "300lm (3w/ft)": { 
+  "300lm (3.0w/ft)": { 
     price_per_foot: 10, 
     watts_per_foot: 3.0, 
     lumens_per_foot: 300 
@@ -11,7 +11,7 @@ export const TAPE_SPECS = {
     watts_per_foot: 3.6, 
     lumens_per_foot: 360 
   },
-  "600lm (6w/ft)": { 
+  "600lm (6.0w/ft)": { 
     price_per_foot: 12, 
     watts_per_foot: 6.0, 
     lumens_per_foot: 600 
