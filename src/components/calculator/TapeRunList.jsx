@@ -71,7 +71,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
   const handleAdd = () => {
     const totalFeet = getSnappedFeet(newRun.feet, newRun.inches);
     
-    if (!newRun.cct || !newRun.tape_type || !newRun.channel_type || totalFeet <= 0) {
+    if (!newRun.cct || !newRun.tape_output || totalFeet <= 0) {
       return;
     }
     
@@ -408,7 +408,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                           </div>
                           <div className="w-20 shrink-0">
                             <div className="text-xs text-slate-500">Housing</div>
-                            <div className="text-sm truncate">{formatChannelType(run.channel_type)}</div>
+                            <div className="text-sm truncate">{run.channel_type ? formatChannelType(run.channel_type) : '—'}</div>
                           </div>
                           <div className="w-16 shrink-0">
                             <div className="text-xs text-slate-500">Lens</div>
