@@ -149,7 +149,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
       {/* Add New Run */}
       <Card className="border-dashed">
         <CardContent className="pt-4 pb-4 overflow-x-auto">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(11, 1fr)', gap: '8px', width: '100%' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '100px 100px 90px 120px 90px 110px 90px 90px 90px 90px 50px', gap: '8px', width: '100%' }}>
             {/* Header row */}
             <div className="text-xs text-slate-500 text-left">Type</div>
             <div className="text-xs text-slate-500 text-left">Location</div>
@@ -163,9 +163,9 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
             <div className="text-xs text-slate-500 text-left">Driver</div>
             <div className="text-xs text-slate-500 text-left">Add</div>
             {/* Input row */}
-            <Input value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} onKeyDown={handleKeyDown} className="h-9" />
-            <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} onKeyDown={handleKeyDown} className="h-9" />
-            <TabSelect value={newRun.product_type} onValueChange={(value) => setNewRun({ ...newRun, product_type: value, tape_type: '' })} triggerClassName="h-9 w-full">
+            <Input value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} onKeyDown={handleKeyDown} className="h-9 truncate" />
+            <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} onKeyDown={handleKeyDown} className="h-9 truncate" />
+            <TabSelect value={newRun.product_type} onValueChange={(value) => setNewRun({ ...newRun, product_type: value, tape_type: '' })} triggerClassName="h-9 truncate">
               <SelectItem value="Flex">Flex</SelectItem>
               <SelectItem value="Tape">Tape</SelectItem>
             </TabSelect>
@@ -178,7 +178,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 {TAPE_INCH_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}"</SelectItem>)}
               </TabSelect>
             </div>
-            <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value, tape_output: value === 'Warm Dim (30k-18k)' ? '360lm (3.6w/ft)' : newRun.tape_output })} triggerClassName="h-9 w-full" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
+            <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value, tape_output: value === 'Warm Dim (30k-18k)' ? '360lm (3.6w/ft)' : newRun.tape_output })} triggerClassName="h-9 truncate" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
               <SelectItem value="2400k">2400k</SelectItem>
               <SelectItem value="2700k">2700k</SelectItem>
               <SelectItem value="3000k">3000k</SelectItem>
@@ -186,25 +186,25 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <SelectItem value="Warm Dim (30k-18k)">Warm Dim (30k-18k)</SelectItem>
               <SelectItem value="Tunable White (18k-40k)" disabled className="text-slate-400">Tunable White (18k-40k)</SelectItem>
             </TabSelect>
-            <TabSelect value={newRun.tape_output} onValueChange={(value) => setNewRun({ ...newRun, tape_output: value })} triggerClassName="h-9 w-full" displayMap={{"300lm (3.0w/ft)": "300lm", "360lm (3.6w/ft)": "360lm", "600lm (6.0w/ft)": "600lm"}}>
+            <TabSelect value={newRun.tape_output} onValueChange={(value) => setNewRun({ ...newRun, tape_output: value })} triggerClassName="h-9 truncate" displayMap={{"300lm (3.0w/ft)": "300lm", "360lm (3.6w/ft)": "360lm", "600lm (6.0w/ft)": "600lm"}}>
               <SelectItem value="300lm (3.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>300lm (3.0w/ft)</SelectItem>
               <SelectItem value="360lm (3.6w/ft)">360lm (3.6w/ft)</SelectItem>
               <SelectItem value="600lm (6.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>600lm (6.0w/ft)</SelectItem>
             </TabSelect>
-            <TabSelect value={newRun.channel_type} onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })} triggerClassName="h-9 w-full">
+            <TabSelect value={newRun.channel_type} onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })} triggerClassName="h-9 truncate">
               <SelectItem value="corner">Corner</SelectItem>
               <SelectItem value="surface">Surface</SelectItem>
             </TabSelect>
-            <TabSelect value={newRun.lens} onValueChange={(value) => setNewRun({ ...newRun, lens: value })} triggerClassName="h-9 w-full">
+            <TabSelect value={newRun.lens} onValueChange={(value) => setNewRun({ ...newRun, lens: value })} triggerClassName="h-9 truncate">
               <SelectItem value="Clear">Clear</SelectItem>
               <SelectItem value="Frosted">Frosted</SelectItem>
             </TabSelect>
-            <TabSelect value={newRun.finish} onValueChange={(value) => setNewRun({ ...newRun, finish: value })} triggerClassName="h-9 w-full">
+            <TabSelect value={newRun.finish} onValueChange={(value) => setNewRun({ ...newRun, finish: value })} triggerClassName="h-9 truncate">
               <SelectItem value="Aluminum">Aluminum</SelectItem>
               <SelectItem value="Black">Black</SelectItem>
               <SelectItem value="White">White</SelectItem>
             </TabSelect>
-            <TabSelect value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 w-full">
+            <TabSelect value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 truncate">
               {(drivers || []).map(d => (
                 <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
               ))}
