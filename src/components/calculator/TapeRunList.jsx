@@ -135,7 +135,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
               <div className="w-28 shrink-0 text-xs text-slate-500">Location</div>
               <div className="w-24 shrink-0 text-xs text-slate-500">Product</div>
               <div className="w-32 shrink-0 text-xs text-slate-500">Length</div>
-              <div className="w-16 shrink-0 text-xs text-slate-500">CCT</div>
+              <div className="w-20 shrink-0 text-xs text-slate-500">CCT</div>
               <div className="w-24 shrink-0 text-xs text-slate-500">Output</div>
               <div className="w-20 shrink-0 text-xs text-slate-500">Housing</div>
               <div className="w-16 shrink-0 text-xs text-slate-500">Lens</div>
@@ -162,7 +162,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
                 <Input type="number" min="0" max="11" step="0.5" placeholder="in" value={newRun.inches} onChange={(e) => setNewRun({ ...newRun, inches: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-0 flex-1" />
               </div>
-              <div className="w-16 shrink-0">
+              <div className="w-20 shrink-0">
                 <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value })} triggerClassName="h-9 w-full" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
                   <SelectItem value="2400k">2400k</SelectItem>
                   <SelectItem value="2700k">2700k</SelectItem>
@@ -364,7 +364,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                               {Math.floor(run.length_feet)}' {Math.round((run.length_feet % 1) * 12)}"
                             </div>
                           </div>
-                          <div className="w-16 shrink-0">
+                          <div className="w-20 shrink-0">
                             <div className="text-xs text-slate-500">CCT</div>
                             <div className="text-sm truncate">{run.cct === 'Warm Dim (30k-18k)' ? 'WD' : run.cct === 'Tunable White (18k-40k)' ? 'TW' : run.cct || '—'}</div>
                           </div>
