@@ -36,11 +36,17 @@ function DriverRow({ driver, index, isLast, runs, onUpdate, onRemove, onAdd }) {
   const pct = driver.maxWatts > 0 ? (usedWatts / driver.maxWatts) * 100 : 0;
   const barColor = pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-yellow-400' : 'bg-green-500';
   const barWidth = Math.min(pct, 100);
+  const runCount = (runs || []).filter(r => r.driver_group === driver.name).length;
 
   return (
     <div className="bg-white rounded-lg border border-slate-200 px-3 py-2 space-y-1.5">
       <div className="flex items-center gap-3">
-        <span className="text-xs font-medium w-24 shrink-0">{driver.name}</span>
+         <div className="flex items-center gap-1.5 shrink-0">
+           <span className="text-xs font-medium">{driver.name}</span>
+           <span className="inline-flex items-center justify-center h-5 px-1.5 text-xs font-semibold bg-slate-200 text-slate-700 rounded-full">
+             {runCount}
+           </span>
+         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Select value={String(driver.maxWatts)} onValueChange={v => onUpdate(driver.id, 'maxWatts', parseFloat(v))}>
             <SelectTrigger className="h-7 w-20 text-xs">
