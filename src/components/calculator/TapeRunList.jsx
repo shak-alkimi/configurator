@@ -173,8 +173,9 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 </TabSelect>
               </div>
               <div className="w-20 shrink-0">
-                <TabSelect value={newRun.tape_type} onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })} triggerClassName="h-9 w-full" displayMap={{"300lm (3w/ft)": "300lm", "600lm (6w/ft)": "600lm"}}>
+                <TabSelect value={newRun.tape_type} onValueChange={(value) => setNewRun({ ...newRun, tape_type: value })} triggerClassName="h-9 w-full" displayMap={{"300lm (3w/ft)": "300lm", "360lm (3.6w/ft)": "360lm", "600lm (6w/ft)": "600lm"}}>
                   <SelectItem value="300lm (3w/ft)">300lm (3w/ft)</SelectItem>
+                  <SelectItem value="360lm (3.6w/ft)">360lm (3.6w/ft)</SelectItem>
                   <SelectItem value="600lm (6w/ft)">600lm (6w/ft)</SelectItem>
                 </TabSelect>
               </div>
@@ -272,6 +273,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                               <Label className="text-xs">Output</Label>
                               <TabSelect value={editValues.tape_type} onValueChange={v => setEditValues({...editValues, tape_type: v})} triggerClassName="h-8 w-24 text-xs">
                                 <SelectItem value="300lm (3w/ft)">300lm (3w/ft)</SelectItem>
+                                <SelectItem value="360lm (3.6w/ft)">360lm (3.6w/ft)</SelectItem>
                                 <SelectItem value="600lm (6w/ft)">600lm (6w/ft)</SelectItem>
                               </TabSelect>
                             </div>
@@ -371,7 +373,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                           <div className="w-20 shrink-0">
                             <div className="text-xs text-slate-500">Output</div>
                             <div className="text-sm whitespace-nowrap">
-                               {run.tape_type === '300lm (3w/ft)' ? '300lm' : run.tape_type === '600lm (6w/ft)' ? '600lm' : run.tape_type || '—'}
+                               {run.tape_type === '300lm (3w/ft)' ? '300lm' : run.tape_type === '360lm (3.6w/ft)' ? '360lm' : run.tape_type === '600lm (6w/ft)' ? '600lm' : run.tape_type || '—'}
                             </div>
                           </div>
                           <div className="w-20 shrink-0">
