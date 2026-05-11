@@ -438,7 +438,6 @@ export default function Calculator() {
                  key={selectedProjectId || `new-${formResetKey}`}
                  runs={tapeRuns}
                  drivers={drivers}
-                 projectId={selectedProjectId}
                  onDriversChange={handleDriversChange}
                  onAdd={handleAddTapeRun}
                  onUpdate={(id, data) => updateTapeRunMutation.mutate({ id, data })}
