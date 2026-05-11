@@ -114,7 +114,7 @@ const MaterialsCalculator = React.memo(({ runs }) => {
 
   const formatCCT = (cct) => {
     if (cct === 'Warm Dim (30k-18k)') return 'DtW (3000-1800K)';
-    if (cct === 'Tunable White (18-40k)') return 'TW (18-40k)';
+    if (cct === 'Tunable White (18k-40k)') return 'TW (18-40k)';
     return cct;
   };
 
@@ -125,7 +125,7 @@ const MaterialsCalculator = React.memo(({ runs }) => {
     "3000k": 3,
     "3500k": 4,
     "Warm Dim (22-30k)": 5,
-    "Tunable White (18-40k)": 6
+    "Tunable White (18k-40k)": 6
   };
 
   // Sort tape light entries by output (2w before 4w) and then by CCT

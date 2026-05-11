@@ -35,7 +35,7 @@
         "3000k",
         "3500k",
         "Warm Dim (30k-18k)",
-        "Tunable White (18-40k)"
+        "Tunable White (18k-40k)"
       ],
       "description": "Correlated Color Temperature"
     },
