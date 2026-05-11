@@ -28,20 +28,18 @@ function DriverRow({ driver, index, isLast, runs, onUpdate, onRemove, onAdd }) {
   const barWidth = Math.min(pct, 100);
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 px-3 py-2 space-y-1.5">
+    <div className="bg-white rounded-lg border border-slate-200 px-3 py-2">
       <div className="flex items-center gap-3">
         <span className="text-xs font-medium w-24 shrink-0">{driver.name}</span>
-        <div className="flex items-center gap-1 shrink-0">
-          <Select value={String(driver.maxWatts)} onValueChange={v => onUpdate(driver.id, 'maxWatts', parseFloat(v))}>
-            <SelectTrigger className="h-7 w-20 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="60">60W</SelectItem>
-              <SelectItem value="96">96W</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <Select value={String(driver.maxWatts)} onValueChange={v => onUpdate(driver.id, 'maxWatts', parseFloat(v))}>
+          <SelectTrigger className="h-7 w-20 text-xs shrink-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="60">60W</SelectItem>
+            <SelectItem value="96">96W</SelectItem>
+          </SelectContent>
+        </Select>
         <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-red-600 shrink-0" onClick={() => onRemove(driver.id)}>
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
@@ -50,8 +48,6 @@ function DriverRow({ driver, index, isLast, runs, onUpdate, onRemove, onAdd }) {
             <Plus className="h-3 w-3" /> Driver
           </Button>
         )}
-      </div>
-      <div className="flex items-center gap-2">
         <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
           <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${barWidth}%` }} />
         </div>
