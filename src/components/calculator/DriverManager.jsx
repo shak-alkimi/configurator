@@ -105,7 +105,7 @@ export default function DriverManager({ drivers, runs, onDriversChange }) {
       
       <DropdownMenu open={showAddMenu} onOpenChange={setShowAddMenu}>
         <DropdownMenuTrigger asChild>
-          <button className="w-full px-3 py-2 text-xs text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg border border-dashed border-slate-200 transition-colors flex items-center justify-center gap-1.5">
+          <button className="w-full h-10 px-3 py-2 text-xs text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg border border-dashed border-slate-200 transition-colors flex items-center justify-center gap-1.5">
             <Plus className="h-3.5 w-3.5" /> Driver
           </button>
         </DropdownMenuTrigger>
