@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Trash2, Plus } from "lucide-react";
 
 const WATTS_PER_FOOT = { "300lm (3.0w/ft)": 3.0, "360lm (3.6w/ft)": 3.6, "600lm (6.0w/ft)": 6.0 };
@@ -53,6 +54,9 @@ function DriverRow({ driver, index, isLast, runs, onUpdate, onRemove, onAdd }) {
 }
 
 export default function DriverManager({ drivers, runs, onDriversChange }) {
+  const [showDialog, setShowDialog] = useState(false);
+  const [selectedWatts, setSelectedWatts] = useState("96");
+
   const updateDriver = (index, field, value) => {
     onDriversChange(drivers.map((d, i) => i === index ? { ...d, [field]: value } : d));
   };
@@ -62,34 +66,108 @@ export default function DriverManager({ drivers, runs, onDriversChange }) {
   };
 
   const addDriver = () => {
+    setShowDialog(true);
+  };
+
+  const confirmAddDriver = () => {
     const nextN = drivers.length + 1;
-    onDriversChange([...drivers, { name: `Driver ${nextN}`, max_watts: 96 }]);
+    onDriversChange([...drivers, { name: `Driver ${nextN}`, max_watts: parseInt(selectedWatts) }]);
+    setShowDialog(false);
+    setSelectedWatts("96");
   };
 
   if (drivers.length === 0) {
     return (
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={addDriver}>
-          <Plus className="h-3 w-3" /> Driver
-        </Button>
-      </div>
+      <>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={addDriver}>
+            <Plus className="h-3 w-3" /> Driver
+          </Button>
+        </div>
+        
+        <Dialog open={showDialog} onOpenChange={setShowDialog}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Select Driver Wattage</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 py-4">
+              <Button
+                variant={selectedWatts === "60" ? "default" : "outline"}
+                onClick={() => setSelectedWatts("60")}
+                className="h-10 text-base"
+              >
+                60W
+              </Button>
+              <Button
+                variant={selectedWatts === "96" ? "default" : "outline"}
+                onClick={() => setSelectedWatts("96")}
+                className="h-10 text-base"
+              >
+                96W
+              </Button>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={confirmAddDriver}>
+                Create Driver
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 
   return (
-    <div className="space-y-2">
-      {drivers.map((driver, index) => (
-        <DriverRow
-          key={driver.id ?? `local-${index}`}
-          driver={driver}
-          index={index}
-          isLast={index === drivers.length - 1}
-          runs={runs}
-          onUpdate={updateDriver}
-          onRemove={removeDriver}
-          onAdd={addDriver}
-        />
-      ))}
-    </div>
+    <>
+      <div className="space-y-2">
+        {drivers.map((driver, index) => (
+          <DriverRow
+            key={driver.id ?? `local-${index}`}
+            driver={driver}
+            index={index}
+            isLast={index === drivers.length - 1}
+            runs={runs}
+            onUpdate={updateDriver}
+            onRemove={removeDriver}
+            onAdd={addDriver}
+          />
+        ))}
+      </div>
+
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Select Driver Wattage</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-4">
+            <Button
+              variant={selectedWatts === "60" ? "default" : "outline"}
+              onClick={() => setSelectedWatts("60")}
+              className="h-10 text-base"
+            >
+              60W
+            </Button>
+            <Button
+              variant={selectedWatts === "96" ? "default" : "outline"}
+              onClick={() => setSelectedWatts("96")}
+              className="h-10 text-base"
+            >
+              96W
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmAddDriver}>
+              Create Driver
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
