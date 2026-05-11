@@ -7,9 +7,10 @@ const WATTS_PER_FOOT = { "300lm (3.0w/ft)": 3.0, "360lm (3.6w/ft)": 3.6, "600lm 
 
 function getDriverWatts(driver, runs) {
   let total = 0;
+  const assignedIds = new Set(driver.assigned_runs || []);
   for (const run of (runs || [])) {
-    if (!run.driver_group || !run.tape_output || !run.length_feet) continue;
-    if (run.driver_group !== driver.name) continue;
+    if (!assignedIds.has(run.id)) continue;
+    if (!run.tape_output || !run.length_feet) continue;
     const wpf = WATTS_PER_FOOT[run.tape_output];
     if (wpf == null) continue;
     total += run.length_feet * wpf;
@@ -26,7 +27,7 @@ function DriverRow({ driver, index, isLast, runs, onUpdate, onRemove, onAdd }) {
   return (
     <div className="bg-white rounded-lg border border-slate-200 px-3 py-2">
       <div className="flex items-center gap-3">
-        <span className="text-xs font-medium w-24 shrink-0">{driver.name}</span>
+         <span className="text-xs font-medium w-24 shrink-0">{driver.name} — {Math.round(usedWatts)}W / {driver.max_watts}W</span>
         <Select value={String(driver.max_watts)} onValueChange={v => onUpdate(index, 'max_watts', parseFloat(v))}>
           <SelectTrigger className="h-7 w-20 text-xs shrink-0">
             <SelectValue />
@@ -47,9 +48,6 @@ function DriverRow({ driver, index, isLast, runs, onUpdate, onRemove, onAdd }) {
         <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
           <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${barWidth}%` }} />
         </div>
-        <span className="text-xs text-slate-500 shrink-0 w-24 text-right">
-          {Math.round(usedWatts)}W / {driver.max_watts}W
-        </span>
       </div>
     </div>
   );
