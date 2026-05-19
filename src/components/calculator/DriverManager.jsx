@@ -90,30 +90,20 @@ export default function DriverManager({ drivers, runs, onDriversChange }) {
 
   return (
     <div className="space-y-2">
-      {drivers.map((driver, index) => (
-        <DriverRow
-          key={driver.id}
-          driver={driver}
-          index={index}
-          isLast={index === drivers.length - 1}
-          runs={runs}
-          onUpdate={updateDriver}
-          onRemove={removeDriver}
-          onAdd={() => setShowAddMenu(true)}
-        />
-      ))}
-      
-      <DropdownMenu open={showAddMenu} onOpenChange={setShowAddMenu}>
-        <DropdownMenuTrigger asChild>
-          <button className="w-full h-10 px-3 py-2 text-xs text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg border border-dashed border-slate-200 transition-colors flex items-center justify-center gap-1.5">
-            <Plus className="h-3.5 w-3.5" /> Driver
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem onClick={() => addDriver(60)}>60W Driver</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => addDriver(96)}>96W Driver</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Drivers</span>
+        <DropdownMenu open={showAddMenu} onOpenChange={setShowAddMenu}>
+          <DropdownMenuTrigger asChild>
+            <button className="h-6 w-6 flex items-center justify-center rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+              <Plus className="h-3.5 w-3.5" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => addDriver(60)}>60W Driver</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => addDriver(96)}>96W Driver</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 }
