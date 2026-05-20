@@ -1,9 +1,10 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { TAPE_SPECS, CHANNEL_SPECS, DRIVER_SPECS, SPOOL_LENGTH_FEET, DRIVER_LOAD_FACTOR, CLIPS_PER_SECTION, CLIPS_PER_SET, CLIP_SET_PRICE, SHIPPING_RATE } from "@/components/calculator/constants";
+import { TAPE_SPECS, CHANNEL_SPECS, SPOOL_LENGTH_FEET, SHIPPING_RATE } from "@/components/calculator/constants";
+import { formatFeetInches, channelSectionsFor, clipsForSections, priceDrivers, titleCase } from "@/components/calculator/calculations";
 
-const MaterialsCalculator = React.memo(({ runs }) => {
+const MaterialsCalculator = React.memo(({ runs, drivers }) => {
 
   const calculations = React.useMemo(() => {
     // Calculate tape totals by type and CCT
@@ -32,35 +33,23 @@ const MaterialsCalculator = React.memo(({ runs }) => {
     runs.forEach(run => {
       const type = run.channel_type;
       const specs = CHANNEL_SPECS[type];
-      
-      if (type !== 'none' && specs) {
-        if (!channelByType[type]) {
-          channelByType[type] = { feet: 0, cost: 0, sections: 0 };
-        }
-        // Round up to nearest 4' increment
-        const sections = Math.ceil(run.length_feet / 4);
-        const actualFeet = sections * 4;
-        channelByType[type].feet += actualFeet;
-        channelByType[type].sections += sections;
-        channelByType[type].cost += actualFeet * specs.price_per_foot;
+      const sections = channelSectionsFor(run);
+      if (sections === 0 || !specs) return;
+      if (!channelByType[type]) {
+        channelByType[type] = { feet: 0, cost: 0, sections: 0 };
       }
+      const actualFeet = sections * 4;
+      channelByType[type].feet += actualFeet;
+      channelByType[type].sections += sections;
+      channelByType[type].cost += actualFeet * specs.price_per_foot;
     });
 
-    // Calculate required drivers
-    const requiredDrivers = [];
-    let remainingWatts = totalWatts;
-    while (remainingWatts > 0) {
-      const driver = DRIVER_SPECS[0];
-      requiredDrivers.push(driver);
-      remainingWatts -= driver.max_watts * DRIVER_LOAD_FACTOR;
-    }
+    // Drivers: actual configured list, or watts-derived fallback.
+    const { specs: requiredDrivers } = priceDrivers(drivers, totalWatts);
 
-    // Calculate mounting hardware (clips)
-    const totalClips = Object.values(channelByType).reduce((sum, channel) => {
-      return sum + (channel.sections * CLIPS_PER_SECTION);
-    }, 0);
-    const clipSets = Math.ceil(totalClips / CLIPS_PER_SET);
-    const clipCost = clipSets * CLIP_SET_PRICE;
+    // Clips priced from total sections across all channels.
+    const totalSections = Object.values(channelByType).reduce((sum, c) => sum + c.sections, 0);
+    const { totalClips, sets: clipSets, cost: clipCost } = clipsForSections(totalSections);
 
     // Calculate tape to tape connectors - one needed every 16'4" (one per spool join)
     const tapeToTapeConnectors = runs.reduce((sum, run) => {
@@ -95,24 +84,19 @@ const MaterialsCalculator = React.memo(({ runs }) => {
       totalCost,
       tapeToTapeConnectors,
     };
-  }, [runs]);
+  }, [runs, drivers]);
 
   if (runs.length === 0) {
     return (
       <Card>
-        <CardContent className="py-12 text-center text-slate-400">
+        <CardContent className="py-12 text-center text-foreground/40">
           Add runs for breakdown
         </CardContent>
       </Card>
     );
   }
 
-  const formatType = (type) => {
-    if (type === 'recessed') return 'Recessed Flange';
-    if (type === '300lm (3w/ft)') return '300lm (3w/ft)';
-    if (type === '600lm (6w/ft)') return '600lm (6w/ft)';
-    return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  };
+  const formatType = titleCase;
 
   const formatCCT = (cct) => {
     if (cct === 'Warm Dim (30k-18k)') return 'DtW (3000-1800K)';
@@ -126,7 +110,7 @@ const MaterialsCalculator = React.memo(({ runs }) => {
     "2700k": 2,
     "3000k": 3,
     "3500k": 4,
-    "Warm Dim (22-30k)": 5,
+    "Warm Dim (30k-18k)": 5,
     "Tunable White (18k-40k)": 6
   };
 
@@ -141,22 +125,22 @@ const MaterialsCalculator = React.memo(({ runs }) => {
   });
 
   return (
-    <div className="space-y-6">
-      <Card className="bg-[#eeeeee]">
+    <div className="space-y-3">
+      <Card className="bg-secondary">
          <CardHeader>
            <CardTitle className="text-lg">Materials</CardTitle>
          </CardHeader>
          <CardContent className="space-y-4">
           {/* Tape Light */}
           <div>
-            <h4 className="text-sm font-semibold text-slate-700 mb-2">Tape Light</h4>
+            <h4 className="text-sm font-semibold text-foreground/80 mb-2">Tape Light</h4>
             <div className="space-y-2">
               {sortedTapeEntries.map(([key, data]) => {
                 const spoolsRequired = Math.ceil(data.feet / SPOOL_LENGTH_FEET);
                 return (
                   <div key={key} className="flex justify-between text-sm">
-                    <span className="text-slate-600">{formatType(data.type)} at {formatCCT(data.cct)}</span>
-                    <span className="font-medium">{Math.floor(data.feet)}' {Math.round((data.feet % 1) * 12)}" ({spoolsRequired} {spoolsRequired === 1 ? 'spool' : 'spools'})</span>
+                    <span className="text-foreground/70">{formatType(data.type)} at {formatCCT(data.cct)}</span>
+                    <span className="font-medium">{formatFeetInches(data.feet)} ({spoolsRequired} {spoolsRequired === 1 ? 'spool' : 'spools'})</span>
                   </div>
                 );
               })}
@@ -167,16 +151,16 @@ const MaterialsCalculator = React.memo(({ runs }) => {
           {Object.keys(calculations.channelByType).length > 0 && (
             <>
               <div>
-                <h4 className="text-sm font-semibold text-slate-700 mb-2">Housing</h4>
+                <h4 className="text-sm font-semibold text-foreground/80 mb-2">Housing</h4>
                 <div className="space-y-2">
                   {Object.entries(calculations.channelByType)
                     .sort(([typeA], [typeB]) => {
-                      const order = ['corner', 'recessed', 'surface', 'none'];
+                      const order = ['corner', 'surface', 'none'];
                       return order.indexOf(typeA) - order.indexOf(typeB);
                     })
                     .map(([type, data]) => (
                       <div key={type} className="flex justify-between text-sm">
-                        <span className="text-slate-600">{formatType(type)}</span>
+                        <span className="text-foreground/70">{formatType(type)}</span>
                         <span className="font-medium">{data.feet}' ({data.sections} {data.sections === 1 ? 'section' : 'sections'})</span>
                       </div>
                     ))}
@@ -187,21 +171,26 @@ const MaterialsCalculator = React.memo(({ runs }) => {
 
           {/* Drivers */}
           <div>
-            <h4 className="text-sm font-semibold text-slate-700 mb-2">Drivers</h4>
+            <h4 className="text-sm font-semibold text-foreground/80 mb-2">Drivers</h4>
             <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-600">96w {calculations.requiredDrivers.length === 1 ? 'Driver' : 'Drivers'}</span>
-                <span className="font-medium">{calculations.requiredDrivers.length}</span>
-              </div>
+              {Object.entries(calculations.requiredDrivers.reduce((acc, d) => {
+                acc[d.max_watts] = (acc[d.max_watts] || 0) + 1;
+                return acc;
+              }, {})).map(([watts, count]) => (
+                <div key={watts} className="flex justify-between text-sm">
+                  <span className="text-foreground/70">{watts}W {count === 1 ? 'Driver' : 'Drivers'}</span>
+                  <span className="font-medium">{count}</span>
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Mounting Hardware */}
           <div>
-            <h4 className="text-sm font-semibold text-slate-700 mb-2">Mounting Hardware</h4>
+            <h4 className="text-sm font-semibold text-foreground/80 mb-2">Mounting Hardware</h4>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Mounting Clips</span>
+                <span className="text-foreground/70">Mounting Clips</span>
                 <span className="font-medium">{calculations.clipSets} {calculations.clipSets === 1 ? 'set' : 'sets'} ({calculations.totalClips} {calculations.totalClips === 1 ? 'clip' : 'clips'})</span>
               </div>
             </div>
@@ -209,14 +198,14 @@ const MaterialsCalculator = React.memo(({ runs }) => {
 
           {/* Connectors */}
           <div>
-            <h4 className="text-sm font-semibold text-slate-700 mb-2">Connectors</h4>
+            <h4 className="text-sm font-semibold text-foreground/80 mb-2">Connectors</h4>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Tape to Tape</span>
+                <span className="text-foreground/70">Tape to Tape</span>
                 <span className="font-medium">{calculations.tapeToTapeConnectors} {calculations.tapeToTapeConnectors === 1 ? 'unit' : 'units'}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Tape to Wire</span>
+                <span className="text-foreground/70">Tape to Wire</span>
                 <span className="font-medium">{runs.length} {runs.length === 1 ? 'unit' : 'units'}</span>
               </div>
             </div>
@@ -227,41 +216,50 @@ const MaterialsCalculator = React.memo(({ runs }) => {
 
       {/* Pricing Summary */}
       <Card className="border-foreground bg-foreground">
-        <CardHeader className="flex flex-row items-start justify-between">
+        <CardHeader>
           <CardTitle className="text-lg text-white">Summary</CardTitle>
-          <img 
-            src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/2b8625608_Alkimi_icon_white_transparent.png" 
-            alt="Logo" 
-            className="h-[18px] w-auto"
-          />
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-300">Tape Light</span>
+            <span className="text-background/70">Tape Light</span>
             <span className="font-medium text-white">${calculations.tapeCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
           {calculations.channelCost > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-gray-300">Housing</span>
+              <span className="text-background/70">Housing</span>
               <span className="font-medium text-white">${calculations.channelCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
           )}
           <div className="flex justify-between text-sm">
-            <span className="text-gray-300">Drivers</span>
+            <span className="text-background/70">Drivers</span>
             <span className="font-medium text-white">${calculations.driverCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-300">Mounting Hardware</span>
+            <span className="text-background/70">Mounting Hardware</span>
             <span className="font-medium text-white">${calculations.clipCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-300">Shipping</span>
-            <span className="font-medium text-white">${calculations.shippingCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
           <Separator />
           <div className="flex justify-between text-lg font-semibold">
             <span className="text-white">Total</span>
             <span className="text-white">${calculations.totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Shipping */}
+      <Card style={{ backgroundColor: '#C0BBB3', borderColor: '#C0BBB3' }}>
+        <CardHeader>
+          <CardTitle className="text-lg text-foreground">Shipping</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex justify-between text-sm">
+            <span className="text-foreground/80">Tube (3"w x 4h)</span>
+            <span className="font-medium text-foreground">2</span>
+          </div>
+          <Separator />
+          <div className="flex justify-between text-lg font-semibold">
+            <span className="text-foreground">Weight</span>
+            <span className="text-foreground">118lbs</span>
           </div>
         </CardContent>
       </Card>

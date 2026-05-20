@@ -14,7 +14,7 @@
       "type": "number",
       "description": "Length of the tape run in feet"
     },
-    "tape_type": {
+    "tape_output": {
       "type": "string",
       "enum": [
         "300lm (3.0w/ft)",
@@ -52,12 +52,28 @@
       "type": "string",
       "enum": [
         "corner",
-        "recessed",
         "surface",
         "none"
       ],
       "default": "corner",
       "description": "Type of channel for mounting"
+    },
+    "lens": {
+      "type": "string",
+      "enum": [
+        "Clear",
+        "Frosted"
+      ],
+      "description": "Lens type for the channel"
+    },
+    "finish": {
+      "type": "string",
+      "enum": [
+        "Aluminum",
+        "Black",
+        "White"
+      ],
+      "description": "Channel finish color"
     },
     "notes": {
       "type": "string",

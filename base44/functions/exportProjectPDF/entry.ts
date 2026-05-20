@@ -1,5 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { jsPDF } from 'npm:jspdf@4.0.0';
+import {
+    TAPE_SPECS,
+    CHANNEL_SPECS,
+    DRIVER_SPECS,
+    DEFAULT_DRIVER_MAX_WATTS,
+    DRIVER_LOAD_FACTOR,
+    SPOOL_LENGTH_FEET,
+    CLIPS_PER_SECTION,
+    CLIPS_PER_SET,
+    CLIP_SET_PRICE,
+    SHIPPING_RATE,
+} from '../../shared/pricing.js';
 
 Deno.serve(async (req) => {
     try {
@@ -40,9 +52,11 @@ Deno.serve(async (req) => {
         
         doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
-        doc.text(`Project Name: ${project.data.project_name}`, 20, y);
+        doc.text(`Project Name: ${project.data.project_name || ''}`, 20, y);
         y += 6;
-        doc.text(`Customer: ${project.data.customer_name}`, 20, y);
+        // Treat legacy '—' placeholder as blank (older drafts seeded the dash).
+        const customerName = (project.data.customer_name && project.data.customer_name !== '—') ? project.data.customer_name : '';
+        doc.text(`Customer: ${customerName}`, 20, y);
         y += 6;
         if (project.data.customer_email) {
             doc.text(`Email: ${project.data.customer_email}`, 20, y);
@@ -80,29 +94,6 @@ Deno.serve(async (req) => {
         doc.text('Cost', 193, y);
         y += 7;
 
-        // Pricing constants — keep in sync with src/components/calculator/constants.jsx
-        const CONSTANTS = {
-            TAPE_SPECS: {
-                "300lm (3.0w/ft)": { price_per_foot: 10, watts_per_foot: 3.0, lumens_per_foot: 300 },
-                "360lm (3.6w/ft)": { price_per_foot: 11, watts_per_foot: 3.6, lumens_per_foot: 360 },
-                "600lm (6.0w/ft)": { price_per_foot: 12, watts_per_foot: 6.0, lumens_per_foot: 600 }
-            },
-            CHANNEL_SPECS: {
-                corner: { price_per_foot: 10 },
-                recessed: { price_per_foot: 12 },
-                surface: { price_per_foot: 8 },
-                none: { price_per_foot: 0 }
-            },
-            DRIVER_MAX_WATTS: 96,
-            DRIVER_LOAD_FACTOR: 0.8,
-            DRIVER_PRICE: 65,
-            CLIPS_PER_SECTION: 4,
-            CLIPS_PER_SET: 12,
-            CLIP_SET_PRICE: 15,
-            SHIPPING_RATE: 0.10
-        };
-        const { TAPE_SPECS, CHANNEL_SPECS, DRIVER_MAX_WATTS, DRIVER_LOAD_FACTOR, DRIVER_PRICE, CLIPS_PER_SECTION, CLIPS_PER_SET, CLIP_SET_PRICE, SHIPPING_RATE } = CONSTANTS;
-
         doc.setFont(undefined, 'normal');
         tapeRuns.forEach((run) => {
             const runData = run.data || run;
@@ -110,13 +101,15 @@ Deno.serve(async (req) => {
                 doc.addPage();
                 y = 20;
             }
-            const feet = Math.floor(runData.length_feet);
-            const inches = Math.round((runData.length_feet % 1) * 12);
+            // Round total-inches first so 5.99ft → 6'0", not 5'12"
+            const totalIn = Math.round((runData.length_feet || 0) * 12);
+            const feet = Math.floor(totalIn / 12);
+            const inches = totalIn % 12;
             const lengthDisplay = `${feet}' ${inches}"`;
             
-            const tapeSpec = TAPE_SPECS[runData.tape_type];
+            const tapeSpec = TAPE_SPECS[runData.tape_output];
             const channelSpec = CHANNEL_SPECS[runData.channel_type];
-            const outputDisplay = runData.tape_type || '';
+            const outputDisplay = runData.tape_output || '';
             
             // Calculate cost with rounded channel sections
             let cost = 0;
@@ -127,8 +120,7 @@ Deno.serve(async (req) => {
                 cost += actualFeet * channelSpec.price_per_foot;
             }
             
-            const channelDisplay = runData.channel_type === 'recessed' ? 'Recessed Flange' : 
-                                   runData.channel_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            const channelDisplay = (runData.channel_type || '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             
             doc.text(runData.run_name || '', 20, y);
             doc.text(lengthDisplay, 48, y);
@@ -146,7 +138,8 @@ Deno.serve(async (req) => {
             const runData = r.data || r;
             return sum + runData.length_feet;
         }, 0);
-        const totalFeetDisplay = `${Math.floor(totalFeet)}' ${Math.round((totalFeet % 1) * 12)}"`;
+        const totalFeetTotalIn = Math.round((totalFeet || 0) * 12);
+        const totalFeetDisplay = `${Math.floor(totalFeetTotalIn / 12)}' ${totalFeetTotalIn % 12}"`;
         doc.text(`Total Length: ${totalFeetDisplay}`, 20, y);
         y += 10;
 
@@ -164,7 +157,7 @@ Deno.serve(async (req) => {
         }, 0);
         const totalTapeCost = tapeRuns.reduce((sum, run) => {
             const runData = run.data || run;
-            const spec = TAPE_SPECS[runData.tape_type];
+            const spec = TAPE_SPECS[runData.tape_output];
             return sum + (spec ? runData.length_feet * spec.price_per_foot : 0);
         }, 0);
         
@@ -182,12 +175,29 @@ Deno.serve(async (req) => {
 
         const totalWattage = tapeRuns.reduce((sum, run) => {
             const runData = run.data || run;
-            const spec = TAPE_SPECS[runData.tape_type];
+            const spec = TAPE_SPECS[runData.tape_output];
             return sum + (spec ? runData.length_feet * spec.watts_per_foot : 0);
         }, 0);
 
-        const driversNeeded = Math.ceil(totalWattage / (DRIVER_MAX_WATTS * DRIVER_LOAD_FACTOR));
-        const driverCost = driversNeeded * DRIVER_PRICE;
+        // Price the actual configured drivers. Fall back to watts-derived default-driver
+        // count only if the project has no driver list.
+        const projectDrivers = (project.data.drivers || []);
+        let driversNeeded;
+        let driverCost;
+        let driverLineLabel;
+        if (projectDrivers.length > 0) {
+            driversNeeded = projectDrivers.length;
+            driverCost = projectDrivers.reduce((sum, d) => {
+                const spec = DRIVER_SPECS[d.maxWatts];
+                return sum + (spec ? spec.price : 0);
+            }, 0);
+            driverLineLabel = `Drivers (${projectDrivers.map(d => `${d.maxWatts}W`).join('+')})`;
+        } else {
+            const defaultSpec = DRIVER_SPECS[DEFAULT_DRIVER_MAX_WATTS];
+            driversNeeded = Math.ceil(totalWattage / (defaultSpec.max_watts * DRIVER_LOAD_FACTOR));
+            driverCost = driversNeeded * defaultSpec.price;
+            driverLineLabel = `Drivers (${driversNeeded}x ${defaultSpec.max_watts}W)`;
+        }
         
         // Calculate clips
         const totalSections = tapeRuns.reduce((sum, run) => {
@@ -209,9 +219,21 @@ Deno.serve(async (req) => {
         y += 6;
         doc.text(`Channel Housing: $${totalChannelCost.toFixed(2)}`, 20, y);
         y += 6;
-        doc.text(`Drivers (${driversNeeded}x ${DRIVER_MAX_WATTS}W): $${driverCost.toFixed(2)}`, 20, y);
+        doc.text(`${driverLineLabel}: $${driverCost.toFixed(2)}`, 20, y);
         y += 6;
         doc.text(`Mounting Hardware (${clipSets} sets): $${clipCost.toFixed(2)}`, 20, y);
+        y += 6;
+        // Connectors are counted on the on-screen Materials panel; mirror them
+        // here so the customer-facing quote isn't missing line items.
+        const tapeToTapeConnectors = tapeRuns.reduce((sum, run) => {
+            const runData = run.data || run;
+            const spools = Math.ceil((runData.length_feet || 0) / SPOOL_LENGTH_FEET);
+            return sum + Math.max(0, spools - 1);
+        }, 0);
+        const tapeToWireConnectors = tapeRuns.length;
+        doc.text(`Tape-to-Tape Connectors: ${tapeToTapeConnectors} units`, 20, y);
+        y += 6;
+        doc.text(`Tape-to-Wire Connectors: ${tapeToWireConnectors} units`, 20, y);
         y += 6;
         doc.text(`Subtotal: $${subtotal.toFixed(2)}`, 20, y);
         y += 6;

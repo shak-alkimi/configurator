@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Save, Trash2, Send, Download, Plus, Search } from "lucide-react";
+import { Save, Trash2, Send, Download } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -18,6 +19,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 
 import ProjectsList from "../components/calculator/ProjectsList";
@@ -25,27 +36,56 @@ import ProjectForm from "../components/calculator/ProjectForm";
 import TapeRunList from "../components/calculator/TapeRunList";
 import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
 
+// Blank project form state. Used by the component's initial state and by
+// `handleNewProject` when resetting to the "new project" form.
+const EMPTY_PROJECT_DATA = Object.freeze({
+  project_name: '',
+  customer_name: '',
+  customer_email: '',
+  customer_phone: '',
+  street: '',
+  city: '',
+  state: '',
+  sector: '',
+  notes: '',
+  status: 'draft',
+  drivers: [],
+});
+
 export default function Calculator() {
-  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedProjectId = searchParams.get('project') || null;
+  const setSelectedProjectId = (id) => {
+    const next = new URLSearchParams(searchParams);
+    if (id) next.set('project', id); else next.delete('project');
+    setSearchParams(next, { replace: true });
+  };
   const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState({ status: 'all', dateFrom: null, dateTo: null });
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const [hideExportTooltip, setHideExportTooltip] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [projectData, setProjectData] = useState({
-    project_name: '',
-    customer_name: '',
-    customer_email: '',
-    customer_phone: '',
-    street: '',
-    city: '',
-    state: '',
-    notes: '',
-    status: 'draft',
-    drivers: []
-  });
-  const [isNewProject, setIsNewProject] = useState(true);
+  const [projectData, setProjectData] = useState({ ...EMPTY_PROJECT_DATA });
+  const [isNewProject, setIsNewProject] = useState(false);
   const [formResetKey, setFormResetKey] = useState(0);
+  const [editingDetails, setEditingDetails] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [emptyDriversPrompt, setEmptyDriversPrompt] = useState(null);
+  const detailsFormRef = useRef(null);
+
+  useEffect(() => {
+    if (!editingDetails) return;
+    const handler = (e) => {
+      if (e.target.closest?.('[data-testid="project-edit-details"]')) return;
+      if (detailsFormRef.current && !detailsFormRef.current.contains(e.target)) {
+        const allFilled = ['project_name','sector','street','city','state','customer_name','customer_email','customer_phone']
+          .every(f => projectData[f]?.toString().trim());
+        if (allFilled) setEditingDetails(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [editingDetails, projectData]);
 
   const queryClient = useQueryClient();
 
@@ -77,15 +117,17 @@ export default function Calculator() {
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
-      setProjectData(result);
+      // For new projects, attach the id so subsequent saves go to update path,
+      // but do NOT overwrite projectData — that would clobber in-flight user edits.
       if (isNewProject) {
         setSelectedProjectId(result.id);
         setIsNewProject(false);
       }
-      toast.success('Project saved successfully');
+      setIsDirty(false);
+      toast.success('Project saved');
     },
     onError: (error) => {
-      toast.error('Failed to save project');
+      toast.error(error?.message || 'Failed to save project');
     },
   });
 
@@ -97,19 +139,19 @@ export default function Calculator() {
       toast.success('Tape run added');
     },
     onError: (error) => {
-      toast.error('Failed to add tape run');
+      toast.error(error?.message || 'Failed to add tape run');
     },
   });
 
   // Update tape run mutation
   const updateTapeRunMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.TapeRun.update(id, data),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
-      toast.success('Tape run updated');
+      if (!variables?.silent) toast.success('Tape run updated');
     },
-    onError: () => {
-      toast.error('Failed to update tape run');
+    onError: (error) => {
+      toast.error(error?.message || 'Failed to update tape run');
     },
   });
 
@@ -121,17 +163,21 @@ export default function Calculator() {
       toast.success('Tape run deleted');
     },
     onError: (error) => {
-      toast.error('Failed to delete tape run');
+      toast.error(error?.message || 'Failed to delete tape run');
     },
   });
 
-  // Reorder tape runs mutation
+  // Reorder tape runs mutation.
+  // Updates are sequential rather than Promise.all so a mid-batch failure stops
+  // immediately instead of letting partial writes commit while later ones race.
   const reorderTapeRunsMutation = useMutation({
     mutationFn: async (reorderedRuns) => {
-      const updates = reorderedRuns.map((run, index) =>
-        base44.entities.TapeRun.update(run.id, { order: index })
-      );
-      await Promise.all(updates);
+      for (let i = 0; i < reorderedRuns.length; i++) {
+        await base44.entities.TapeRun.update(reorderedRuns[i].id, {
+          order: i,
+          driver_group: reorderedRuns[i].driver_group ?? '',
+        });
+      }
     },
     onMutate: async (newReorderedRuns) => {
       await queryClient.cancelQueries({ queryKey: ['tapeRuns', selectedProjectId] });
@@ -140,9 +186,9 @@ export default function Calculator() {
       queryClient.setQueryData(['tapeRuns', selectedProjectId], runsWithUpdatedOrder);
       return { previousTapeRuns };
     },
-    onError: (err, newReorderedRuns, context) => {
+    onError: (error, newReorderedRuns, context) => {
       queryClient.setQueryData(['tapeRuns', selectedProjectId], context.previousTapeRuns);
-      toast.error('Failed to reorder');
+      toast.error(error?.message || 'Failed to reorder');
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
@@ -153,11 +199,34 @@ export default function Calculator() {
     reorderTapeRunsMutation.mutate(reorderedRuns);
   };
 
-  // Update drivers in projectData and save to project
+  // Update drivers — optimistic local update, persisted through a tracked mutation
+  // with rollback so a failed save doesn't leave the UI ahead of the server.
+  const updateDriversMutation = useMutation({
+    mutationFn: ({ projectId, drivers }) =>
+      base44.entities.Project.update(projectId, { drivers }),
+    onMutate: ({ drivers }) => {
+      const previousDrivers = projectData.drivers;
+      setProjectData(prev => ({ ...prev, drivers }));
+      return { previousDrivers };
+    },
+    onError: (error, _vars, context) => {
+      if (context?.previousDrivers !== undefined) {
+        setProjectData(prev => ({ ...prev, drivers: context.previousDrivers }));
+      }
+      toast.error(error?.message || 'Failed to update drivers');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+
   const handleDriversChange = (newDrivers) => {
-    setProjectData(prev => ({ ...prev, drivers: newDrivers }));
+    setIsDirty(true);
     if (selectedProjectId) {
-      base44.entities.Project.update(selectedProjectId, { drivers: newDrivers });
+      updateDriversMutation.mutate({ projectId: selectedProjectId, drivers: newDrivers });
+    } else {
+      // No project saved yet — just update local state; first save will persist drivers.
+      setProjectData(prev => ({ ...prev, drivers: newDrivers }));
     }
   };
 
@@ -170,41 +239,73 @@ export default function Calculator() {
       toast.success('Project deleted');
     },
     onError: (error) => {
-      toast.error('Failed to delete project');
+      toast.error(error?.message || 'Failed to delete project');
     },
   });
 
-  // Load selected project
+  // Load selected project on id change only.
+  // Intentionally excluding `projects` from deps so a background refetch of the
+  // list doesn't clobber the form while the user is editing.
   useEffect(() => {
     if (selectedProjectId && !isNewProject) {
       const project = projects.find(p => p.id === selectedProjectId);
       if (project) {
         setProjectData(project);
+        setIsDirty(false);
       }
     }
-  }, [selectedProjectId, projects, isNewProject]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProjectId, isNewProject]);
 
-  const handleNewProject = () => {
-    setIsNewProject(true);
-    setSelectedProjectId(null);
-    setProjectData({
-      project_name: '',
-      customer_name: '',
-      customer_email: '',
-      customer_phone: '',
-      street: '',
-      city: '',
-      state: '',
-      notes: '',
-      status: 'draft',
-      drivers: []
-    });
-    setFormResetKey(prev => prev + 1);
+  const handleNewProject = async (initialName = '') => {
+    const seedName = (typeof initialName === 'string' ? initialName : '').trim();
+
+    if (!seedName) {
+      // Empty-name reset (logo click, post-delete): clear selection and DON'T
+      // enter "new project" mode — the right pane should be empty.
+      setIsNewProject(false);
+      setSelectedProjectId(null);
+      setProjectData({ ...EMPTY_PROJECT_DATA });
+      setFormResetKey(prev => prev + 1);
+      return;
+    }
+
+    try {
+      const created = await base44.entities.Project.create({
+        project_name: seedName,
+        status: 'draft',
+        drivers: [{ id: String(Date.now()), name: 'Driver 1', maxWatts: 96 }]
+      });
+      await queryClient.invalidateQueries({ queryKey: ['projects'] });
+      setProjectData(created);
+      setSelectedProjectId(created.id);
+      setIsNewProject(false);
+      setFormResetKey(prev => prev + 1);
+      toast.success('Draft created');
+    } catch (error) {
+      toast.error(error?.message || 'Failed to create draft');
+    }
   };
 
   const handleSelectProject = (projectId) => {
     setSelectedProjectId(projectId);
     setIsNewProject(false);
+    setEditingDetails(false);
+  };
+
+  const handleEditDetails = (projectId) => {
+    const sameProject = selectedProjectId === projectId;
+    setSelectedProjectId(projectId);
+    setIsNewProject(false);
+    if (sameProject && editingDetails) {
+      const allFilled = ['project_name','sector','street','city','state','customer_name','customer_email','customer_phone']
+        .every(f => projectData[f]?.toString().trim());
+      if (allFilled) {
+        setEditingDetails(false);
+        return;
+      }
+    }
+    setEditingDetails(true);
   };
 
   const generateQuoteNumber = async () => {
@@ -212,7 +313,7 @@ export default function Calculator() {
     const existingNumbers = recentProjects
       .map(p => p.quote_number)
       .filter(qn => qn && qn.startsWith('QUOTE-'))
-      .map(qn => parseInt(qn.replace('QUOTE-', '')))
+      .map(qn => parseInt(qn.replace('QUOTE-', ''), 10))
       .filter(n => !isNaN(n));
     
     const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
@@ -220,11 +321,10 @@ export default function Calculator() {
   };
 
   const handleSaveProject = async () => {
-    if (!projectData.project_name || !projectData.customer_name) {
-      toast.error('Please fill in required fields');
+    if (!projectData.project_name) {
+      toast.error('Project name is required');
       return;
     }
-
     await saveProjectMutation.mutateAsync(projectData);
   };
 
@@ -232,16 +332,13 @@ export default function Calculator() {
     try {
       const nextOrder = tapeRuns.length;
       if (!selectedProjectId && isNewProject) {
-        // Save project first
-        if (!projectData.project_name || !projectData.customer_name) {
-          toast.error('Please save project details first');
+        if (!projectData.project_name) {
+          toast.error('Please give the project a name before adding runs');
           return;
         }
+        // saveProjectMutation.onSuccess handles setSelectedProjectId + setIsNewProject —
+        // do not duplicate those writes here, that's the race C5/C6 in the audit.
         const result = await saveProjectMutation.mutateAsync(projectData);
-        setSelectedProjectId(result.id);
-        setIsNewProject(false);
-        
-        // Now add the tape run
         await createTapeRunMutation.mutateAsync({
           ...runData,
           project_id: result.id,
@@ -255,25 +352,29 @@ export default function Calculator() {
         });
       }
     } catch (error) {
-      toast.error('Failed to add tape run');
+      toast.error(error?.message || 'Failed to add tape run');
     }
   };
 
 
   const handleDeleteProject = () => {
-    if (selectedProjectId) {
-      deleteProjectMutation.mutate(selectedProjectId);
-    }
+    if (selectedProjectId) setDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteProject = () => {
+    if (selectedProjectId) deleteProjectMutation.mutate(selectedProjectId);
+    setDeleteConfirmOpen(false);
   };
 
   const handleUpdateStatus = async (projectId, newStatus) => {
     try {
       const updateData = { status: newStatus };
       
-      // Generate quote number when project is approved
+      // Generate quote number when project is approved. Guard the lookup —
+      // `projects` is React Query cache and may be stale or empty.
       if (newStatus === 'approved') {
         const project = projects.find(p => p.id === projectId);
-        if (!project.quote_number) {
+        if (project && !project.quote_number) {
           updateData.quote_number = await generateQuoteNumber();
         }
       }
@@ -282,19 +383,29 @@ export default function Calculator() {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success(`Project ${newStatus === 'approved' ? 'approved' : 'reverted to ' + newStatus}`);
     } catch (error) {
-      toast.error('Failed to update project status');
+      toast.error(error?.message || 'Failed to update project status');
+    }
+  };
+
+  const performSubmit = async (driversOverride) => {
+    try {
+      await saveProjectMutation.mutateAsync({
+        ...projectData,
+        ...(driversOverride ? { drivers: driversOverride } : {}),
+        status: 'submitted'
+      });
+    } catch (error) {
+      toast.error(error?.message || 'Failed to submit project');
     }
   };
 
   const handleSubmitProject = async () => {
-    try {
-      await saveProjectMutation.mutateAsync({
-        ...projectData,
-        status: 'submitted'
-      });
-    } catch (error) {
-      toast.error('Failed to submit project');
+    const emptyDrivers = (projectData.drivers || []).filter(d => !tapeRuns.some(r => r.driver_group === d.name));
+    if (emptyDrivers.length > 0) {
+      setEmptyDriversPrompt(emptyDrivers);
+      return;
     }
+    await performSubmit();
   };
 
   const handleExportPDF = async () => {
@@ -318,9 +429,9 @@ export default function Calculator() {
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
-      toast.success('PDF exported successfully');
+      toast.success('PDF exported');
     } catch (error) {
-      toast.error('Failed to export PDF');
+      toast.error(error?.message || 'Failed to export PDF');
     } finally {
       setIsExporting(false);
     }
@@ -349,60 +460,97 @@ export default function Calculator() {
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
-      toast.success('CSV exported successfully');
+      toast.success('CSV exported');
     } catch (error) {
-      toast.error('Failed to export CSV');
+      toast.error(error?.message || 'Failed to export CSV');
     } finally {
       setIsExporting(false);
     }
   };
 
+  const DETAIL_FIELDS = ['project_name','sector','street','city','state','customer_name','customer_email','customer_phone'];
+  const detailsComplete = DETAIL_FIELDS.every(f => projectData[f]?.toString().trim());
+  const hasAnyDetailData = DETAIL_FIELDS.some(f => projectData[f]?.toString().trim());
+  const savedProject = projectData.id ? projects.find(p => p.id === projectData.id) : null;
+  const detailsSaved = !!savedProject && DETAIL_FIELDS.every(f => savedProject[f]?.toString().trim());
+  const showConfigurator = detailsComplete && detailsSaved;
+  const saveActive = isDirty && hasAnyDetailData;
+
   return (
     <TooltipProvider>
-      <div className="h-screen flex gap-0 bg-white">
-      {/* Sidebar - Projects List */}
-      <div className="hidden md:flex flex-col py-6 w-64 lg:w-80 px-4 lg:px-6">
-        <Card className="h-full flex flex-col overflow-hidden">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between">
-            <img src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/badc89fb6_Alkimi_logo_long_black.png" alt="Alkimi Logo" className="h-8 w-auto -ml-6" />
+      <div className="h-screen flex gap-4 md:gap-6 p-4 md:p-6 bg-white">
+      {/* Sidebar - Projects List + Materials */}
+      <div className="hidden md:flex flex-col w-52 lg:w-64 gap-4 md:gap-6 min-h-0">
+        <Card className="flex flex-col overflow-hidden max-h-full">
+          <CardHeader className="pt-12 pb-12 flex flex-row items-center justify-between">
+            <button
+              type="button"
+              onClick={() => handleNewProject('')}
+              aria-label="Clear selection"
+              data-testid="alkimi-logo"
+              className="cursor-pointer"
+            >
+              <img src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/badc89fb6_Alkimi_logo_long_black.png" alt="Alkimi Logo" className="h-8 w-auto -ml-6" />
+            </button>
           </CardHeader>
-          <CardContent className="flex-1 px-2 pb-6 pt-0 overflow-y-auto">
+          <CardContent className="p-0 overflow-hidden flex-1 min-h-0">
             <ProjectsList
-              projects={projects.filter(p => {
-                const matchesSearch = p.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  p.customer_name.toLowerCase().includes(searchQuery.toLowerCase());
-                const matchesStatus = filters.status === 'all' || p.status === filters.status;
-                const matchesDateFrom = !filters.dateFrom || new Date(p.created_date) >= filters.dateFrom;
-                const matchesDateTo = !filters.dateTo || new Date(p.created_date) <= filters.dateTo;
-                return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo;
-              })}
+              projects={projects
+                .map(p => (projectData.id && p.id === projectData.id ? { ...p, ...projectData } : p))
+                .filter(p => {
+                  const q = searchQuery.toLowerCase();
+                  return (p.project_name || '').toLowerCase().includes(q) ||
+                    (p.customer_name || '').toLowerCase().includes(q);
+                })}
               selectedId={selectedProjectId}
               onSelect={handleSelectProject}
+              onEditDetails={handleEditDetails}
               onNew={handleNewProject}
               isLoading={projectsLoading}
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
               onUpdateStatus={handleUpdateStatus}
-              filters={filters}
-              onFiltersChange={setFilters}
             />
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto flex gap-0">
-        {/* Center - Configurator */}
+      <div className="flex-1 overflow-y-auto flex gap-4 md:gap-6">
+        {/* Materials sidebar — only once project details are saved and not being edited */}
+        {selectedProjectId && showConfigurator && !editingDetails && (
+          <div className="hidden md:flex flex-col w-52 lg:w-64 min-h-0 overflow-y-auto shrink-0">
+            <MaterialsCalculator runs={tapeRuns} drivers={projectData.drivers || []} />
+          </div>
+        )}
+        {/* Empty state — looping brand video centered in the configurator area */}
+        {!(selectedProjectId || isNewProject) && (
+          <div className="flex-1 min-w-0 flex items-center justify-center overflow-hidden">
+            <video
+              src="/empty-state.mov"
+              autoPlay
+              loop
+              muted
+              playsInline
+              aria-hidden="true"
+              data-testid="empty-state-video"
+              className="max-h-[75%] max-w-[75%] object-contain mix-blend-multiply"
+              style={{ filter: 'contrast(1.25) brightness(1.08)' }}
+            />
+          </div>
+        )}
+        {/* Configurator — only renders when a project is selected or being created */}
+        {(selectedProjectId || isNewProject) && (
         <div className="flex-1 min-w-0 overflow-y-auto">
-          <div className="space-y-4 md:space-y-6 p-4 md:py-6">
+          <div className="space-y-3">
             {/* Header Actions */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <h2 className="text-2xl font-bold break-words" style={{ color: '#252320' }}>
-                  {isNewProject ? 'New Project' : (projectData.project_name?.length > 50 ? projectData.project_name.substring(0, 50) + '...' : projectData.project_name)}
+                <h2 className="text-2xl font-bold break-words text-foreground line-clamp-1">
+                  {isNewProject ? 'New Project' : projectData.project_name}
                 </h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  {isNewProject ? 'Configure a new tape light quote' : projectData.customer_name}
+                <p className="text-sm text-foreground/60 mt-1 min-h-[1.25rem]">
+                  {isNewProject ? 'Configure a new tape light quote' : (projectData.customer_name && projectData.customer_name !== '—' ? projectData.customer_name : ' ')}
                 </p>
               </div>
               <div className="flex gap-2 flex-wrap flex-shrink-0">
@@ -414,7 +562,7 @@ export default function Calculator() {
                           <Tooltip open={exportDropdownOpen || hideExportTooltip ? false : undefined}>
                             <TooltipTrigger asChild>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="icon" disabled={isExporting}>
+                                <Button variant="outline" size="icon" disabled={isExporting} aria-label="Export project" data-testid="project-export">
                                   <Download className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
@@ -422,16 +570,16 @@ export default function Calculator() {
                             <TooltipContent>Export</TooltipContent>
                           </Tooltip>
                           <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => { 
-                              handleExportPDF(); 
+                            <DropdownMenuItem data-testid="project-export-pdf" onClick={() => {
+                              handleExportPDF();
                               setExportDropdownOpen(false);
                               setHideExportTooltip(true);
                               setTimeout(() => setHideExportTooltip(false), 500);
                             }}>
                               Export as PDF
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => { 
-                              handleExportCSV(); 
+                            <DropdownMenuItem data-testid="project-export-csv" onClick={() => {
+                              handleExportCSV();
                               setExportDropdownOpen(false);
                               setHideExportTooltip(true);
                               setTimeout(() => setHideExportTooltip(false), 500);
@@ -442,7 +590,7 @@ export default function Calculator() {
                         </DropdownMenu>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={handleDeleteProject}>
+                            <Button variant="outline" size="icon" onClick={handleDeleteProject} aria-label="Delete project" data-testid="project-delete">
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </TooltipTrigger>
@@ -452,7 +600,7 @@ export default function Calculator() {
                     )}
                     <Tooltip>
                        <TooltipTrigger asChild>
-                         <Button variant="outline" size="icon" onClick={handleSubmitProject}>
+                         <Button variant="outline" size="icon" onClick={handleSubmitProject} aria-label="Submit project" data-testid="project-submit">
                            <Send className="h-4 w-4" />
                          </Button>
                        </TooltipTrigger>
@@ -460,7 +608,7 @@ export default function Calculator() {
                      </Tooltip>
                      <Tooltip>
                        <TooltipTrigger asChild>
-                         <Button size="icon" onClick={handleSaveProject}>
+                         <Button variant={saveActive ? 'default' : 'outline'} size="icon" onClick={handleSaveProject} aria-label="Save project" data-testid="project-save">
                            <Save className="h-4 w-4" />
                          </Button>
                        </TooltipTrigger>
@@ -471,40 +619,91 @@ export default function Calculator() {
               </div>
             </div>
 
-            <Card>
-              <CardContent>
-                <ProjectForm
-                  project={projectData}
-                  onChange={setProjectData}
-                />
-              </CardContent>
-            </Card>
+            {(editingDetails || !showConfigurator) && (
+              <Card ref={detailsFormRef}>
+                <CardContent className="p-6">
+                  <ProjectForm project={projectData} onChange={(next) => { setProjectData(next); setIsDirty(true); }} />
+                </CardContent>
+              </Card>
+            )}
 
-            <Card>
-              <CardContent>
-                <TapeRunList
-                 key={selectedProjectId || `new-${formResetKey}`}
-                 runs={tapeRuns}
-                 drivers={projectData.drivers || []}
-                 onDriversChange={handleDriversChange}
-                 onAdd={handleAddTapeRun}
-                 onUpdate={(id, data) => updateTapeRunMutation.mutate({ id, data })}
-                 onDelete={(id) => deleteTapeRunMutation.mutate(id)}
-                 onReorder={handleReorderRuns}
-                />
-              </CardContent>
-            </Card>
+            {showConfigurator && (
+              <Card
+                className={`relative ${editingDetails ? 'locked-monochrome pointer-events-none select-none' : ''}`}
+                aria-disabled={editingDetails || undefined}
+              >
+                {editingDetails && (
+                  <div className="absolute inset-0 z-10 rounded-xl bg-background/60" aria-hidden="true" />
+                )}
+                <CardContent className="p-6">
+                  <TapeRunList
+                   key={selectedProjectId || `new-${formResetKey}`}
+                   runs={tapeRuns}
+                   drivers={projectData.drivers || []}
+                   onDriversChange={handleDriversChange}
+                   onAdd={(data) => { setIsDirty(true); return handleAddTapeRun(data); }}
+                   onUpdate={(id, data, options = {}) => { setIsDirty(true); updateTapeRunMutation.mutate({ id, data, silent: options.silent }); }}
+                   onDelete={(id) => { setIsDirty(true); deleteTapeRunMutation.mutate(id); }}
+                   onReorder={(...args) => { setIsDirty(true); handleReorderRuns(...args); }}
+                  />
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
+        )}
 
-        {/* Right Column - Materials & Quote (matches left sidebar width) */}
-        <div className="hidden md:flex flex-col py-6 w-64 lg:w-80 px-4 lg:px-6 shrink-0">
-          <div className="sticky top-6">
-            <MaterialsCalculator runs={tapeRuns} />
-          </div>
-        </div>
       </div>
       </div>
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes the project and all its tape runs. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="project-delete-cancel">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteProject} data-testid="project-delete-confirm">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={emptyDriversPrompt != null} onOpenChange={(open) => !open && setEmptyDriversPrompt(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {emptyDriversPrompt?.length} driver{emptyDriversPrompt?.length === 1 ? '' : 's'} with no runs
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {emptyDriversPrompt?.map(d => d.name).join(', ')} {emptyDriversPrompt?.length === 1 ? 'has' : 'have'} no tape runs assigned. Remove {emptyDriversPrompt?.length === 1 ? 'it' : 'them'} before submitting, or keep and submit anyway?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="empty-drivers-cancel">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              data-testid="empty-drivers-keep"
+              onClick={() => { const prompt = emptyDriversPrompt; setEmptyDriversPrompt(null); if (prompt) performSubmit(); }}
+            >
+              Keep & Submit
+            </AlertDialogAction>
+            <AlertDialogAction
+              data-testid="empty-drivers-remove"
+              onClick={() => {
+                const prompt = emptyDriversPrompt;
+                setEmptyDriversPrompt(null);
+                if (!prompt) return;
+                const emptyNames = new Set(prompt.map(d => d.name));
+                const cleaned = (projectData.drivers || []).filter(d => !emptyNames.has(d.name));
+                setProjectData(prev => ({ ...prev, drivers: cleaned }));
+                performSubmit(cleaned);
+              }}
+            >
+              Remove & Submit
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </TooltipProvider>
   );
 }

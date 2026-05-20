@@ -60,7 +60,17 @@ const SelectContent = React.forwardRef(({ className, children, position = "poppe
         className
       )}
       position={position}
-      {...props}>
+      {...props}
+      onKeyDown={(e) => {
+        props.onKeyDown?.(e);
+        if (e.key === 'Tab' && !e.defaultPrevented) {
+          const highlighted = e.currentTarget.querySelector('[data-highlighted]');
+          if (highlighted) {
+            e.preventDefault();
+            highlighted.click();
+          }
+        }
+      }}>
       <SelectScrollUpButton />
       <SelectPrimitive.Viewport
         className={cn("p-1", position === "popper" &&

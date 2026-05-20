@@ -12,31 +12,46 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'Gellix';
+  src: url('https://pub-0f9ca3815f744aa9adb51ff90f8f2e65.r2.dev/Gellix-DemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Gellix';
+  src: url('https://pub-0f9ca3815f744aa9adb51ff90f8f2e65.r2.dev/Gellix-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
+    /* Alkimi brand palette — see memory/alkimi_brand_tokens.md */
     --background: 0 0% 100%;
-    --foreground: 25 11% 14%;
+    --foreground: 25 9% 14%;        /* #252320 brand near-black */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 25 9% 14%;   /* #252320 */
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 100 64% 26%;
+    --popover-foreground: 25 9% 14%;/* #252320 */
+    --primary: 95 83% 26%;          /* #35790B brand green */
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
+    --secondary: 40 6% 91%;         /* #EAEAE7 lightest neutral */
+    --secondary-foreground: 25 9% 14%;
+    --muted: 40 6% 91%;             /* #EAEAE7 */
     --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --accent: 40 6% 91%;            /* #EAEAE7 */
+    --accent-foreground: 25 9% 14%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+    --border: 30 5% 86%;            /* #DDDCDA brand light gray */
+    --input: 30 5% 86%;
+    --ring: 25 9% 14%;              /* #252320 */
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
@@ -100,4 +115,29 @@
     @apply bg-background text-foreground;
     font-family: 'Gellix', sans-serif;
   }
+}
+
+/* Hide native number-input spinner buttons app-wide; we always use accompanying explicit controls. */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Used to neutralize an inert/locked container (no chroma bleed-through on warm-undertone brand colors). */
+.locked-monochrome {
+  --foreground: 0 0% 30%;
+  --card-foreground: 0 0% 30%;
+  --muted-foreground: 0 0% 50%;
+  --primary: 0 0% 30%;
+  --border: 0 0% 85%;
+  --input: 0 0% 85%;
+  --ring: 0 0% 50%;
+  --secondary: 0 0% 95%;
+  --muted: 0 0% 95%;
+  --accent: 0 0% 95%;
+  filter: grayscale(1);
 }

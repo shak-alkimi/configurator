@@ -6,10 +6,17 @@ import { SelectItem } from "@/components/ui/select";
 import TabSelect from "@/components/calculator/TabSelect";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2, GripVertical, Pencil, Check, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { TAPE_SPECS, CHANNEL_SPECS } from "@/components/calculator/constants";
-import { calculateRunCost } from "@/components/calculator/calculations";
+import { calculateRunCost, formatFeetInches, titleCase } from "@/components/calculator/calculations";
 import DriverManager from "@/components/calculator/DriverManager";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +29,22 @@ import {
 
 const TAPE_INCH_OPTIONS = ['0', '2.5', '5', '7.5', '10'];
 
+// Blank new-run form state. Used by the initial state and the post-add reset.
+const EMPTY_NEW_RUN = Object.freeze({
+  run_name: '',
+  feet: '',
+  inches: '',
+  tape_output: '',
+  product_type: '',
+  location: '',
+  cct: '',
+  channel_type: '',
+  lens: '',
+  finish: '',
+  notes: '',
+  driver_group: '',
+});
+
 // Format total inches as "Xft Y.Zin"
 function formatSnapped(totalInches) {
   const ft = Math.floor(totalInches / 12);
@@ -29,6 +52,7 @@ function formatSnapped(totalInches) {
   const inDisplay = Number.isInteger(inches) ? `${inches}` : inches.toFixed(1);
   return `${ft}ft ${inDisplay}in`;
 }
+
 
 // Given feet + inches strings, return total feet
 function getSnappedFeet(feetStr, inchesStr) {
@@ -46,24 +70,16 @@ function extractInchesOption(lengthFeet) {
 }
 
 export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onUpdate, onDelete, onReorder }) {
+  const sortedDrivers = [...(drivers || [])].sort((a, b) => {
+    const numA = parseInt(/^Driver\s+(\d+)$/.exec(a.name || '')?.[1] ?? Infinity, 10);
+    const numB = parseInt(/^Driver\s+(\d+)$/.exec(b.name || '')?.[1] ?? Infinity, 10);
+    return numA - numB;
+  });
   const [localRuns, setLocalRuns] = useState(runs);
   const [editingId, setEditingId] = useState(null);
   const [editValues, setEditValues] = useState({});
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
-  const [newRun, setNewRun] = useState({
-    run_name: '',
-    feet: '',
-    inches: '',
-    tape_output: '',
-    product_type: '',
-    location: '',
-    cct: '',
-    channel_type: '',
-    lens: '',
-    finish: '',
-    notes: '',
-    driver_group: ''
-  });
+  const [newRun, setNewRun] = useState({ ...EMPTY_NEW_RUN });
 
   useEffect(() => {
     setLocalRuns(runs);
@@ -81,7 +97,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
   const handleAdd = () => {
     const totalFeet = getSnappedFeet(newRun.feet, newRun.inches);
     
-    if (!newRun.cct || !newRun.tape_output || !newRun.channel_type || totalFeet <= 0) {
+    if (!newRun.product_type || !newRun.cct || !newRun.tape_output || !newRun.channel_type || !newRun.lens || !newRun.finish || !newRun.driver_group || totalFeet <= 0) {
       return;
     }
     
@@ -98,204 +114,255 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
       notes: newRun.notes,
       driver_group: newRun.driver_group
     });
-    setNewRun({
-      run_name: '',
-      feet: '',
-      inches: '',
-      tape_output: '',
-      product_type: '',
-      location: '',
-      cct: '',
-      channel_type: '',
-      lens: '',
-      finish: '',
-      notes: '',
-      driver_group: ''
-    });
+    setNewRun({ ...EMPTY_NEW_RUN });
   };
 
-  const formatTapeType = (type) => {
-    return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  };
-
-  const formatChannelType = (type) => {
-    return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  };
+  const formatChannelType = titleCase;
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
-    if (result.source.index === result.destination.index) return;
-    
-    const reorderedRuns = Array.from(localRuns);
-    const [movedRun] = reorderedRuns.splice(result.source.index, 1);
-    reorderedRuns.splice(result.destination.index, 0, movedRun);
+    const srcGroup = result.source.droppableId;
+    const dstGroup = result.destination.droppableId;
+    if (srcGroup === dstGroup && result.source.index === result.destination.index) return;
 
-    setLocalRuns(reorderedRuns);
-    setTimeout(() => onReorder(reorderedRuns), 0);
+    const movedRunId = result.draggableId;
+    const movedRun = localRuns.find(r => String(r.id) === movedRunId);
+    if (!movedRun) return;
+
+    const groupOrder = [...sortedDrivers.map(d => d.name), '__unassigned__'];
+    const grouped = Object.fromEntries(groupOrder.map(g => [g, []]));
+    for (const r of localRuns) {
+      const k = r.driver_group && sortedDrivers.some(d => d.name === r.driver_group) ? r.driver_group : '__unassigned__';
+      grouped[k].push(r);
+    }
+
+    grouped[srcGroup] = grouped[srcGroup].filter(r => String(r.id) !== movedRunId);
+    const newDriverGroup = dstGroup === '__unassigned__' ? '' : dstGroup;
+    const updatedMoved = { ...movedRun, driver_group: newDriverGroup };
+    grouped[dstGroup] = [
+      ...grouped[dstGroup].slice(0, result.destination.index),
+      updatedMoved,
+      ...grouped[dstGroup].slice(result.destination.index),
+    ];
+
+    const newFlat = groupOrder.flatMap(g => grouped[g]);
+    setLocalRuns(newFlat);
+    setTimeout(() => onReorder(newFlat), 0);
+  };
+
+  // Move a run from one index to another. Used by drag-drop AND by the up/down
+  // buttons that exist so agents and keyboard users can reorder without DnD.
+  const reorderRunAt = (fromIndex, toIndex) => {
+    if (toIndex < 0 || toIndex >= localRuns.length) return;
+    if (fromIndex === toIndex) return;
+    const reordered = Array.from(localRuns);
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+    setLocalRuns(reordered);
+    setTimeout(() => onReorder(reordered), 0);
   };
 
   const isFormValid = () => {
-    return newRunSnappedFeet > 0 && newRun.cct && newRun.tape_output && newRun.channel_type;
+    return newRunSnappedFeet > 0 && newRun.product_type && newRun.cct && newRun.tape_output && newRun.channel_type && newRun.lens && newRun.finish && newRun.driver_group;
+  };
+
+  const addDriver = (maxWatts) => {
+    const used = new Set((drivers || []).map(d => {
+      const m = /^Driver\s+(\d+)$/.exec(d.name || '');
+      return m ? parseInt(m[1], 10) : null;
+    }).filter(n => n != null));
+    let nextN = 1;
+    while (used.has(nextN)) nextN++;
+    onDriversChange([...(drivers || []), { id: String(Date.now()), name: `Driver ${nextN}`, maxWatts }]);
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between pt-6">
-        <h3 className="text-sm font-semibold" style={{ color: '#252320' }}>Alkiline</h3>
-        <span className="text-xs text-slate-500">
-          Total: {(() => {
-            const totalFeet = localRuns.reduce((sum, r) => sum + r.length_feet, 0);
-            return `${Math.floor(totalFeet)}' ${Math.round((totalFeet % 1) * 12)}"`;
-          })()}
-        </span>
-      </div>
+    <div>
+      <section data-section="drivers" className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs uppercase tracking-wider text-foreground/50">Drivers</h3>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="h-9 w-9 rounded" aria-label="Add driver" data-testid="driver-add">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem data-testid="driver-add-60" onClick={() => addDriver(60)}>60W Driver</DropdownMenuItem>
+              <DropdownMenuItem data-testid="driver-add-96" onClick={() => addDriver(96)}>96W Driver</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <DriverManager
+          drivers={drivers || []}
+          runs={localRuns}
+          onDriversChange={onDriversChange}
+          onClearDriverRuns={(driverName) => {
+            const affected = (localRuns || []).filter(r => r.driver_group === driverName);
+            affected.forEach(r => onUpdate(r.id, { driver_group: '' }, { silent: true }));
+            if (affected.length > 0) {
+              toast.success(`Cleared ${affected.length} run${affected.length === 1 ? '' : 's'} from ${driverName}`);
+            }
+          }}
+        />
+      </section>
 
-      <DriverManager
-        drivers={drivers || []}
-        runs={localRuns}
-        onDriversChange={onDriversChange}
-      />
-
-      {/* Add New Run */}
-      <Card className="border-dashed">
-        <CardContent className="pt-4 pb-4">
+      <section data-section="configure" className="space-y-2 mt-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs uppercase tracking-wider text-foreground/50">Configure</h3>
+          <Button
+            onClick={handleAdd}
+            size="icon"
+            variant={isFormValid() ? 'default' : 'outline'}
+            className="h-9 w-9 rounded"
+            disabled={!isFormValid()}
+            aria-label="Add tape run"
+            data-testid="tape-run-add"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
+        <Card>
+        <CardContent className="p-6">
           <div className="w-full">
             {/* New Run Row */}
             <div className="flex gap-2 items-end w-full">
-              {/* Type */}
               <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <span className="text-xs text-gray-500 text-left">Type</span>
-                <Input value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
+                <Label htmlFor="new-run-name" className="text-xs text-foreground/60 text-left">Name</Label>
+                <Input id="new-run-name" data-testid="new-run-name" value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
               </div>
-              
-              {/* Location */}
+
               <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <span className="text-xs text-gray-500 text-left">Location</span>
-                <Input value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
+                <Label htmlFor="new-run-location" className="text-xs text-foreground/60 text-left">Location</Label>
+                <Input id="new-run-location" data-testid="new-run-location" value={newRun.location} onChange={e => setNewRun({ ...newRun, location: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
               </div>
-              
-              {/* Product */}
+
               <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <span className="text-xs text-gray-500 text-left">Product</span>
-                <TabSelect value={newRun.product_type} onValueChange={(value) => setNewRun({ ...newRun, product_type: value, tape_output: '' })} triggerClassName="h-9 w-full">
+                <Label htmlFor="new-run-product" className="text-xs text-foreground/60 text-left">Product</Label>
+                <TabSelect id="new-run-product" value={newRun.product_type} onValueChange={(value) => setNewRun({ ...newRun, product_type: value, tape_output: '' })} triggerClassName="h-9 w-full">
                   <SelectItem value="Flex">Flex</SelectItem>
                   <SelectItem value="Tape">Tape</SelectItem>
                 </TabSelect>
               </div>
-              
-              {/* Length */}
-              <div className="flex flex-col gap-1 flex-[2] min-w-0">
-                <span className="text-xs text-gray-500 text-left">Length</span>
-                <div className="flex gap-1">
-                  <Input type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="w-10 shrink-0 border rounded px-1 h-9 text-sm" />
-                  <TabSelect value={newRun.inches} onValueChange={(v) => setNewRun({ ...newRun, inches: v })} triggerClassName="flex-1 h-9" placeholder="in">
-                    {TAPE_INCH_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}"</SelectItem>)}
+
+              <div className="flex flex-col gap-1 shrink-0">
+                <Label htmlFor="new-run-length-feet" className="text-xs text-foreground/60 text-left">Length</Label>
+                <div className="flex gap-2">
+                  <div className="relative w-20 shrink-0">
+                    <Input id="new-run-length-feet" data-testid="new-run-length-feet" type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="w-full border rounded pl-2 pr-7 h-9 text-sm" />
+                    {newRun.feet && (
+                      <span aria-hidden="true" className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-foreground pointer-events-none">ft</span>
+                    )}
+                  </div>
+                  <TabSelect id="new-run-length-inches" value={newRun.inches} onValueChange={(v) => setNewRun({ ...newRun, inches: v })} triggerClassName="w-20 h-9" placeholder="in" aria-label="Length inches">
+                    {TAPE_INCH_OPTIONS.map(o => <SelectItem key={o} value={o}>{`${o}in`}</SelectItem>)}
                   </TabSelect>
                 </div>
               </div>
-              
-              {/* CCT */}
+
               <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <span className="text-xs text-gray-500 text-left">CCT</span>
-                <TabSelect value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value, tape_output: value === 'Warm Dim (30k-18k)' ? '360lm (3.6w/ft)' : newRun.tape_output })} triggerClassName="h-9 w-full" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
+                <Label htmlFor="new-run-cct" className="text-xs text-foreground/60 text-left">CCT</Label>
+                <TabSelect id="new-run-cct" value={newRun.cct} onValueChange={(value) => setNewRun({ ...newRun, cct: value, tape_output: value === 'Warm Dim (30k-18k)' ? '360lm (3.6w/ft)' : newRun.tape_output })} triggerClassName="h-9 w-full" displayMap={{"Warm Dim (30k-18k)": "WD", "Tunable White (18k-40k)": "TW"}}>
                   <SelectItem value="2400k">2400k</SelectItem>
                   <SelectItem value="2700k">2700k</SelectItem>
                   <SelectItem value="3000k">3000k</SelectItem>
                   <SelectItem value="3500k">3500k</SelectItem>
                   <SelectItem value="Warm Dim (30k-18k)">Warm Dim (30k-18k)</SelectItem>
-                  <SelectItem value="Tunable White (18k-40k)" disabled className="text-slate-400">Tunable White (18k-40k)</SelectItem>
+                  <SelectItem value="Tunable White (18k-40k)" disabled className="text-foreground/40">Tunable White (18k-40k)</SelectItem>
                 </TabSelect>
               </div>
-              
-              {/* Output */}
+
               <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <span className="text-xs text-gray-500 text-left">Output</span>
-                <TabSelect value={newRun.tape_output} onValueChange={(value) => setNewRun({ ...newRun, tape_output: value })} triggerClassName="h-9 w-full" displayMap={{"300lm (3.0w/ft)": "300lm", "360lm (3.6w/ft)": "360lm", "600lm (6.0w/ft)": "600lm"}}>
-                  <SelectItem value="300lm (3.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>300lm (3.0w/ft)</SelectItem>
+                <Label htmlFor="new-run-output" className="text-xs text-foreground/60 text-left">Output</Label>
+                <TabSelect id="new-run-output" value={newRun.tape_output} onValueChange={(value) => setNewRun({ ...newRun, tape_output: value })} triggerClassName="h-9 w-full" displayMap={{"300lm (3.0w/ft)": "300lm", "360lm (3.6w/ft)": "360lm", "600lm (6.0w/ft)": "600lm"}}>
+                  <SelectItem value="300lm (3.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-foreground/40' : ''}>300lm (3.0w/ft)</SelectItem>
                   <SelectItem value="360lm (3.6w/ft)">360lm (3.6w/ft)</SelectItem>
-                  <SelectItem value="600lm (6.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>600lm (6.0w/ft)</SelectItem>
+                  <SelectItem value="600lm (6.0w/ft)" disabled={newRun.cct === 'Warm Dim (30k-18k)'} className={newRun.cct === 'Warm Dim (30k-18k)' ? 'text-foreground/40' : ''}>600lm (6.0w/ft)</SelectItem>
                 </TabSelect>
               </div>
-              
-              {/* Housing */}
+
               <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <span className="text-xs text-gray-500 text-left">Housing</span>
-                <TabSelect value={newRun.channel_type} onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })} triggerClassName="h-9 w-full">
+                <Label htmlFor="new-run-housing" className="text-xs text-foreground/60 text-left">Housing</Label>
+                <TabSelect id="new-run-housing" value={newRun.channel_type} onValueChange={(value) => setNewRun({ ...newRun, channel_type: value })} triggerClassName="h-9 w-full">
                   <SelectItem value="corner">Corner</SelectItem>
                   <SelectItem value="surface">Surface</SelectItem>
                   <SelectItem value="none">None</SelectItem>
                 </TabSelect>
               </div>
-              
-              {/* Lens */}
+
               <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <span className="text-xs text-gray-500 text-left">Lens</span>
-                <TabSelect value={newRun.lens} onValueChange={(value) => setNewRun({ ...newRun, lens: value })} triggerClassName="h-9 w-full">
+                <Label htmlFor="new-run-lens" className="text-xs text-foreground/60 text-left">Lens</Label>
+                <TabSelect id="new-run-lens" value={newRun.lens} onValueChange={(value) => setNewRun({ ...newRun, lens: value })} triggerClassName="h-9 w-full">
                   <SelectItem value="Clear">Clear</SelectItem>
                   <SelectItem value="Frosted">Frosted</SelectItem>
                 </TabSelect>
               </div>
-              
-              {/* Finish */}
+
               <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <span className="text-xs text-gray-500 text-left">Finish</span>
-                <TabSelect value={newRun.finish} onValueChange={(value) => setNewRun({ ...newRun, finish: value })} triggerClassName="h-9 w-full">
+                <Label htmlFor="new-run-finish" className="text-xs text-foreground/60 text-left">Finish</Label>
+                <TabSelect id="new-run-finish" value={newRun.finish} onValueChange={(value) => setNewRun({ ...newRun, finish: value })} triggerClassName="h-9 w-full">
                   <SelectItem value="Aluminum">Aluminum</SelectItem>
                   <SelectItem value="Black">Black</SelectItem>
                   <SelectItem value="White">White</SelectItem>
                 </TabSelect>
               </div>
-              
-              {/* Driver */}
+
               <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <span className="text-xs text-gray-500 text-left">Driver</span>
-                <TabSelect value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 w-full">
-                  {(drivers || []).map(d => (
+                <Label htmlFor="new-run-driver" className="text-xs text-foreground/60 text-left">Driver</Label>
+                <TabSelect id="new-run-driver" value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 w-full">
+                  {sortedDrivers.map(d => (
                     <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
                   ))}
                 </TabSelect>
               </div>
-              
-              {/* Add Button */}
-              <Button
-                onClick={handleAdd}
-                size="icon"
-                className={`h-9 w-9 rounded ${!isFormValid() ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#3A5F3A] text-white hover:bg-[#2d4a2d]'}`}
-                disabled={!isFormValid()}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </section>
 
-      {/* Existing Runs */}
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="runs">
-          {(provided) => (
-            <div 
-              className="space-y-2"
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-            >
-              {localRuns.map((run, index) => (
+      {/* Existing Runs — grouped by driver */}
+      {localRuns.length > 0 && (
+      <section data-section="runs" className="space-y-2 mt-10">
+        <h3 className="text-xs uppercase tracking-wider text-foreground/50">Runs</h3>
+        {(() => {
+        const groups = [];
+        for (const d of sortedDrivers) {
+          const groupRuns = localRuns.filter(r => r.driver_group === d.name);
+          if (groupRuns.length) groups.push({ key: d.name, label: d.name, runs: groupRuns });
+        }
+        const unassigned = localRuns.filter(r => !r.driver_group || !sortedDrivers.some(d => d.name === r.driver_group));
+        if (unassigned.length) groups.push({ key: '__unassigned__', label: 'Unassigned', runs: unassigned });
+
+        return (
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <div className="space-y-6">
+            {groups.map((group) => (
+              <div key={group.key} data-testid="tape-run-group" data-group={group.key}>
+                <div className="text-xs font-medium mb-2 px-1 text-right">{group.label}</div>
+                <Droppable droppableId={group.key}>
+                  {(provided) => (
+                    <div
+                      className="space-y-3"
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                    >
+                      {group.runs.map((run, index) => (
                 <Draggable key={String(run.id)} draggableId={String(run.id)} index={index}>
                   {(provided, snapshot) => (
-                    <Card 
+                    <Card
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      className="border-slate-200" 
-                      style={{ 
-                        backgroundColor: editingId === run.id ? '#ffffff' : (snapshot.isDragging ? '#ffffff' : '#eeeeee'),
-                        ...provided.draggableProps.style 
-                      }}
+                      data-testid="tape-run-row"
+                      data-run-id={run.id}
+                      className={`border-border ${editingId === run.id || snapshot.isDragging ? 'bg-background' : 'bg-secondary'}`}
+                      style={provided.draggableProps.style}
                     >
-                      <CardContent className="py-3">
+                      <CardContent className="p-4">
                         {editingId === run.id ? (
-                          <div className="flex flex-wrap gap-2 items-end bg-white">
+                          <div className="flex flex-wrap gap-2 items-end bg-background">
                             <div className="space-y-1">
-                              <Label className="text-xs">Type</Label>
+                              <Label className="text-xs">Name</Label>
                               <Input value={editValues.run_name} onChange={e => setEditValues({...editValues, run_name: e.target.value})} className="h-8 w-16 text-xs" />
                             </div>
                             <div className="space-y-1">
@@ -316,15 +383,15 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             <div className="space-y-1">
                               <Label className="text-xs">Inches</Label>
                               <TabSelect value={editValues.inches} onValueChange={v => setEditValues({...editValues, inches: v})} triggerClassName="h-8 w-20 text-xs">
-                                {TAPE_INCH_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}"</SelectItem>)}
+                                {TAPE_INCH_OPTIONS.map(o => <SelectItem key={o} value={o}>{`${o}in`}</SelectItem>)}
                               </TabSelect>
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Output</Label>
                               <TabSelect value={editValues.tape_output} onValueChange={v => setEditValues({...editValues, tape_output: v})} triggerClassName="h-8 w-24 text-xs">
-                                <SelectItem value="300lm (3.0w/ft)" disabled={editValues.cct === 'Warm Dim (30k-18k)'} className={editValues.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>300lm (3.0w/ft)</SelectItem>
+                                <SelectItem value="300lm (3.0w/ft)" disabled={editValues.cct === 'Warm Dim (30k-18k)'} className={editValues.cct === 'Warm Dim (30k-18k)' ? 'text-foreground/40' : ''}>300lm (3.0w/ft)</SelectItem>
                                 <SelectItem value="360lm (3.6w/ft)">360lm (3.6w/ft)</SelectItem>
-                                <SelectItem value="600lm (6.0w/ft)" disabled={editValues.cct === 'Warm Dim (30k-18k)'} className={editValues.cct === 'Warm Dim (30k-18k)' ? 'text-slate-400' : ''}>600lm (6.0w/ft)</SelectItem>
+                                <SelectItem value="600lm (6.0w/ft)" disabled={editValues.cct === 'Warm Dim (30k-18k)'} className={editValues.cct === 'Warm Dim (30k-18k)' ? 'text-foreground/40' : ''}>600lm (6.0w/ft)</SelectItem>
                               </TabSelect>
                             </div>
                             <div className="space-y-1">
@@ -335,7 +402,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                                 <SelectItem value="3000k">3000k</SelectItem>
                                 <SelectItem value="3500k">3500k</SelectItem>
                                 <SelectItem value="Warm Dim (30k-18k)">Warm Dim (30k-18k)</SelectItem>
-                                <SelectItem value="Tunable White (18k-40k)" disabled className="text-slate-400">Tunable White (18k-40k)</SelectItem>
+                                <SelectItem value="Tunable White (18k-40k)" disabled className="text-foreground/40">Tunable White (18k-40k)</SelectItem>
                                 </TabSelect>
                             </div>
                             <div className="space-y-1">
@@ -369,7 +436,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                                 ))}
                               </TabSelect>
                             </div>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:text-green-700" onClick={() => {
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary hover:text-primary/80" aria-label="Save run edit" data-testid="tape-run-save" onClick={() => {
                               onUpdate(run.id, {
                                 run_name: editValues.run_name,
                                 location: editValues.location,
@@ -380,78 +447,84 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                                 channel_type: editValues.channel_type,
                                 lens: editValues.lens,
                                 finish: editValues.finish,
+                                notes: editValues.notes,
                                 driver_group: editValues.driver_group
                               });
                               setEditingId(null);
                             }}>
                               <Check className="h-4 w-4" />
                             </Button>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-slate-600" onClick={() => setEditingId(null)}>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-foreground/40 hover:text-foreground/70" aria-label="Cancel run edit" data-testid="tape-run-cancel" onClick={() => setEditingId(null)}>
                               <X className="h-4 w-4" />
                             </Button>
                           </div>
                         ) : (
                         <div className="flex items-center gap-2 overflow-x-auto">
-                          <div 
+                          <div
                             {...provided.dragHandleProps}
-                            className="w-6 shrink-0 cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600"
+                            role="button"
+                            aria-roledescription="Drag handle. Use the up and down buttons on the right for keyboard or agent-driven reordering."
+                            aria-label={`Drag run ${index + 1}`}
+                            className="w-6 shrink-0 cursor-grab active:cursor-grabbing text-foreground/40 hover:text-foreground/70"
                           >
                             <GripVertical className="h-5 w-5" />
                           </div>
-                          <div className="w-16 shrink-0">
-                            <div className="text-xs text-slate-500">Type</div>
+                          <div className="flex-1 min-w-0 text-center">
+                            <div className="text-xs text-foreground/60">Name</div>
                             <div className="text-sm font-medium truncate">{run.run_name || 'Unnamed'}</div>
                           </div>
-                          <div className="w-28 shrink-0">
-                            <div className="text-xs text-slate-500">Location</div>
+                          <div className="flex-1 min-w-0 text-center">
+                            <div className="text-xs text-foreground/60">Location</div>
                             <div className="text-sm truncate">{run.location || '—'}</div>
                           </div>
-                          <div className="w-24 shrink-0">
-                            <div className="text-xs text-slate-500">Product</div>
+                          <div className="flex-1 min-w-0 text-center">
+                            <div className="text-xs text-foreground/60">Product</div>
                             <div className="text-sm truncate">{run.product_type || '—'}</div>
                           </div>
-                          <div className="w-32 shrink-0">
-                            <div className="text-xs text-slate-500">Length</div>
+                          <div className="flex-1 min-w-0 text-center">
+                            <div className="text-xs text-foreground/60">Length</div>
                             <div className="text-sm whitespace-nowrap">
                               {run.product_type === 'Tape'
                                 ? formatSnapped(run.length_feet * 12)
-                                : `${Math.floor(run.length_feet)}' ${Math.round((run.length_feet % 1) * 12)}"`}
+                                : formatFeetInches(run.length_feet)}
                             </div>
                           </div>
-                          <div className="w-20 shrink-0">
-                            <div className="text-xs text-slate-500">CCT</div>
+                          <div className="flex-1 min-w-0 text-center">
+                            <div className="text-xs text-foreground/60">CCT</div>
                             <div className="text-sm truncate">{run.cct === 'Warm Dim (30k-18k)' ? 'WD' : run.cct === 'Tunable White (18k-40k)' ? 'TW' : run.cct || '—'}</div>
                           </div>
-                          <div className="w-20 shrink-0">
-                            <div className="text-xs text-slate-500">Output</div>
+                          <div className="flex-1 min-w-0 text-center">
+                            <div className="text-xs text-foreground/60">Output</div>
                             <div className="text-sm whitespace-nowrap">
                                {run.tape_output === '300lm (3.0w/ft)' ? '300lm' : run.tape_output === '360lm (3.6w/ft)' ? '360lm' : run.tape_output === '600lm (6.0w/ft)' ? '600lm' : run.tape_output || '—'}
                             </div>
                           </div>
-                          <div className="w-20 shrink-0">
-                            <div className="text-xs text-slate-500">Housing</div>
+                          <div className="flex-1 min-w-0 text-center">
+                            <div className="text-xs text-foreground/60">Housing</div>
                             <div className="text-sm truncate">{formatChannelType(run.channel_type)}</div>
                           </div>
-                          <div className="w-16 shrink-0">
-                            <div className="text-xs text-slate-500">Lens</div>
+                          <div className="flex-1 min-w-0 text-center">
+                            <div className="text-xs text-foreground/60">Lens</div>
                             <div className="text-sm truncate">{run.lens || '—'}</div>
                           </div>
-                          <div className="w-20 shrink-0">
-                            <div className="text-xs text-slate-500">Finish</div>
+                          <div className="flex-1 min-w-0 text-center">
+                            <div className="text-xs text-foreground/60">Finish</div>
                             <div className="text-sm truncate">{run.finish || '—'}</div>
                           </div>
-                          <div className="w-20 shrink-0">
-                            <div className="text-xs text-slate-500">Driver</div>
-                            <div className="text-sm">{run.driver_group || '—'}</div>
+                          <div className="flex-1 min-w-0 text-center">
+                            <div className="text-xs text-foreground/60">Driver</div>
+                            <div className="text-sm truncate">{run.driver_group || '—'}</div>
                           </div>
-                          <div className="w-14 shrink-0 text-right">
-                            <div className="text-xs text-slate-500">Cost</div>
+                          <div className="flex-1 min-w-0 text-center">
+                            <div className="text-xs text-foreground/60">Cost</div>
                             <div className="text-sm font-semibold whitespace-nowrap">${calculateRunCost(run).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                           </div>
-                          <div className="flex shrink-0 gap-0 items-center w-16">
+                          <div className="flex shrink-0 gap-0 items-center">
                             <Button
                               variant="ghost"
                               size="icon"
+                              aria-label="Edit run"
+                              data-testid="tape-run-edit"
                               onClick={() => {
                                 setEditingId(run.id);
                                 setEditValues({
@@ -465,18 +538,21 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                                   channel_type: run.channel_type,
                                   lens: run.lens || '',
                                   finish: run.finish || '',
+                                  notes: run.notes || '',
                                   driver_group: run.driver_group || ''
                                 });
                               }}
-                              className="h-8 w-8 text-slate-400 hover:text-slate-600"
+                              className="h-8 w-8 text-foreground/40 hover:text-foreground/70"
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
                             <Button
                                variant="ghost"
                                size="icon"
+                               aria-label="Delete run"
+                               data-testid="tape-run-delete"
                                onClick={() => setDeleteConfirmId(run.id)}
-                               className="h-8 w-8 text-slate-400 hover:text-red-600"
+                               className="h-8 w-8 text-foreground/40 hover:text-destructive"
                              >
                                <Trash2 className="h-4 w-4" />
                              </Button>
@@ -487,12 +563,19 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                     </Card>
                   )}
                 </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </div>
+            ))}
+          </div>
+        </DragDropContext>
+        );
+      })()}
+      </section>
+      )}
 
       <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
         <AlertDialogContent>

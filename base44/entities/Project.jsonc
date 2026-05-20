@@ -133,8 +133,7 @@
     }
   },
   "required": [
-    "project_name",
-    "customer_name"
+    "project_name"
   ],
   "rls": {
     "create": {
