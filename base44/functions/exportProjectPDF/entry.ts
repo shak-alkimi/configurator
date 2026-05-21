@@ -34,7 +34,11 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Project not found' }, { status: 404 });
         }
         
-        const project = projects[0];
+        // The SDK sometimes wraps entity payloads under `.data`, sometimes returns
+        // flat objects depending on the API path used. Normalize once so all
+        // subsequent reads work regardless of shape.
+        const projectRaw = projects[0];
+        const project = projectRaw.data || projectRaw;
         const tapeRuns = await base44.asServiceRole.entities.TapeRun.filter({ project_id }, undefined, undefined, undefined, data_env);
 
         const doc = new jsPDF();
@@ -52,30 +56,30 @@ Deno.serve(async (req) => {
         
         doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
-        doc.text(`Project Name: ${project.data.project_name || ''}`, 20, y);
+        doc.text(`Project Name: ${project.project_name || ''}`, 20, y);
         y += 6;
         // Treat legacy '—' placeholder as blank (older drafts seeded the dash).
-        const customerName = (project.data.customer_name && project.data.customer_name !== '—') ? project.data.customer_name : '';
+        const customerName = (project.customer_name && project.customer_name !== '—') ? project.customer_name : '';
         doc.text(`Customer: ${customerName}`, 20, y);
         y += 6;
-        if (project.data.customer_email) {
-            doc.text(`Email: ${project.data.customer_email}`, 20, y);
+        if (project.customer_email) {
+            doc.text(`Email: ${project.customer_email}`, 20, y);
             y += 6;
         }
-        if (project.data.customer_phone) {
-            doc.text(`Phone: ${project.data.customer_phone}`, 20, y);
+        if (project.customer_phone) {
+            doc.text(`Phone: ${project.customer_phone}`, 20, y);
             y += 6;
         }
-        if (project.data.street || project.data.city || project.data.state) {
-            const address = [project.data.street, project.data.city, project.data.state].filter(Boolean).join(', ');
+        if (project.street || project.city || project.state) {
+            const address = [project.street, project.city, project.state].filter(Boolean).join(', ');
             doc.text(`Address: ${address}`, 20, y);
             y += 6;
         }
-        if (project.data.sector) {
-            doc.text(`Sector: ${project.data.sector}`, 20, y);
+        if (project.sector) {
+            doc.text(`Sector: ${project.sector}`, 20, y);
             y += 6;
         }
-        doc.text(`Status: ${project.data.status}`, 20, y);
+        doc.text(`Status: ${project.status}`, 20, y);
         y += 10;
 
         // Configured Runs
@@ -181,7 +185,7 @@ Deno.serve(async (req) => {
 
         // Price the actual configured drivers. Fall back to watts-derived default-driver
         // count only if the project has no driver list.
-        const projectDrivers = (project.data.drivers || []);
+        const projectDrivers = (project.drivers || []);
         let driversNeeded;
         let driverCost;
         let driverLineLabel;
@@ -242,13 +246,13 @@ Deno.serve(async (req) => {
         doc.setFont(undefined, 'bold');
         doc.text(`Total: $${total.toFixed(2)}`, 20, y);
 
-        if (project.data.notes) {
+        if (project.notes) {
             y += 10;
             doc.setFont(undefined, 'bold');
             doc.text('Notes:', 20, y);
             y += 6;
             doc.setFont(undefined, 'normal');
-            const splitNotes = doc.splitTextToSize(project.data.notes, 170);
+            const splitNotes = doc.splitTextToSize(project.notes, 170);
             doc.text(splitNotes, 20, y);
         }
 
@@ -258,7 +262,7 @@ Deno.serve(async (req) => {
             status: 200,
             headers: {
                 'Content-Type': 'application/pdf',
-                'Content-Disposition': `attachment; filename="${project.data.project_name}.pdf"`
+                'Content-Disposition': `attachment; filename="${project.project_name}.pdf"`
             }
         });
     } catch (error) {
