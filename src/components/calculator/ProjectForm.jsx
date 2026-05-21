@@ -3,7 +3,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+// City must start with a letter; thereafter allow letters, spaces, hyphens, apostrophes, periods.
+// Handles real names like Winston-Salem, Coeur d'Alene, St. Louis.
+const CITY_PATTERN = /^[A-Za-z][A-Za-z\s\-'.]*$/;
+
+export function isValidCity(value) {
+  if (!value) return true; // empty is allowed (optional field)
+  return CITY_PATTERN.test(value.trim());
+}
+
 export default function ProjectForm({ project, onChange }) {
+  const cityError = project.city && !isValidCity(project.city);
   return (
     <div className="space-y-4">
       {project.quote_number && project.status === 'approved' && (
@@ -59,7 +69,15 @@ export default function ProjectForm({ project, onChange }) {
             id="city"
             value={project.city || ''}
             onChange={(e) => onChange({ ...project, city: e.target.value })}
+            aria-invalid={cityError || undefined}
+            aria-describedby={cityError ? 'city-error' : undefined}
+            className={cityError ? 'border-destructive focus-visible:ring-destructive' : ''}
           />
+          {cityError && (
+            <p id="city-error" className="text-xs text-destructive">
+              City names must start with a letter (letters, spaces, hyphens, apostrophes, periods only).
+            </p>
+          )}
         </div>
         <div className="col-span-4 space-y-2">
           <Label htmlFor="state">State</Label>

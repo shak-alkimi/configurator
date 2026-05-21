@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster"
+import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
@@ -6,6 +7,10 @@ import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import Settings from './pages/Settings';
+import Dashboard from './pages/Dashboard';
+import Estimates from './pages/Estimates';
+import Orders from './pages/Orders';
+import Reps from './pages/Reps';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -60,6 +65,10 @@ const AuthenticatedApp = () => {
         />
       ))}
       <Route path="/settings" element={<LayoutWrapper currentPageName="Settings"><Settings /></LayoutWrapper>} />
+      <Route path="/dashboard" element={<LayoutWrapper currentPageName="Dashboard"><Dashboard /></LayoutWrapper>} />
+      <Route path="/estimates" element={<LayoutWrapper currentPageName="Estimates"><Estimates /></LayoutWrapper>} />
+      <Route path="/orders" element={<LayoutWrapper currentPageName="Orders"><Orders /></LayoutWrapper>} />
+      <Route path="/reps" element={<LayoutWrapper currentPageName="Reps"><Reps /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -76,6 +85,7 @@ function App() {
           <AuthenticatedApp />
         </Router>
         <Toaster />
+        <SonnerToaster position="bottom-right" richColors closeButton />
       </QueryClientProvider>
     </AuthProvider>
   )

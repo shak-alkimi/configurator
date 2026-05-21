@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Save, Trash2, Send, Download } from "lucide-react";
+import { Save, Trash2, Send, Download, ArrowLeft } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -32,7 +32,7 @@ import {
 
 
 import ProjectsList from "../components/calculator/ProjectsList";
-import ProjectForm from "../components/calculator/ProjectForm";
+import ProjectForm, { isValidCity } from "../components/calculator/ProjectForm";
 import TapeRunList from "../components/calculator/TapeRunList";
 import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
 
@@ -54,6 +54,7 @@ const EMPTY_PROJECT_DATA = Object.freeze({
 
 export default function Calculator() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const selectedProjectId = searchParams.get('project') || null;
   const setSelectedProjectId = (id) => {
     const next = new URLSearchParams(searchParams);
@@ -325,6 +326,10 @@ export default function Calculator() {
       toast.error('Project name is required');
       return;
     }
+    if (!isValidCity(projectData.city)) {
+      toast.error('City must start with a letter (letters, spaces, hyphens, apostrophes, periods only)');
+      return;
+    }
     await saveProjectMutation.mutateAsync(projectData);
   };
 
@@ -400,6 +405,10 @@ export default function Calculator() {
   };
 
   const handleSubmitProject = async () => {
+    if (!isValidCity(projectData.city)) {
+      toast.error('City must start with a letter (letters, spaces, hyphens, apostrophes, periods only)');
+      return;
+    }
     const emptyDrivers = (projectData.drivers || []).filter(d => !tapeRuns.some(r => r.driver_group === d.name));
     if (emptyDrivers.length > 0) {
       setEmptyDriversPrompt(emptyDrivers);
@@ -558,6 +567,14 @@ export default function Calculator() {
                   <>
                     {!isNewProject && (
                      <>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="outline" size="icon" onClick={() => navigate('/estimates')} aria-label="Return to dashboard" data-testid="project-back">
+                              <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Dashboard</TooltipContent>
+                        </Tooltip>
                         <DropdownMenu open={exportDropdownOpen} onOpenChange={setExportDropdownOpen}>
                           <Tooltip open={exportDropdownOpen || hideExportTooltip ? false : undefined}>
                             <TooltipTrigger asChild>

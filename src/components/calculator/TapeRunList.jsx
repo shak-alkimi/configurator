@@ -183,7 +183,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
           <h3 className="text-xs uppercase tracking-wider text-foreground/50">Drivers</h3>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-9 w-9 rounded" aria-label="Add driver" data-testid="driver-add">
+              <Button size="icon" className="h-9 w-9 rounded bg-foreground text-background hover:bg-foreground/90" aria-label="Add driver" data-testid="driver-add">
                 <Plus className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -214,7 +214,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
             onClick={handleAdd}
             size="icon"
             variant={isFormValid() ? 'default' : 'outline'}
-            className="h-9 w-9 rounded"
+            className={`h-9 w-9 rounded ${isFormValid() ? 'bg-foreground text-background hover:bg-foreground/90' : ''}`}
             disabled={!isFormValid()}
             aria-label="Add tape run"
             data-testid="tape-run-add"
@@ -323,7 +323,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
 
       {/* Existing Runs — grouped by driver */}
       {localRuns.length > 0 && (
-      <section data-section="runs" className="space-y-2 mt-10">
+      <section data-section="runs" className="space-y-0 mt-10">
         <h3 className="text-xs uppercase tracking-wider text-foreground/50">Runs</h3>
         {(() => {
         const groups = [];
@@ -339,7 +339,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
           <div className="space-y-6">
             {groups.map((group) => (
               <div key={group.key} data-testid="tape-run-group" data-group={group.key}>
-                <div className="text-xs font-medium mb-2 px-1 text-right">{group.label}</div>
+                <div className="text-xs font-medium mb-1 px-1 text-right">{group.label}</div>
                 <Droppable droppableId={group.key}>
                   {(provided) => (
                     <div

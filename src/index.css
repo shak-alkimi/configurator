@@ -127,6 +127,11 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+@keyframes portal-shell-divider {
+  from { transform: scaleX(0); opacity: 0; }
+  to   { transform: scaleX(1); opacity: 1; }
+}
+
 /* Used to neutralize an inert/locked container (no chroma bleed-through on warm-undertone brand colors). */
 .locked-monochrome {
   --foreground: 0 0% 30%;
