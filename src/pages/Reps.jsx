@@ -122,7 +122,7 @@ export default function Reps() {
                 <th className="text-right font-medium px-4 py-3">Approved</th>
                 <th className="text-right font-medium px-4 py-3">Shipped</th>
                 <th className="text-right font-medium px-4 py-3">Last activity</th>
-                <th className="w-24 px-4 py-3"></th>
+                <th className="w-12 px-4 py-3"></th>
               </tr>
             </thead>
             <tbody>
@@ -174,11 +174,11 @@ export default function Reps() {
                     <td className="px-4 py-3">
                       <button
                         onClick={() => viewAs(r.email)}
-                        className="inline-flex items-center gap-1 h-7 px-2 rounded-[3px] border border-border text-xs text-foreground/70 hover:text-foreground hover:bg-foreground/5 transition-colors"
+                        aria-label={`View as ${r.email}`}
+                        className="inline-flex items-center justify-center h-7 w-7 rounded-[3px] border border-border text-foreground/70 hover:text-foreground hover:bg-foreground/5 transition-colors"
                         title={`View as ${r.email}`}
                       >
-                        <Eye className="h-3 w-3" aria-hidden="true" />
-                        View as
+                        <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
                     </td>
                   </tr>

@@ -1,6 +1,12 @@
+import { useState } from "react";
 import { NavLink, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
+import { base44 } from "@/api/base44Client";
 import { Eye, X } from "lucide-react";
+
+// Injected at build time by vite.config.js (define: __APP_VERSION__)
+// eslint-disable-next-line no-undef
+const FRONTEND_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : { sha: 'dev', ts: '' };
 
 const NAV_ITEMS_ALL = [
   { to: "/dashboard", label: "Dashboard", roles: ["admin", "rep"] },
@@ -154,6 +160,44 @@ export default function PortalShell({ children, showDivider = false }) {
       <main role="main" className="flex-1 flex flex-col min-h-0">
         {children}
       </main>
+      <VersionFooter />
     </div>
+  );
+}
+
+function VersionFooter() {
+  const [backend, setBackend] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  const check = async () => {
+    setBusy(true);
+    try {
+      const res = await base44.functions.invoke("getVersion", {});
+      setBackend(res?.data || res);
+    } catch (e) {
+      setBackend({ error: e?.message || "Failed" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const matches = backend && !backend.error && backend.sha === FRONTEND_VERSION.sha;
+
+  return (
+    <footer className="px-[15px] py-2 flex items-center justify-end gap-3 text-[10px] text-foreground/40 tabular-nums">
+      <span>frontend {FRONTEND_VERSION.sha}</span>
+      {backend && (
+        <span className={backend.error ? "text-red-600/60" : matches ? "text-foreground/40" : "text-amber-600"}>
+          {backend.error ? `backend error: ${backend.error}` : `backend ${backend.sha}${matches ? " ✓" : " ✗"}`}
+        </span>
+      )}
+      <button
+        onClick={check}
+        disabled={busy}
+        className="text-foreground/40 hover:text-foreground/70 underline underline-offset-2 disabled:opacity-50"
+      >
+        {busy ? "checking…" : backend ? "recheck" : "check backend"}
+      </button>
+    </footer>
   );
 }
