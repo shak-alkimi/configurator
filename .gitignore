@@ -28,3 +28,5 @@ dist-ssr
 *.sw?
 
 .env
+# Local Claude Code agent state
+.claude/
