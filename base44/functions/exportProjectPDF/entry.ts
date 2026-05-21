@@ -38,7 +38,30 @@ Deno.serve(async (req) => {
         // flat objects depending on the API path used. Normalize once so all
         // subsequent reads work regardless of shape.
         const projectRaw = projects[0];
-        const project = projectRaw.data || projectRaw;
+        if (!projectRaw || typeof projectRaw !== 'object') {
+            return Response.json({
+                error: 'projects[0] is not an object',
+                debug: {
+                    projectsLength: projects.length,
+                    projectRawType: typeof projectRaw,
+                    projectRawValue: projectRaw === null ? 'null' : String(projectRaw),
+                },
+            }, { status: 500 });
+        }
+        const project = projectRaw.data && typeof projectRaw.data === 'object'
+            ? projectRaw.data
+            : projectRaw;
+        if (!project || typeof project !== 'object') {
+            return Response.json({
+                error: 'unwrapped project is not an object',
+                debug: {
+                    projectRawKeys: Object.keys(projectRaw),
+                    hasDataKey: 'data' in projectRaw,
+                    dataType: typeof projectRaw.data,
+                    projectType: typeof project,
+                },
+            }, { status: 500 });
+        }
         const tapeRuns = await base44.asServiceRole.entities.TapeRun.filter({ project_id }, undefined, undefined, undefined, data_env);
 
         const doc = new jsPDF();
