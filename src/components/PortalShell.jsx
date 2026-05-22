@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
+import { DEPLOY_MARKER } from "@/lib/deploy-marker";
 import { ChevronDown, Eye, LogOut, Settings as SettingsIcon, X } from "lucide-react";
 import {
   DropdownMenu,
@@ -10,10 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-// Injected at build time by vite.config.js (define: __APP_VERSION__)
-// eslint-disable-next-line no-undef
-const FRONTEND_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : { sha: 'dev', ts: '' };
 
 const NAV_ITEMS_ALL = [
   { to: "/dashboard", label: "Dashboard", roles: ["admin", "rep"] },
@@ -209,11 +206,11 @@ function VersionFooter() {
     }
   };
 
-  const matches = backend && !backend.error && backend.sha === FRONTEND_VERSION.sha;
+  const matches = backend && !backend.error && backend.sha === DEPLOY_MARKER;
 
   return (
     <footer className="px-[15px] py-2 flex items-center justify-end gap-3 text-[10px] text-foreground/40 tabular-nums">
-      <span>frontend {FRONTEND_VERSION.sha}</span>
+      <span>frontend {DEPLOY_MARKER}</span>
       {backend && (
         <span className={backend.error ? "text-red-600/60" : matches ? "text-foreground/40" : "text-amber-600"}>
           {backend.error ? `backend error: ${backend.error}` : `backend ${backend.sha}${matches ? " ✓" : " ✗"}`}
