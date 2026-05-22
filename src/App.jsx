@@ -41,10 +41,13 @@ const AuthenticatedApp = () => {
   if (authError && !isLoginRoute) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      const from = encodeURIComponent(window.location.pathname + window.location.search);
-      return <Navigate to={`/signin?from=${from}`} replace />;
     }
+    // Catch-all for any auth-related error (auth_required, unknown, or a
+    // generic 403 like "You must be logged in"). Bouncing to /signin is the
+    // right default — if the rep is genuinely signed in, signin re-checks
+    // and forwards to the original path.
+    const from = encodeURIComponent(window.location.pathname + window.location.search);
+    return <Navigate to={`/signin?from=${from}`} replace />;
   }
 
   // Render the main app
