@@ -9,6 +9,9 @@ export const base44 = createClient({
   token,
   functionsVersion,
   serverUrl: '',
-  requiresAuth: true,
+  // We render our own /login page now (src/pages/Login.jsx), so the SDK
+  // should NOT auto-redirect to Base44's hosted login on 401. AuthContext
+  // catches the auth_required error and App.jsx routes to /login itself.
+  requiresAuth: false,
   appBaseUrl
 });

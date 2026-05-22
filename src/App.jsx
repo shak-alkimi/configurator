@@ -12,6 +12,7 @@ import Estimates from './pages/Estimates';
 import Orders from './pages/Orders';
 import Reps from './pages/Reps';
 import Calculator from './pages/Calculator';
+import Login from './pages/Login';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -24,7 +25,8 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   : <>{children}</>;
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
+  const isLoginRoute = typeof window !== 'undefined' && window.location.pathname === '/login';
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -35,20 +37,20 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Handle authentication errors
-  if (authError) {
+  // Handle authentication errors — but let /login render so reps can sign in.
+  if (authError && !isLoginRoute) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
+      const from = encodeURIComponent(window.location.pathname + window.location.search);
+      return <Navigate to={`/login?from=${from}`} replace />;
     }
   }
 
   // Render the main app
   return (
     <Routes>
+      <Route path="/login" element={<Login />} />
       {/* Portal opens on the Dashboard for both admins and reps. The Configurator
           has its own /configurator path. The auto-registered routes below remain
           so existing deep-links keep working. */}
