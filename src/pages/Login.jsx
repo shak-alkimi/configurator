@@ -57,6 +57,14 @@ export default function Login() {
     }
   };
 
+  const handleMicrosoft = () => {
+    try {
+      base44.auth.loginWithProvider("microsoft", returnTo);
+    } catch (err) {
+      toast.error(err?.message || "Microsoft sign-in unavailable");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-secondary flex flex-col items-center justify-center px-[15px] py-12">
       <div className="w-full max-w-[400px]">
@@ -65,23 +73,28 @@ export default function Login() {
         </div>
 
         <div className="bg-white rounded-[10px] border border-border p-8">
-          <h1 className="text-[22px] font-semibold leading-none text-center text-foreground">
-            Sign in
-          </h1>
-          <p className="text-sm text-foreground/60 text-center mt-2">
-            Welcome back to the rep portal
-          </p>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleGoogle}
-            className="w-full h-10 mt-8 gap-2 font-medium"
-            data-testid="login-google"
-          >
-            <GoogleIcon className="h-4 w-4" />
-            Continue with Google
-          </Button>
+          <div className="space-y-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGoogle}
+              className="w-full h-10 gap-2 font-medium"
+              data-testid="login-google"
+            >
+              <GoogleIcon className="h-4 w-4" />
+              Continue with Google
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleMicrosoft}
+              className="w-full h-10 gap-2 font-medium"
+              data-testid="login-microsoft"
+            >
+              <MicrosoftIcon className="h-4 w-4" />
+              Continue with Outlook
+            </Button>
+          </div>
 
           <div className="flex items-center gap-3 my-6">
             <div className="flex-1 h-px bg-border" />
@@ -136,6 +149,17 @@ export default function Login() {
         </p>
       </div>
     </div>
+  );
+}
+
+function MicrosoftIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="2" y="2" width="9" height="9" fill="#F25022" />
+      <rect x="13" y="2" width="9" height="9" fill="#7FBA00" />
+      <rect x="2" y="13" width="9" height="9" fill="#00A4EF" />
+      <rect x="13" y="13" width="9" height="9" fill="#FFB900" />
+    </svg>
   );
 }
 
