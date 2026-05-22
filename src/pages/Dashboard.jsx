@@ -156,7 +156,7 @@ export default function Dashboard() {
               type="button"
               onClick={() => !soon && navigate(href)}
               disabled={soon}
-              className={`group relative bg-secondary overflow-hidden rounded-[10px] flex flex-col text-left h-full p-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+              className={`group relative bg-secondary overflow-hidden rounded-[10px] flex flex-col text-left h-full p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 soon ? 'cursor-not-allowed' : 'cursor-pointer'
               }`}
               data-testid={`dashboard-card-${label.toLowerCase()}`}

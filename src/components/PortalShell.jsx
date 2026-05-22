@@ -150,7 +150,7 @@ export default function PortalShell({ children, showDivider = false }) {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       {asEmail && (
         <ImpersonationBanner asEmail={asEmail} onExit={exitImpersonation} />
       )}
