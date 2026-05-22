@@ -1,9 +1,21 @@
-import version from '../../shared/version.json' with { type: 'json' };
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-Deno.serve(() => {
+// SHA and timestamp are stamped here at deploy time.
+// Update these values whenever a new version is deployed.
+const VERSION_SHA = 'fddedb3';
+const VERSION_TS = new Date().toISOString();
+
+Deno.serve(async (req) => {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+
+    if (!user) {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     return Response.json({
-        sha: version.sha,
-        ts: version.ts,
+        sha: VERSION_SHA,
+        ts: VERSION_TS,
         runtime: 'deno',
     });
 });
