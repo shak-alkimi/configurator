@@ -15,19 +15,26 @@ export default function Reps() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviting, setInviting] = useState(false);
 
-  const { data: projects = [], isLoading } = useQuery({
+  const { data: users = [], isLoading: usersLoading } = useQuery({
+    queryKey: ["users"],
+    queryFn: () => base44.entities.User.list(),
+    enabled: isAdmin,
+  });
+
+  const { data: projects = [], isLoading: projectsLoading } = useQuery({
     queryKey: ["projects"],
     queryFn: () => base44.entities.Project.list("-updated_date"),
     enabled: isAdmin,
   });
 
+  const isLoading = usersLoading || projectsLoading;
+
   const reps = useMemo(() => {
-    const map = new Map();
+    const stats = new Map();
     for (const p of projects) {
       const email = p.created_by;
       if (!email) continue;
-      const e = map.get(email) || {
-        email,
+      const e = stats.get(email) || {
         count: 0,
         lastActivity: 0,
         statuses: { draft: 0, submitted: 0, approved: 0, shipped: 0 },
@@ -36,10 +43,26 @@ export default function Reps() {
       if (e.statuses[p.status] != null) e.statuses[p.status]++;
       const t = p.updated_date ? new Date(p.updated_date).getTime() : 0;
       if (t > e.lastActivity) e.lastActivity = t;
-      map.set(email, e);
+      stats.set(email, e);
     }
-    return [...map.values()].sort((a, b) => b.lastActivity - a.lastActivity);
-  }, [projects]);
+    return users
+      .filter((u) => u.role !== "admin")
+      .map((u) => {
+        const s = stats.get(u.email) || {
+          count: 0,
+          lastActivity: 0,
+          statuses: { draft: 0, submitted: 0, approved: 0, shipped: 0 },
+        };
+        return {
+          email: u.email,
+          fullName: u.full_name || "",
+          count: s.count,
+          lastActivity: s.lastActivity,
+          statuses: s.statuses,
+        };
+      })
+      .sort((a, b) => b.lastActivity - a.lastActivity);
+  }, [users, projects]);
 
   const handleInvite = async () => {
     const email = inviteEmail.trim().toLowerCase();
@@ -148,9 +171,16 @@ export default function Reps() {
                     <td className="px-4 py-3">
                       <button
                         onClick={() => filterTo(r.email)}
-                        className="font-medium text-foreground hover:underline truncate text-left"
+                        className="text-left max-w-full truncate"
                       >
-                        {r.email}
+                        <div className="font-medium text-foreground hover:underline truncate">
+                          {r.fullName || r.email}
+                        </div>
+                        {r.fullName && (
+                          <div className="text-xs text-foreground/40 truncate">
+                            {r.email}
+                          </div>
+                        )}
                       </button>
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums">{r.count}</td>
@@ -169,7 +199,7 @@ export default function Reps() {
                     <td className="px-4 py-3 text-right text-xs text-foreground/50 tabular-nums">
                       {r.lastActivity
                         ? format(new Date(r.lastActivity), "MMM d, yyyy")
-                        : "—"}
+                        : <span className="text-foreground/30">No activity</span>}
                     </td>
                     <td className="px-4 py-3">
                       <button
@@ -205,11 +235,13 @@ function InviteRow({ email, onEmailChange, onSubmit, onCancel, busy }) {
       <input
         type="email"
         autoFocus
+        autoComplete="off"
+        name="invite-email"
         value={email}
         onChange={(e) => onEmailChange(e.target.value)}
         placeholder="rep@example.com"
         aria-label="Rep email"
-        className="flex-1 h-8 bg-transparent text-sm focus:outline-none placeholder:text-foreground/30"
+        className="no-autofill-bg flex-1 h-8 bg-transparent text-sm focus:outline-none placeholder:text-foreground/30"
       />
       <button
         type="submit"

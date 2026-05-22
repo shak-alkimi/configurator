@@ -132,6 +132,20 @@ input[type="number"] {
   to   { transform: scaleX(1); opacity: 1; }
 }
 
+/* Chrome ignores autocomplete="off" on email-like inputs and paints a
+   yellow/pink autofill background. Inputs marked .no-autofill-bg get a
+   transparent override via a giant inset box-shadow (the canonical fix). */
+.no-autofill-bg:-webkit-autofill,
+.no-autofill-bg:-webkit-autofill:hover,
+.no-autofill-bg:-webkit-autofill:focus,
+.no-autofill-bg:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  transition: background-color 9999s ease-in-out 0s;
+  caret-color: hsl(var(--foreground));
+}
+
 /* Used to neutralize an inert/locked container (no chroma bleed-through on warm-undertone brand colors). */
 .locked-monochrome {
   --foreground: 0 0% 30%;

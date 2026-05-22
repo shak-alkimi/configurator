@@ -73,24 +73,18 @@ export function useProjectsTable({ baseFilter, statuses }) {
     [projects, baseFilter]
   );
 
-  const counts = useMemo(() => {
-    const c = { all: pageProjects.length };
-    for (const s of statuses) c[s] = 0;
-    for (const p of pageProjects) {
-      if (c[p.status] != null) c[p.status]++;
-    }
-    return c;
-  }, [pageProjects, statuses]);
-
   // Admins may also scope visible rows to a single rep (via the rep filter
   // pill) or "view as" a rep (impersonation banner). Both narrow the set the
   // same way client-side; the banner just adds a UI affordance.
   const scopedToEmail = impersonateAs || (repFilter !== "all" ? repFilter : null);
 
-  const rows = useMemo(() => {
+  // Counts power the status pills. They must respect rep/impersonation scope
+  // and search (so "All N" matches the table the user is actually looking at),
+  // but ignore the active status itself — otherwise selecting one pill would
+  // zero out the others.
+  const scopedProjects = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const filtered = pageProjects.filter((p) => {
-      if (activeStatus !== "all" && p.status !== activeStatus) return false;
+    return pageProjects.filter((p) => {
       if (scopedToEmail && p.created_by !== scopedToEmail) return false;
       if (q) {
         const hay = `${p.project_name || ""} ${p.customer_name || ""} ${p.quote_number || ""}`.toLowerCase();
@@ -98,8 +92,23 @@ export function useProjectsTable({ baseFilter, statuses }) {
       }
       return true;
     });
+  }, [pageProjects, scopedToEmail, search]);
+
+  const counts = useMemo(() => {
+    const c = { all: scopedProjects.length };
+    for (const s of statuses) c[s] = 0;
+    for (const p of scopedProjects) {
+      if (c[p.status] != null) c[p.status]++;
+    }
+    return c;
+  }, [scopedProjects, statuses]);
+
+  const rows = useMemo(() => {
+    const filtered = activeStatus === "all"
+      ? scopedProjects
+      : scopedProjects.filter((p) => p.status === activeStatus);
     return sortRows(filtered, sortKey, sortDir);
-  }, [pageProjects, activeStatus, search, scopedToEmail, sortKey, sortDir]);
+  }, [scopedProjects, activeStatus, sortKey, sortDir]);
 
   // Distinct rep list (derived from project creators). Used to populate the
   // admin rep filter dropdown and the Reps page.

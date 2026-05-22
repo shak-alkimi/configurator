@@ -110,15 +110,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Where signed-out users land. Today: the Framer marketing site's portal
+  // entry page. When the domain flips, swap this to www.alkimiworks.com/dashboard.
+  const POST_LOGOUT_URL = 'https://alkimi.framer.website/dashboard';
+
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
-    
+
     if (shouldRedirect) {
-      // Use the SDK's logout method which handles token cleanup and redirect
-      base44.auth.logout(window.location.href);
+      base44.auth.logout(POST_LOGOUT_URL);
     } else {
-      // Just remove the token without redirect
       base44.auth.logout();
     }
   };

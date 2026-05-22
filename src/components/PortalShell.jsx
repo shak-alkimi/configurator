@@ -1,8 +1,15 @@
 import { useState } from "react";
-import { NavLink, useSearchParams } from "react-router-dom";
+import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
-import { Eye, X } from "lucide-react";
+import { ChevronDown, Eye, LogOut, Settings as SettingsIcon, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Injected at build time by vite.config.js (define: __APP_VERSION__)
 // eslint-disable-next-line no-undef
@@ -49,26 +56,42 @@ function NavItem({ to, label, soon }) {
   );
 }
 
-function AccountPill({ user, isAdmin }) {
+function AccountPill({ user, isAdmin, onSignOut, onSettings }) {
   const label = user?.full_name || user?.email || "Account";
   return (
-    <NavLink
-      to="/settings"
-      className="inline-flex items-center gap-2 rounded-[3px] bg-foreground text-background text-sm font-medium leading-none hover:bg-foreground/90 transition-colors"
-      style={{ padding: '11px 14px 11px 18px' }}
-    >
-      <span className="max-w-[160px] truncate">{label}</span>
-      <span
-        className={`inline-flex items-center px-1.5 h-4 rounded-[2px] text-[9px] font-semibold tracking-wider uppercase ${
-          isAdmin
-            ? "bg-background/15 text-background"
-            : "bg-background/10 text-background/80"
-        }`}
-        aria-label={`Role: ${isAdmin ? 'Admin' : 'Rep'}`}
-      >
-        {isAdmin ? "Admin" : "Rep"}
-      </span>
-    </NavLink>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 rounded-[3px] bg-foreground text-background text-sm font-medium leading-none hover:bg-foreground/90 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          style={{ padding: '11px 12px 11px 18px' }}
+        >
+          <span className="max-w-[160px] truncate">{label}</span>
+          <span
+            className={`inline-flex items-center px-1.5 h-4 rounded-[2px] text-[9px] font-semibold tracking-wider uppercase ${
+              isAdmin
+                ? "bg-background/15 text-background"
+                : "bg-background/10 text-background/80"
+            }`}
+            aria-label={`Role: ${isAdmin ? 'Admin' : 'Rep'}`}
+          >
+            {isAdmin ? "Admin" : "Rep"}
+          </span>
+          <ChevronDown className="h-3 w-3 opacity-70" aria-hidden="true" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" sideOffset={6} className="min-w-[180px]">
+        <DropdownMenuItem onSelect={onSettings} className="cursor-pointer">
+          <SettingsIcon className="h-3.5 w-3.5 mr-2 opacity-70" aria-hidden="true" />
+          Settings
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={onSignOut} className="cursor-pointer">
+          <LogOut className="h-3.5 w-3.5 mr-2 opacity-70" aria-hidden="true" />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -94,7 +117,8 @@ function ImpersonationBanner({ asEmail, onExit }) {
 }
 
 export default function PortalShell({ children, showDivider = false }) {
-  const { user, isAdmin, isRep } = useAuth();
+  const { user, isAdmin, isRep, logout } = useAuth();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const asEmail = isAdmin ? searchParams.get("as") : null;
 
@@ -152,7 +176,12 @@ export default function PortalShell({ children, showDivider = false }) {
           </NavLink>
 
           <div className="flex items-center gap-3">
-            <AccountPill user={user} isAdmin={isAdmin} />
+            <AccountPill
+              user={user}
+              isAdmin={isAdmin}
+              onSettings={() => navigate("/settings")}
+              onSignOut={() => logout()}
+            />
           </div>
         </div>
       </header>
