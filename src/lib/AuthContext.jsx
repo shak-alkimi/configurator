@@ -110,24 +110,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Where signed-out users land. Today: the Framer marketing site's portal
-  // entry page. When the domain flips, swap this to www.alkimiworks.com/dashboard.
-  const POST_LOGOUT_URL = 'https://alkimi.framer.website/dashboard';
+  // Where signed-out users land. Our own /signin page — same domain, no risk
+  // of the SDK silently dropping an external-domain redirect, and no chance
+  // of Base44's session cookies re-authenticating on bounce-back to the
+  // portal root.
+  const POST_LOGOUT_URL = '/signin';
 
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
 
-    if (shouldRedirect) {
-      base44.auth.logout(POST_LOGOUT_URL);
-    } else {
+    // Clear the token via the SDK, then navigate ourselves — relying on the
+    // SDK's optional returnUrl argument was inconsistent across domains.
+    try {
       base44.auth.logout();
+    } catch {
+      // Token may already be missing; ignore.
+    }
+    if (shouldRedirect) {
+      window.location.href = POST_LOGOUT_URL;
     }
   };
 
   const navigateToLogin = () => {
-    // Use the SDK's redirectToLogin method
-    base44.auth.redirectToLogin(window.location.href);
+    // We render our own /signin now; sidestep base44.auth.redirectToLogin
+    // (which would push to Base44's hosted login on base44.app).
+    window.location.href = '/signin';
   };
 
   const isAdmin = user?.role === 'admin';
