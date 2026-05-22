@@ -125,7 +125,7 @@ export default function Estimates() {
         eyebrow="Estimate"
         onClose={() => t.selectProject(null)}
         onOpenConfigurator={() =>
-          t.selectedProject && navigate(`/?project=${t.selectedProject.id}`)
+          t.selectedProject && navigate(`/configurator?project=${t.selectedProject.id}`)
         }
       />
     </PortalShell>
