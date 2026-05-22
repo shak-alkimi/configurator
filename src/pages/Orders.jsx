@@ -112,11 +112,6 @@ export default function Orders() {
           showOwner={t.isAdmin && !t.impersonateAs}
         />
 
-        {t.rows.length === 0 && !t.isLoading && (
-          <div className="py-16 text-center text-sm text-foreground/50">
-            No orders match the current filter.
-          </div>
-        )}
       </div>
 
       <ProjectDetailDrawer

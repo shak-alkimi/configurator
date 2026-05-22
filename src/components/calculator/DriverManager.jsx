@@ -34,7 +34,7 @@ function DriverRow({ driver, runs, onUpdate, onRemove }) {
   const runCount = (runs || []).filter(r => r.driver_group === driver.name).length;
 
   return (
-    <div className="bg-background rounded-lg border border-border px-3 py-2 flex items-center gap-3" data-testid="driver-row" data-driver-name={driver.name}>
+    <div className="bg-background rounded-[10px] border border-border px-3 py-2 flex items-center gap-3" data-testid="driver-row" data-driver-name={driver.name}>
       <div className="flex items-center gap-1.5 shrink-0">
         <span className="text-xs font-medium">{driver.name}</span>
         <span className="inline-flex items-center justify-center h-5 px-1.5 text-xs font-semibold bg-secondary text-foreground/70 rounded-full">
@@ -42,7 +42,7 @@ function DriverRow({ driver, runs, onUpdate, onRemove }) {
         </span>
       </div>
       <Select value={String(driver.maxWatts)} onValueChange={v => onUpdate(driver.id, 'maxWatts', parseFloat(v))}>
-        <SelectTrigger className="h-7 w-20 text-xs shrink-0">
+        <SelectTrigger className="h-9 w-20 text-sm shrink-0">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -56,7 +56,7 @@ function DriverRow({ driver, runs, onUpdate, onRemove }) {
       <span className="text-xs text-foreground/60 shrink-0 w-20 text-right whitespace-nowrap">
         {usedWatts.toFixed(1)}W / {driver.maxWatts}W
       </span>
-      <Button variant="ghost" size="icon" className="h-7 w-7 text-foreground/40 hover:text-destructive shrink-0" aria-label={`Remove ${driver.name}`} data-testid="driver-remove" onClick={() => onRemove(driver.id)}>
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-foreground/40 hover:text-destructive shrink-0" aria-label={`Remove ${driver.name}`} data-testid="driver-remove" onClick={() => onRemove(driver.id)}>
         <Trash2 className="h-3.5 w-3.5" />
       </Button>
     </div>

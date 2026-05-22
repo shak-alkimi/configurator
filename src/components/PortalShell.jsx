@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
+import { NavLink, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
 import { DEPLOY_MARKER } from "@/lib/deploy-marker";
@@ -24,7 +24,17 @@ const NAV_ITEMS_ALL = [
 ];
 
 function NavItem({ to, label, soon }) {
-  const base = "text-sm font-medium leading-none py-1 transition-colors";
+  const base = "relative text-sm font-medium leading-none py-1 transition-colors group";
+  // Framer-style traveling underline: enters from the left on hover, exits
+  // to the right on leave. No permanent underline for the active link — that
+  // matches the Framer site's behavior where active is communicated by text
+  // color only and the underline reads purely as a hover affordance.
+  const Underline = () => (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute left-0 right-0 -bottom-0.5 h-px bg-current transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] scale-x-0 origin-right group-hover:scale-x-100 group-hover:origin-left"
+    />
+  );
   if (soon) {
     return (
       <span
@@ -48,6 +58,7 @@ function NavItem({ to, label, soon }) {
       }
     >
       {label}
+      <Underline />
     </NavLink>
   );
 }
@@ -115,10 +126,16 @@ function ImpersonationBanner({ asEmail, onExit }) {
 export default function PortalShell({ children, showDivider = false }) {
   const { user, isAdmin, isRep, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const asEmail = isAdmin ? searchParams.get("as") : null;
 
+  // On the Dashboard the cards themselves are the navigation — collapse the
+  // top nav to just the Dashboard label so the user still has a "you are here"
+  // anchor. Everywhere else show the full nav.
+  const onDashboard = location.pathname === "/dashboard";
   const navItems = NAV_ITEMS_ALL.filter((item) => {
+    if (onDashboard) return item.to === "/dashboard";
     if (isAdmin) return item.roles.includes("admin");
     if (isRep) return item.roles.includes("rep");
     return false;

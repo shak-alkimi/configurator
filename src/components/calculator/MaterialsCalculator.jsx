@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { TAPE_SPECS, CHANNEL_SPECS, SPOOL_LENGTH_FEET, SHIPPING_RATE } from "@/components/calculator/constants";
 import { formatFeetInches, channelSectionsFor, clipsForSections, priceDrivers, titleCase } from "@/components/calculator/calculations";
 
-const MaterialsCalculator = React.memo(({ runs, drivers }) => {
+const MaterialsCalculator = React.memo(({ runs, drivers, emptyStateHeight }) => {
 
   const calculations = React.useMemo(() => {
     // Calculate tape totals by type and CCT
@@ -88,8 +88,11 @@ const MaterialsCalculator = React.memo(({ runs, drivers }) => {
 
   if (runs.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-12 text-center text-foreground/40">
+      <Card
+        className="rounded-[10px] border border-border shadow-none bg-white flex"
+        style={emptyStateHeight ? { height: emptyStateHeight } : undefined}
+      >
+        <CardContent className="flex-1 flex items-center justify-center text-center text-foreground/40">
           Add runs for breakdown
         </CardContent>
       </Card>
@@ -125,8 +128,8 @@ const MaterialsCalculator = React.memo(({ runs, drivers }) => {
   });
 
   return (
-    <div className="space-y-3">
-      <Card className="bg-secondary">
+    <div className="space-y-[15px]">
+      <Card className="bg-white rounded-[10px] border border-border shadow-none">
          <CardHeader>
            <CardTitle className="text-lg">Materials</CardTitle>
          </CardHeader>
@@ -215,7 +218,7 @@ const MaterialsCalculator = React.memo(({ runs, drivers }) => {
       </Card>
 
       {/* Pricing Summary */}
-      <Card className="border-foreground bg-foreground">
+      <Card className="bg-foreground rounded-[10px] border-0 shadow-none">
         <CardHeader>
           <CardTitle className="text-lg text-white">Summary</CardTitle>
         </CardHeader>
@@ -247,7 +250,7 @@ const MaterialsCalculator = React.memo(({ runs, drivers }) => {
       </Card>
 
       {/* Shipping */}
-      <Card style={{ backgroundColor: '#C0BBB3', borderColor: '#C0BBB3' }}>
+      <Card className="rounded-[10px] border-0 shadow-none" style={{ backgroundColor: '#C0BBB3' }}>
         <CardHeader>
           <CardTitle className="text-lg text-foreground">Shipping</CardTitle>
         </CardHeader>

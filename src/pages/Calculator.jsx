@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Save, Trash2, Send, Download, ArrowLeft } from "lucide-react";
+import { ChevronDown, Download, MoreHorizontal, Pencil, Save, Send, Trash2 } from "lucide-react";
 import PortalShell from "@/components/PortalShell";
+import { STATUS_STYLE, statusLabel } from "@/components/projectsTable/helpers";
 
 import {
   DropdownMenu,
@@ -13,12 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -35,6 +31,7 @@ import {
 import ProjectForm, { isValidCity } from "../components/calculator/ProjectForm";
 import TapeRunList from "../components/calculator/TapeRunList";
 import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
+import { calculateTotalPrice } from "../components/calculator/calculations";
 
 // Blank project form state. Used by the component's initial state and by
 // `handleNewProject` when resetting to the "new project" form.
@@ -54,15 +51,12 @@ const EMPTY_PROJECT_DATA = Object.freeze({
 
 export default function Calculator() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
   const selectedProjectId = searchParams.get('project') || null;
   const setSelectedProjectId = (id) => {
     const next = new URLSearchParams(searchParams);
     if (id) next.set('project', id); else next.delete('project');
     setSearchParams(next, { replace: true });
   };
-  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
-  const [hideExportTooltip, setHideExportTooltip] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [projectData, setProjectData] = useState({ ...EMPTY_PROJECT_DATA });
   const [isNewProject, setIsNewProject] = useState(false);
@@ -72,20 +66,32 @@ export default function Calculator() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [emptyDriversPrompt, setEmptyDriversPrompt] = useState(null);
   const detailsFormRef = useRef(null);
+  // Mirror the middle column's total content height (DetailsHeader +
+  // TapeRunList) onto the empty-state Materials card so the right rail's
+  // empty state matches whatever the middle column adds up to — works in
+  // both the expanded and collapsed details states. Uses a callback ref
+  // because the observed element only mounts after the project-context
+  // conditional opens up — a regular useRef + useEffect with [] deps would
+  // miss the mount.
+  const [middleColumnHeight, setMiddleColumnHeight] = useState(null);
+  const middleColumnObserverRef = useRef(null);
+  const middleColumnRef = React.useCallback((node) => {
+    if (middleColumnObserverRef.current) {
+      middleColumnObserverRef.current.disconnect();
+      middleColumnObserverRef.current = null;
+    }
+    if (!node || typeof ResizeObserver === 'undefined') return;
+    setMiddleColumnHeight(Math.round(node.getBoundingClientRect().height));
+    const ro = new ResizeObserver(([entry]) => {
+      if (entry) setMiddleColumnHeight(Math.round(entry.contentRect.height));
+    });
+    ro.observe(node);
+    middleColumnObserverRef.current = ro;
+  }, []);
 
-  useEffect(() => {
-    if (!editingDetails) return;
-    const handler = (e) => {
-      if (e.target.closest?.('[data-testid="project-edit-details"]')) return;
-      if (detailsFormRef.current && !detailsFormRef.current.contains(e.target)) {
-        const allFilled = ['project_name','sector','street','city','state','customer_name','customer_email','customer_phone']
-          .every(f => projectData[f]?.toString().trim());
-        if (allFilled) setEditingDetails(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [editingDetails, projectData]);
+  // Header collapse is now a deliberate action only — via the chevron in the
+  // strip or after a successful Save click. No outside-click auto-collapse
+  // that would interrupt mid-typing.
 
   const queryClient = useQueryClient();
 
@@ -117,12 +123,20 @@ export default function Calculator() {
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
-      // For new projects, attach the id so subsequent saves go to update path,
-      // but do NOT overwrite projectData — that would clobber in-flight user edits.
+      // For new projects, attach the id so subsequent saves go to update path.
+      // Patch projectData.id too — otherwise the `isHydrating` check stays true
+      // (id mismatch) and the header treats the rep as still loading.
       if (isNewProject) {
         setSelectedProjectId(result.id);
         setIsNewProject(false);
       }
+      setProjectData((prev) => (prev.id === result.id ? prev : { ...prev, id: result.id }));
+      // Only collapse the header when the rep actually has the details
+      // filled in. An auto-save triggered by adding a tape run (with empty
+      // customer info) shouldn't snap the header closed under them.
+      const fullyFilled = ['project_name','sector','street','city','state','customer_name','customer_email','customer_phone']
+        .every(f => result?.[f]?.toString().trim());
+      if (fullyFilled) setEditingDetails(false);
       setIsDirty(false);
       toast.success('Project saved');
     },
@@ -243,18 +257,30 @@ export default function Calculator() {
     },
   });
 
-  // Load selected project on id change only.
-  // Intentionally excluding `projects` from deps so a background refetch of the
-  // list doesn't clobber the form while the user is editing.
+  // Load selected project when either the id changes OR the projects list
+  // finally resolves on first mount. The `projectData.id !== selectedProjectId`
+  // guard ensures background refetches don't clobber in-progress edits — once
+  // a project is hydrated locally, subsequent projects-list refreshes are
+  // ignored for that same id.
   useEffect(() => {
-    if (selectedProjectId && !isNewProject) {
+    if (selectedProjectId && !isNewProject && projectData.id !== selectedProjectId) {
       const project = projects.find(p => p.id === selectedProjectId);
       if (project) {
         setProjectData(project);
         setIsDirty(false);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProjectId, isNewProject, projects, projectData.id]);
+
+  // No empty state on the Configurator: visits without a ?project param drop
+  // the rep straight into the new-project form. Dashboard's Configurator card
+  // is the visible entry point with the orb video.
+  useEffect(() => {
+    if (!selectedProjectId && !isNewProject) {
+      setIsNewProject(true);
+      setProjectData({ ...EMPTY_PROJECT_DATA });
+      setFormResetKey((prev) => prev + 1);
+    }
   }, [selectedProjectId, isNewProject]);
 
   const handleNewProject = async (initialName = '') => {
@@ -303,13 +329,18 @@ export default function Calculator() {
     try {
       const nextOrder = tapeRuns.length;
       if (!selectedProjectId && isNewProject) {
+        // Don't block prototyping if the rep hasn't named the project yet —
+        // auto-fill a placeholder so the run can save and produce a live cost.
+        // The rep can rename in the details strip whenever they're ready.
+        const ensuredData = projectData.project_name
+          ? projectData
+          : { ...projectData, project_name: 'Untitled draft' };
         if (!projectData.project_name) {
-          toast.error('Please give the project a name before adding runs');
-          return;
+          setProjectData(ensuredData);
         }
         // saveProjectMutation.onSuccess handles setSelectedProjectId + setIsNewProject —
         // do not duplicate those writes here, that's the race C5/C6 in the audit.
-        const result = await saveProjectMutation.mutateAsync(projectData);
+        const result = await saveProjectMutation.mutateAsync(ensuredData);
         await createTapeRunMutation.mutateAsync({
           ...runData,
           project_id: result.id,
@@ -324,6 +355,40 @@ export default function Calculator() {
       }
     } catch (error) {
       toast.error(error?.message || 'Failed to add tape run');
+    }
+  };
+
+  const handleDuplicateTapeRun = async (run) => {
+    if (!selectedProjectId) {
+      toast.error('Save the project before duplicating runs');
+      return;
+    }
+    setIsDirty(true);
+    const insertAfterOrder = run.order ?? 0;
+    // Bump every run with order > insertAfterOrder so the dup sits directly after.
+    const toBump = tapeRuns.filter(r => (r.order ?? 0) > insertAfterOrder);
+    try {
+      await Promise.all(
+        toBump.map(r => base44.entities.TapeRun.update(r.id, { order: (r.order ?? 0) + 1 }))
+      );
+      await createTapeRunMutation.mutateAsync({
+        run_name: run.run_name,
+        length_feet: run.length_feet,
+        tape_output: run.tape_output,
+        product_type: run.product_type,
+        location: run.location,
+        cct: run.cct,
+        channel_type: run.channel_type,
+        lens: run.lens,
+        finish: run.finish,
+        notes: run.notes,
+        driver_group: run.driver_group,
+        project_id: selectedProjectId,
+        order: insertAfterOrder + 1,
+      });
+      toast.success('Tape run duplicated');
+    } catch (error) {
+      toast.error(error?.message || 'Failed to duplicate run');
     }
   };
 
@@ -425,186 +490,95 @@ export default function Calculator() {
   const DETAIL_FIELDS = ['project_name','sector','street','city','state','customer_name','customer_email','customer_phone'];
   const detailsComplete = DETAIL_FIELDS.every(f => projectData[f]?.toString().trim());
   const hasAnyDetailData = DETAIL_FIELDS.some(f => projectData[f]?.toString().trim());
-  const savedProject = projectData.id ? projects.find(p => p.id === projectData.id) : null;
-  const detailsSaved = !!savedProject && DETAIL_FIELDS.every(f => savedProject[f]?.toString().trim());
+  // A project counts as saved the moment it has an id and we're not in
+  // new-project mode. (Used to depend on the projects-list refetch result,
+  // which introduced a race window where the header wouldn't collapse after
+  // the first save.)
+  const detailsSaved = !isNewProject && !!selectedProjectId;
   const showConfigurator = detailsComplete && detailsSaved;
   const saveActive = isDirty && hasAnyDetailData;
+  // Brief window between mount and the projects-list resolving: we know there's
+  // a project to load but haven't hydrated it yet. Treat the header as
+  // collapsed during this window to avoid a flash of the expanded form.
+  const isHydrating =
+    !!selectedProjectId && !isNewProject && projectData.id !== selectedProjectId;
+  // Sticky edit mode: when the details form auto-opens (because details are
+  // incomplete), commit editingDetails=true. Otherwise typing the last empty
+  // field flips showConfigurator → true → form collapses mid-keystroke.
+  useEffect(() => {
+    if (!isHydrating && !showConfigurator && !editingDetails) {
+      setEditingDetails(true);
+    }
+  }, [isHydrating, showConfigurator, editingDetails]);
+  // Live order total — updates as tape runs / drivers change. Shown in the
+  // DetailsHeader so reps see price change as they configure.
+  const orderTotal = useMemo(
+    () => calculateTotalPrice(tapeRuns, projectData.drivers || []),
+    [tapeRuns, projectData.drivers]
+  );
 
   return (
     <PortalShell>
     <TooltipProvider>
-      <div className="flex-1 flex gap-4 md:gap-6 px-[15px] pt-6 pb-8 min-h-0 overflow-hidden">
+      <div className="flex-1 flex gap-[15px] px-[15px] pt-[92px] pb-8 min-h-0 overflow-hidden">
       {/* Main Content + optional right rail */}
-      <div className="flex-1 overflow-y-auto flex gap-4 md:gap-6 min-w-0">
-        {/* Empty state — looping brand video + start CTA */}
-        {!(selectedProjectId || isNewProject) && (
-          <div className="flex-1 min-w-0 flex flex-col items-center justify-center overflow-hidden gap-6">
-            <video
-              src="/empty-state.mov"
-              autoPlay
-              loop
-              muted
-              playsInline
-              aria-hidden="true"
-              data-testid="empty-state-video"
-              className="max-h-[60%] max-w-[60%] object-contain mix-blend-multiply"
-              style={{ filter: 'contrast(1.25) brightness(1.08)' }}
-            />
-            <div className="flex flex-col items-center gap-3">
-              <Button
-                size="lg"
-                onClick={() => {
-                  setSelectedProjectId(null);
-                  setProjectData({ ...EMPTY_PROJECT_DATA });
-                  setFormResetKey((prev) => prev + 1);
-                  setIsNewProject(true);
-                }}
-                data-testid="empty-state-new"
-                className="gap-2"
-              >
-                <Plus className="h-4 w-4" aria-hidden="true" />
-                Start new project
-              </Button>
-              <button
-                type="button"
-                onClick={() => navigate('/estimates')}
-                className="text-xs text-foreground/50 hover:text-foreground underline underline-offset-2"
-              >
-                or browse estimates
-              </button>
-            </div>
-          </div>
-        )}
-        {/* Configurator — only renders when a project is selected or being created */}
+      <div className="flex-1 overflow-y-auto flex gap-[15px] min-w-0">
+        {/* Configurator — visits without a ?project param auto-enter new-project
+            mode (see the effect above), so this branch is effectively always
+            taken once auth + initial state settle. */}
         {(selectedProjectId || isNewProject) && (
         <div className="flex-1 min-w-0 overflow-y-auto">
-          <div className="space-y-3">
-            {/* Header Actions */}
-            <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <h2 className="text-2xl font-bold break-words text-foreground line-clamp-1">
-                  {isNewProject ? 'New Project' : projectData.project_name}
-                </h2>
-                <p className="text-sm text-foreground/60 mt-1 min-h-[1.25rem]">
-                  {isNewProject ? 'Configure a new tape light quote' : (projectData.customer_name && projectData.customer_name !== '—' ? projectData.customer_name : ' ')}
-                </p>
-              </div>
-              <div className="flex gap-2 flex-wrap flex-shrink-0">
-                {(!isNewProject || projectData.project_name || projectData.customer_name || projectData.customer_email || projectData.customer_phone || projectData.notes) && (
-                  <>
-                    {!isNewProject && (
-                     <>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={() => navigate('/estimates')} aria-label="Return to dashboard" data-testid="project-back">
-                              <ArrowLeft className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Dashboard</TooltipContent>
-                        </Tooltip>
-                        <DropdownMenu open={exportDropdownOpen} onOpenChange={setExportDropdownOpen}>
-                          <Tooltip open={exportDropdownOpen || hideExportTooltip ? false : undefined}>
-                            <TooltipTrigger asChild>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="icon" disabled={isExporting} aria-label="Export project" data-testid="project-export">
-                                  <Download className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                            </TooltipTrigger>
-                            <TooltipContent>Export</TooltipContent>
-                          </Tooltip>
-                          <DropdownMenuContent>
-                            <DropdownMenuItem data-testid="project-export-pdf" onClick={() => {
-                              handleExportPDF();
-                              setExportDropdownOpen(false);
-                              setHideExportTooltip(true);
-                              setTimeout(() => setHideExportTooltip(false), 500);
-                            }}>
-                              Export as PDF
-                            </DropdownMenuItem>
-                            <DropdownMenuItem data-testid="project-export-csv" onClick={() => {
-                              handleExportCSV();
-                              setExportDropdownOpen(false);
-                              setHideExportTooltip(true);
-                              setTimeout(() => setHideExportTooltip(false), 500);
-                            }}>
-                              Export as CSV
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={handleDeleteProject} aria-label="Delete project" data-testid="project-delete">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Delete</TooltipContent>
-                        </Tooltip>
-                     </>
-                    )}
-                    <Tooltip>
-                       <TooltipTrigger asChild>
-                         <Button variant="outline" size="icon" onClick={handleSubmitProject} aria-label="Submit project" data-testid="project-submit">
-                           <Send className="h-4 w-4" />
-                         </Button>
-                       </TooltipTrigger>
-                       <TooltipContent>Submit</TooltipContent>
-                     </Tooltip>
-                     <Tooltip>
-                       <TooltipTrigger asChild>
-                         <Button variant={saveActive ? 'default' : 'outline'} size="icon" onClick={handleSaveProject} aria-label="Save project" data-testid="project-save">
-                           <Save className="h-4 w-4" />
-                         </Button>
-                       </TooltipTrigger>
-                       <TooltipContent>Save</TooltipContent>
-                     </Tooltip>
-                  </>
-                )}
-              </div>
-            </div>
+          <div ref={middleColumnRef} className="space-y-[15px]">
+            {/* Collapsible details header — Option A from the polish plan. */}
+            <DetailsHeader
+              project={projectData}
+              isNewProject={isNewProject}
+              expanded={!isHydrating && (editingDetails || !showConfigurator)}
+              detailsFormRef={detailsFormRef}
+              onExpand={() => setEditingDetails(true)}
+              onCollapse={() => { if (showConfigurator) setEditingDetails(false); }}
+              onChange={(next) => { setProjectData(next); setIsDirty(true); }}
+              saveActive={saveActive}
+              isExporting={isExporting}
+              orderTotal={orderTotal}
+              onSave={handleSaveProject}
+              onSubmit={handleSubmitProject}
+              onDelete={handleDeleteProject}
+              onExportPDF={handleExportPDF}
+              onExportCSV={handleExportCSV}
+            />
 
-            {(editingDetails || !showConfigurator) && (
-              <Card ref={detailsFormRef}>
-                <CardContent className="p-6">
-                  <ProjectForm project={projectData} onChange={(next) => { setProjectData(next); setIsDirty(true); }} />
-                </CardContent>
-              </Card>
-            )}
-
-            {(selectedProjectId || isNewProject) && (
-              <Card
-                className={`relative ${editingDetails ? 'locked-monochrome pointer-events-none select-none' : ''}`}
-                aria-disabled={editingDetails || undefined}
-              >
-                {editingDetails && (
-                  <div className="absolute inset-0 z-10 rounded-xl bg-background/60" aria-hidden="true" />
-                )}
-                <CardContent className="p-6">
-                  <TapeRunList
-                   key={selectedProjectId || `new-${formResetKey}`}
-                   runs={tapeRuns}
-                   drivers={projectData.drivers || []}
-                   onDriversChange={handleDriversChange}
-                   onAdd={(data) => { setIsDirty(true); return handleAddTapeRun(data); }}
-                   onUpdate={(id, data, options = {}) => { setIsDirty(true); updateTapeRunMutation.mutate({ id, data, silent: options.silent }); }}
-                   onDelete={(id) => { setIsDirty(true); deleteTapeRunMutation.mutate(id); }}
-                   onReorder={(...args) => { setIsDirty(true); handleReorderRuns(...args); }}
-                  />
-                </CardContent>
-              </Card>
-            )}
+            <Card
+              className="relative rounded-[10px] border border-border shadow-none bg-white"
+            >
+              <CardContent className="p-0">
+                <TapeRunList
+                  key={selectedProjectId || `new-${formResetKey}`}
+                  runs={tapeRuns}
+                  drivers={projectData.drivers || []}
+                  onDriversChange={handleDriversChange}
+                  onAdd={(data) => { setIsDirty(true); return handleAddTapeRun(data); }}
+                  onDuplicate={handleDuplicateTapeRun}
+                  onUpdate={(id, data, options = {}) => { setIsDirty(true); updateTapeRunMutation.mutate({ id, data, silent: options.silent }); }}
+                  onDelete={(id) => { setIsDirty(true); deleteTapeRunMutation.mutate(id); }}
+                  onReorder={(...args) => { setIsDirty(true); handleReorderRuns(...args); }}
+                />
+              </CardContent>
+            </Card>
           </div>
         </div>
         )}
       </div>
-      {/* Right rail: Materials + Summary + Shipping. Visible whenever the rep
-          is in a project context and not editing details — including new
-          projects, so prototyping tape runs shows live material/cost feedback. */}
-      {(selectedProjectId || isNewProject) && !editingDetails && (
-        <div className="hidden md:flex flex-col w-60 lg:w-64 min-h-0 overflow-y-auto shrink-0">
-          <MaterialsCalculator runs={tapeRuns} drivers={projectData.drivers || []} />
-        </div>
-      )}
+      {/* Right rail: Materials + Summary + Shipping. Always rendered so the
+          middle column's width stays constant — the rail's empty state
+          ("Add runs for breakdown") sits there until the rep adds tape runs. */}
+      <div className="hidden md:flex flex-col w-72 lg:w-80 min-h-0 overflow-y-auto shrink-0">
+        <MaterialsCalculator
+          runs={tapeRuns}
+          drivers={projectData.drivers || []}
+          emptyStateHeight={middleColumnHeight}
+        />
+      </div>
       </div>
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>
@@ -657,5 +631,184 @@ export default function Calculator() {
       </AlertDialog>
     </TooltipProvider>
     </PortalShell>
+  );
+}
+
+/**
+ * Configurator's project-details header. Two visual modes:
+ *   - collapsed strip: one-line summary (name · customer · status) + actions
+ *   - expanded: full ProjectForm + same actions
+ * Tapping the strip expands; an explicit Close button collapses (only when
+ * showConfigurator is true — i.e., all required fields are saved).
+ */
+function DetailsHeader({
+  project,
+  isNewProject,
+  expanded,
+  detailsFormRef,
+  onExpand,
+  onCollapse,
+  onChange,
+  saveActive,
+  isExporting,
+  orderTotal,
+  onSave,
+  onSubmit,
+  onDelete,
+  onExportPDF,
+  onExportCSV,
+}) {
+  const customerLine =
+    project.customer_name && project.customer_name !== '—' ? project.customer_name : null;
+  const statusKey = project.status || 'draft';
+  const showActions =
+    !isNewProject ||
+    project.project_name ||
+    project.customer_name ||
+    project.customer_email ||
+    project.customer_phone ||
+    project.notes;
+
+  const formattedTotal =
+    typeof orderTotal === 'number' && orderTotal > 0
+      ? `$${orderTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      : null;
+
+  const summaryLine = (
+    <div className="min-w-0 flex-1 flex items-center gap-3">
+      <span className="font-semibold text-foreground truncate">
+        {isNewProject ? 'New project' : project.project_name || 'Untitled'}
+      </span>
+      {customerLine && (
+        <span className="text-sm text-foreground/60 truncate">{customerLine}</span>
+      )}
+      {formattedTotal && (
+        <span className="text-sm font-semibold text-foreground tabular-nums whitespace-nowrap" aria-label={`Order total ${formattedTotal}`}>
+          {formattedTotal}
+        </span>
+      )}
+    </div>
+  );
+
+  const statusPill = (
+    <span
+      className={`inline-flex items-center px-2 h-5 rounded-[3px] text-[10px] font-medium uppercase tracking-wider flex-shrink-0 ${
+        STATUS_STYLE[statusKey] || STATUS_STYLE.draft
+      }`}
+    >
+      {statusLabel(statusKey)}
+    </span>
+  );
+
+  return (
+    <Card className="overflow-hidden rounded-[10px] border border-border shadow-none bg-white">
+      <div className="flex items-center gap-3 px-6 py-3 min-h-9">
+        {expanded ? (
+          <>
+            {summaryLine}
+            {statusPill}
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={onExpand}
+            className="flex-1 min-w-0 flex items-center gap-3 text-left -mx-2 px-2 py-1 rounded-[3px] hover:bg-foreground/[0.03] transition-colors group"
+            data-testid="project-details-strip"
+            aria-label="Edit project details"
+          >
+            {summaryLine}
+            {statusPill}
+            <Pencil
+              className="h-3.5 w-3.5 text-foreground/40 group-hover:text-foreground/70 transition-colors flex-shrink-0"
+              aria-hidden="true"
+            />
+          </button>
+        )}
+
+        {showActions && (
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {!isNewProject && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="More actions"
+                    data-testid="project-more"
+                    className="h-9 w-9"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    disabled={isExporting}
+                    onClick={onExportPDF}
+                    data-testid="project-export-pdf"
+                  >
+                    <Download className="h-3.5 w-3.5 mr-2 opacity-70" aria-hidden="true" />
+                    Export as PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    disabled={isExporting}
+                    onClick={onExportCSV}
+                    data-testid="project-export-csv"
+                  >
+                    <Download className="h-3.5 w-3.5 mr-2 opacity-70" aria-hidden="true" />
+                    Export as CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={onDelete}
+                    className="text-destructive focus:text-destructive"
+                    data-testid="project-delete"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-2 opacity-70" aria-hidden="true" />
+                    Delete project
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onSubmit}
+              data-testid="project-submit"
+              className="h-9 gap-1.5"
+            >
+              <Send className="h-3.5 w-3.5" aria-hidden="true" />
+              Submit
+            </Button>
+            <Button
+              variant={saveActive ? 'default' : 'outline'}
+              size="sm"
+              onClick={onSave}
+              data-testid="project-save"
+              className="h-9 gap-1.5"
+            >
+              <Save className="h-3.5 w-3.5" aria-hidden="true" />
+              Save
+            </Button>
+            {expanded && !isNewProject && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onCollapse}
+                aria-label="Close details"
+                className="h-9 w-9 p-0"
+                title="Collapse details"
+              >
+                <ChevronDown className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {expanded && (
+        <div ref={detailsFormRef} className="border-t border-border px-6 py-6">
+          <ProjectForm project={project} onChange={onChange} />
+        </div>
+      )}
+    </Card>
   );
 }

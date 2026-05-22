@@ -88,3 +88,40 @@ export function calculateRunCost(run) {
   if (!tapeSpec) return 0;
   return run.length_feet * tapeSpec.price_per_foot + channelCostFor(run);
 }
+
+/**
+ * Each run's proportional share of the full project cost — tape + channel +
+ * its pro-rata slice of drivers + mounting hardware, then 10% shipping baked
+ * in. The sum of `calculateRunFullCost` across every run equals the project
+ * total returned by `calculateTotalPrice`, so the per-row dollar reconciles
+ * with the Materials Summary card exactly.
+ *
+ * Drivers and clips are pooled by design (one driver can serve multiple runs),
+ * so attributing them per-run is a proportional accounting choice, not a
+ * physical truth. We split by each run's tape+channel subtotal weight.
+ */
+export function calculateRunFullCost(run, allRuns, drivers) {
+  if (!run || !run.length_feet || !run.tape_output) return 0;
+  const runSubtotal = calculateRunCost(run);
+  if (runSubtotal === 0) return 0;
+
+  let projectSubtotal = 0;
+  let totalWatts = 0;
+  let totalSections = 0;
+  (allRuns || []).forEach((r) => {
+    projectSubtotal += calculateRunCost(r);
+    const tapeSpec = TAPE_SPECS[r.tape_output];
+    if (tapeSpec && r.length_feet) {
+      totalWatts += r.length_feet * tapeSpec.watts_per_foot;
+    }
+    totalSections += channelSectionsFor(r);
+  });
+
+  const driverCost = priceDrivers(drivers, totalWatts).cost;
+  const clipCost = clipsForSections(totalSections).cost;
+  const overhead = driverCost + clipCost;
+
+  const ratio = projectSubtotal > 0 ? runSubtotal / projectSubtotal : 0;
+  const runWithOverhead = runSubtotal + overhead * ratio;
+  return runWithOverhead + runWithOverhead * SHIPPING_RATE;
+}

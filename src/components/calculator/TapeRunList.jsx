@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { SelectItem } from "@/components/ui/select";
 import TabSelect from "@/components/calculator/TabSelect";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Trash2, GripVertical, Pencil, Check, X } from "lucide-react";
+import { Copy, Plus, Trash2, GripVertical, Pencil, Check, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { TAPE_SPECS, CHANNEL_SPECS } from "@/components/calculator/constants";
-import { calculateRunCost, formatFeetInches, titleCase } from "@/components/calculator/calculations";
+import { calculateRunFullCost, formatFeetInches, titleCase } from "@/components/calculator/calculations";
 import DriverManager from "@/components/calculator/DriverManager";
 import { toast } from "sonner";
 import {
@@ -69,7 +68,7 @@ function extractInchesOption(lengthFeet) {
   return TAPE_INCH_OPTIONS.find(o => parseFloat(o) === clamped) ?? '0';
 }
 
-export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onUpdate, onDelete, onReorder }) {
+export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onUpdate, onDelete, onReorder, onDuplicate }) {
   const sortedDrivers = [...(drivers || [])].sort((a, b) => {
     const numA = parseInt(/^Driver\s+(\d+)$/.exec(a.name || '')?.[1] ?? Infinity, 10);
     const numB = parseInt(/^Driver\s+(\d+)$/.exec(b.name || '')?.[1] ?? Infinity, 10);
@@ -94,27 +93,33 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
   // Compute snapped preview for new run
   const newRunSnappedFeet = getSnappedFeet(newRun.feet, newRun.inches);
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     const totalFeet = getSnappedFeet(newRun.feet, newRun.inches);
-    
+
     if (!newRun.product_type || !newRun.cct || !newRun.tape_output || !newRun.channel_type || !newRun.lens || !newRun.finish || !newRun.driver_group || totalFeet <= 0) {
       return;
     }
-    
-    onAdd({ 
-      run_name: newRun.run_name,
-      length_feet: totalFeet,
-      tape_output: newRun.tape_output,
-      product_type: newRun.product_type,
-      location: newRun.location,
-      cct: newRun.cct,
-      channel_type: newRun.channel_type,
-      lens: newRun.lens,
-      finish: newRun.finish,
-      notes: newRun.notes,
-      driver_group: newRun.driver_group
-    });
-    setNewRun({ ...EMPTY_NEW_RUN });
+
+    // Wait for the add to succeed before clearing — if it errors (e.g. server
+    // rejects or project save fails), the rep's typed values stay in the form.
+    try {
+      await onAdd({
+        run_name: newRun.run_name,
+        length_feet: totalFeet,
+        tape_output: newRun.tape_output,
+        product_type: newRun.product_type,
+        location: newRun.location,
+        cct: newRun.cct,
+        channel_type: newRun.channel_type,
+        lens: newRun.lens,
+        finish: newRun.finish,
+        notes: newRun.notes,
+        driver_group: newRun.driver_group,
+      });
+      setNewRun({ ...EMPTY_NEW_RUN });
+    } catch {
+      // Calculator's handleAddTapeRun already toasts on error — keep form.
+    }
   };
 
   const formatChannelType = titleCase;
@@ -178,12 +183,12 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
 
   return (
     <div>
-      <section data-section="drivers" className="space-y-2">
+      <section data-section="drivers" className={`px-6 border-b border-border ${(drivers?.length || 0) === 0 ? 'py-3' : 'space-y-2 py-6 min-h-[152px]'}`}>
         <div className="flex items-center justify-between">
           <h3 className="text-xs uppercase tracking-wider text-foreground/50">Drivers</h3>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="icon" className="h-9 w-9 rounded bg-foreground text-background hover:bg-foreground/90" aria-label="Add driver" data-testid="driver-add">
+              <Button size="icon" variant="outline" className="h-9 w-9 rounded border-foreground hover:border-foreground" aria-label="Add driver" data-testid="driver-add">
                 <Plus className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -207,14 +212,14 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
         />
       </section>
 
-      <section data-section="configure" className="space-y-2 mt-6">
+      <section data-section="configure" className="space-y-2 px-6 py-6 border-b border-border last:border-b-0 min-h-[152px]">
         <div className="flex items-center justify-between">
           <h3 className="text-xs uppercase tracking-wider text-foreground/50">Configure</h3>
           <Button
             onClick={handleAdd}
             size="icon"
             variant={isFormValid() ? 'default' : 'outline'}
-            className={`h-9 w-9 rounded ${isFormValid() ? 'bg-foreground text-background hover:bg-foreground/90' : ''}`}
+            className={`h-9 w-9 rounded ${isFormValid() ? 'bg-secondary text-foreground hover:bg-secondary/80 border-0' : ''}`}
             disabled={!isFormValid()}
             aria-label="Add tape run"
             data-testid="tape-run-add"
@@ -222,13 +227,11 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
             <Plus className="h-4 w-4" />
           </Button>
         </div>
-        <Card>
-        <CardContent className="p-6">
-          <div className="w-full">
+        <div className="w-full">
             {/* New Run Row */}
             <div className="flex gap-2 items-end w-full">
               <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <Label htmlFor="new-run-name" className="text-xs text-foreground/60 text-left">Name</Label>
+                <Label htmlFor="new-run-name" className="text-xs text-foreground/60 text-left">Type</Label>
                 <Input id="new-run-name" data-testid="new-run-name" value={newRun.run_name} onChange={(e) => setNewRun({ ...newRun, run_name: e.target.value })} onKeyDown={handleKeyDown} className="h-9 w-full" />
               </div>
 
@@ -249,7 +252,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                 <Label htmlFor="new-run-length-feet" className="text-xs text-foreground/60 text-left">Length</Label>
                 <div className="flex gap-2">
                   <div className="relative w-20 shrink-0">
-                    <Input id="new-run-length-feet" data-testid="new-run-length-feet" type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="w-full border rounded pl-2 pr-7 h-9 text-sm" />
+                    <Input id="new-run-length-feet" data-testid="new-run-length-feet" type="number" min="0" placeholder="ft" value={newRun.feet} onChange={(e) => setNewRun({ ...newRun, feet: e.target.value })} onKeyDown={handleKeyDown} className="w-full pl-2 pr-7 h-9 text-sm" />
                     {newRun.feet && (
                       <span aria-hidden="true" className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-foreground pointer-events-none">ft</span>
                     )}
@@ -309,21 +312,43 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
 
               <div className="flex flex-col gap-1 flex-1 min-w-0">
                 <Label htmlFor="new-run-driver" className="text-xs text-foreground/60 text-left">Driver</Label>
-                <TabSelect id="new-run-driver" value={newRun.driver_group} onValueChange={(value) => setNewRun({ ...newRun, driver_group: value })} triggerClassName="h-9 w-full">
-                  {sortedDrivers.map(d => (
-                    <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
-                  ))}
+                <TabSelect
+                  id="new-run-driver"
+                  value={newRun.driver_group}
+                  onValueChange={(value) => {
+                    // "__add__" sentinel: rep has no drivers yet and chose the
+                    // inline "Add driver" option — create the default driver
+                    // and assign this run to it in one click.
+                    if (value === '__add__') {
+                      const nextN = (drivers?.length || 0) + 1;
+                      const newDriverName = `Driver ${nextN}`;
+                      onDriversChange([
+                        ...(drivers || []),
+                        { id: String(Date.now()), name: newDriverName, maxWatts: 96 },
+                      ]);
+                      setNewRun({ ...newRun, driver_group: newDriverName });
+                      return;
+                    }
+                    setNewRun({ ...newRun, driver_group: value });
+                  }}
+                  triggerClassName="h-9 w-full"
+                >
+                  {sortedDrivers.length === 0 ? (
+                    <SelectItem value="__add__">+ Add driver</SelectItem>
+                  ) : (
+                    sortedDrivers.map(d => (
+                      <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
+                    ))
+                  )}
                 </TabSelect>
               </div>
             </div>
           </div>
-        </CardContent>
-        </Card>
       </section>
 
       {/* Existing Runs — grouped by driver */}
       {localRuns.length > 0 && (
-      <section data-section="runs" className="space-y-0 mt-10">
+      <section data-section="runs" className="space-y-0 px-6 py-6 min-h-[152px]">
         <h3 className="text-xs uppercase tracking-wider text-foreground/50">Runs</h3>
         {(() => {
         const groups = [];
@@ -355,14 +380,14 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                       {...provided.draggableProps}
                       data-testid="tape-run-row"
                       data-run-id={run.id}
-                      className={`border-border ${editingId === run.id || snapshot.isDragging ? 'bg-background' : 'bg-secondary'}`}
+                      className={`shadow-none ${editingId === run.id || snapshot.isDragging ? 'bg-background border border-border' : 'bg-secondary/60 border-0'}`}
                       style={provided.draggableProps.style}
                     >
                       <CardContent className="p-4">
                         {editingId === run.id ? (
                           <div className="flex flex-wrap gap-2 items-end bg-background">
                             <div className="space-y-1">
-                              <Label className="text-xs">Name</Label>
+                              <Label className="text-xs">Type</Label>
                               <Input value={editValues.run_name} onChange={e => setEditValues({...editValues, run_name: e.target.value})} className="h-8 w-16 text-xs" />
                             </div>
                             <div className="space-y-1">
@@ -470,7 +495,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             <GripVertical className="h-5 w-5" />
                           </div>
                           <div className="flex-1 min-w-0 text-center">
-                            <div className="text-xs text-foreground/60">Name</div>
+                            <div className="text-xs text-foreground/60">Type</div>
                             <div className="text-sm font-medium truncate">{run.run_name || 'Unnamed'}</div>
                           </div>
                           <div className="flex-1 min-w-0 text-center">
@@ -517,7 +542,7 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                           </div>
                           <div className="flex-1 min-w-0 text-center">
                             <div className="text-xs text-foreground/60">Cost</div>
-                            <div className="text-sm font-semibold whitespace-nowrap">${calculateRunCost(run).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                            <div className="text-sm font-semibold whitespace-nowrap">${calculateRunFullCost(run, runs, drivers).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                           </div>
                           <div className="flex shrink-0 gap-0 items-center">
                             <Button
@@ -546,6 +571,16 @@ export default function TapeRunList({ runs, drivers, onDriversChange, onAdd, onU
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
+                            <Button
+                               variant="ghost"
+                               size="icon"
+                               aria-label="Duplicate run"
+                               data-testid="tape-run-duplicate"
+                               onClick={() => onDuplicate && onDuplicate(run)}
+                               className="h-8 w-8 text-foreground/40 hover:text-foreground/70"
+                             >
+                               <Copy className="h-4 w-4" />
+                             </Button>
                             <Button
                                variant="ghost"
                                size="icon"

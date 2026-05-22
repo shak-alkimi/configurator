@@ -73,10 +73,14 @@ export default function Dashboard() {
   const allCards = [
     {
       icon: Sliders,
-      category: 'Tool',
+      // "Opus" — alchemist's term for the magnum opus / great work. Brand-
+      // canon name for the Configurator (decided in Cowork session). Keep
+      // the route at /configurator for back-compat with bookmarks/CTAs.
+      category: 'Opus',
       label: 'Configurator',
-      href: '/',
+      href: '/configurator',
       stat: null,
+      media: '/empty-state.mov',
       roles: ['admin', 'rep'],
     },
     {
@@ -146,7 +150,7 @@ export default function Dashboard() {
           }}
           data-testid="dashboard-card-grid"
         >
-          {cards.map(({ icon: Icon, category, label, href, stat, soon }) => (
+          {cards.map(({ icon: Icon, category, label, href, stat, soon, media }) => (
             <button
               key={label}
               type="button"
@@ -159,11 +163,22 @@ export default function Dashboard() {
             >
               <div
                 className={`flex-1 min-h-0 flex items-center justify-center transition-transform duration-500 ease-out ${
-                  soon ? '' : 'group-hover:scale-105'
+                  soon || media ? '' : 'group-hover:scale-105'
                 }`}
               >
                 {stat ? (
                   <StatCounter value={stat.value} label={stat.label} />
+                ) : media ? (
+                  <video
+                    src={media}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    aria-hidden="true"
+                    className="max-h-[75%] max-w-[75%] object-contain mix-blend-multiply"
+                    style={{ filter: 'contrast(1.25) brightness(1.08)' }}
+                  />
                 ) : (
                   <Icon
                     className={`h-12 w-12 ${
