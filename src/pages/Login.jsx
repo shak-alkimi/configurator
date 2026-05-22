@@ -115,7 +115,6 @@ export default function Login() {
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
                 data-testid="login-email"
               />
             </div>
@@ -129,7 +128,6 @@ export default function Login() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
                 data-testid="login-password"
               />
             </div>
