@@ -626,7 +626,7 @@ export default function Calculator() {
               </Card>
             )}
 
-            {showConfigurator && (
+            {(selectedProjectId || isNewProject) && (
               <Card
                 className={`relative ${editingDetails ? 'locked-monochrome pointer-events-none select-none' : ''}`}
                 aria-disabled={editingDetails || undefined}
@@ -652,8 +652,10 @@ export default function Calculator() {
         </div>
         )}
       </div>
-      {/* Right rail: Materials + Summary + Shipping. Only when configuring runs. */}
-      {selectedProjectId && showConfigurator && !editingDetails && (
+      {/* Right rail: Materials + Summary + Shipping. Visible whenever the rep
+          is in a project context and not editing details — including new
+          projects, so prototyping tape runs shows live material/cost feedback. */}
+      {(selectedProjectId || isNewProject) && !editingDetails && (
         <div className="hidden md:flex flex-col w-60 lg:w-64 min-h-0 overflow-y-auto shrink-0">
           <MaterialsCalculator runs={tapeRuns} drivers={projectData.drivers || []} />
         </div>
