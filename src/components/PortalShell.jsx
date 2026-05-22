@@ -17,7 +17,7 @@ const FRONTEND_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION_
 
 const NAV_ITEMS_ALL = [
   { to: "/dashboard", label: "Dashboard", roles: ["admin", "rep"] },
-  { to: "/", label: "Configurator", roles: ["admin", "rep"] },
+  { to: "/configurator", label: "Configurator", roles: ["admin", "rep"] },
   { to: "/estimates", label: "Estimates", roles: ["admin", "rep"] },
   { to: "/orders", label: "Orders", roles: ["admin", "rep"] },
   { to: "/reps", label: "Reps", roles: ["admin"] },
@@ -42,7 +42,6 @@ function NavItem({ to, label, soon }) {
   return (
     <NavLink
       to={to}
-      end={to === "/"}
       className={({ isActive }) =>
         `${base} ${
           isActive
