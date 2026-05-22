@@ -3,8 +3,9 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Save, Trash2, Send, Download, ArrowLeft } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Plus, Save, Trash2, Send, Download, ArrowLeft } from "lucide-react";
+import PortalShell from "@/components/PortalShell";
 
 import {
   DropdownMenu,
@@ -31,7 +32,6 @@ import {
 } from "@/components/ui/alert-dialog";
 
 
-import ProjectsList from "../components/calculator/ProjectsList";
 import ProjectForm, { isValidCity } from "../components/calculator/ProjectForm";
 import TapeRunList from "../components/calculator/TapeRunList";
 import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
@@ -486,55 +486,14 @@ export default function Calculator() {
   const saveActive = isDirty && hasAnyDetailData;
 
   return (
+    <PortalShell>
     <TooltipProvider>
-      <div className="h-screen flex gap-4 md:gap-6 p-4 md:p-6 bg-white">
-      {/* Sidebar - Projects List + Materials */}
-      <div className="hidden md:flex flex-col w-52 lg:w-64 gap-4 md:gap-6 min-h-0">
-        <Card className="flex flex-col overflow-hidden max-h-full">
-          <CardHeader className="pt-12 pb-12 flex flex-row items-center justify-between">
-            <button
-              type="button"
-              onClick={() => handleNewProject('')}
-              aria-label="Clear selection"
-              data-testid="alkimi-logo"
-              className="cursor-pointer"
-            >
-              <img src="https://media.base44.com/images/public/698fc81203f85a20f281d9dc/badc89fb6_Alkimi_logo_long_black.png" alt="Alkimi Logo" className="h-8 w-auto -ml-6" />
-            </button>
-          </CardHeader>
-          <CardContent className="p-0 overflow-hidden flex-1 min-h-0">
-            <ProjectsList
-              projects={projects
-                .map(p => (projectData.id && p.id === projectData.id ? { ...p, ...projectData } : p))
-                .filter(p => {
-                  const q = searchQuery.toLowerCase();
-                  return (p.project_name || '').toLowerCase().includes(q) ||
-                    (p.customer_name || '').toLowerCase().includes(q);
-                })}
-              selectedId={selectedProjectId}
-              onSelect={handleSelectProject}
-              onEditDetails={handleEditDetails}
-              onNew={handleNewProject}
-              isLoading={projectsLoading}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              onUpdateStatus={handleUpdateStatus}
-            />
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto flex gap-4 md:gap-6">
-        {/* Materials sidebar — only once project details are saved and not being edited */}
-        {selectedProjectId && showConfigurator && !editingDetails && (
-          <div className="hidden md:flex flex-col w-52 lg:w-64 min-h-0 overflow-y-auto shrink-0">
-            <MaterialsCalculator runs={tapeRuns} drivers={projectData.drivers || []} />
-          </div>
-        )}
-        {/* Empty state — looping brand video centered in the configurator area */}
+      <div className="flex-1 flex gap-4 md:gap-6 px-[15px] pt-6 pb-8 min-h-0 overflow-hidden">
+      {/* Main Content + optional right rail */}
+      <div className="flex-1 overflow-y-auto flex gap-4 md:gap-6 min-w-0">
+        {/* Empty state — looping brand video + start CTA */}
         {!(selectedProjectId || isNewProject) && (
-          <div className="flex-1 min-w-0 flex items-center justify-center overflow-hidden">
+          <div className="flex-1 min-w-0 flex flex-col items-center justify-center overflow-hidden gap-6">
             <video
               src="/empty-state.mov"
               autoPlay
@@ -543,9 +502,27 @@ export default function Calculator() {
               playsInline
               aria-hidden="true"
               data-testid="empty-state-video"
-              className="max-h-[75%] max-w-[75%] object-contain mix-blend-multiply"
+              className="max-h-[60%] max-w-[60%] object-contain mix-blend-multiply"
               style={{ filter: 'contrast(1.25) brightness(1.08)' }}
             />
+            <div className="flex flex-col items-center gap-3">
+              <Button
+                size="lg"
+                onClick={() => handleNewProject('')}
+                data-testid="empty-state-new"
+                className="gap-2"
+              >
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                Start new project
+              </Button>
+              <button
+                type="button"
+                onClick={() => navigate('/estimates')}
+                className="text-xs text-foreground/50 hover:text-foreground underline underline-offset-2"
+              >
+                or browse estimates
+              </button>
+            </div>
           </div>
         )}
         {/* Configurator — only renders when a project is selected or being created */}
@@ -669,8 +646,13 @@ export default function Calculator() {
           </div>
         </div>
         )}
-
       </div>
+      {/* Right rail: Materials + Summary + Shipping. Only when configuring runs. */}
+      {selectedProjectId && showConfigurator && !editingDetails && (
+        <div className="hidden md:flex flex-col w-60 lg:w-64 min-h-0 overflow-y-auto shrink-0">
+          <MaterialsCalculator runs={tapeRuns} drivers={projectData.drivers || []} />
+        </div>
+      )}
       </div>
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>
@@ -722,5 +704,6 @@ export default function Calculator() {
         </AlertDialogContent>
       </AlertDialog>
     </TooltipProvider>
+    </PortalShell>
   );
 }
