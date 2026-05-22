@@ -68,6 +68,15 @@ export function useProjectsTable({ baseFilter, statuses }) {
     queryFn: () => base44.entities.Project.list("-updated_date"),
   });
 
+  // Source the rep filter dropdown from User entity (not project creators) so
+  // accounts that have signed up but haven't created anything still appear.
+  // Inactive accounts get greyed in the Toolbar's RepFilter.
+  const { data: users = [] } = useQuery({
+    queryKey: ["users"],
+    queryFn: () => base44.entities.User.list(),
+    enabled: isAdmin,
+  });
+
   const pageProjects = useMemo(
     () => projects.filter(baseFilter),
     [projects, baseFilter]
@@ -110,22 +119,39 @@ export function useProjectsTable({ baseFilter, statuses }) {
     return sortRows(filtered, sortKey, sortDir);
   }, [scopedProjects, activeStatus, sortKey, sortDir]);
 
-  // Distinct rep list (derived from project creators). Used to populate the
-  // admin rep filter dropdown and the Reps page.
+  // Rep list for the dropdown. Sourced from User entity so accounts with no
+  // projects-on-this-page still appear (just with count: 0, greyed in the UI).
+  // Per-rep counts and lastActivity come from this page's pageProjects, so
+  // Orders shows different per-rep numbers than Estimates.
   const reps = useMemo(() => {
     if (!isAdmin) return [];
-    const map = new Map();
+    const stats = new Map();
     for (const p of pageProjects) {
       const email = p.created_by;
       if (!email) continue;
-      const entry = map.get(email) || { email, count: 0, lastActivity: 0 };
+      const entry = stats.get(email) || { count: 0, lastActivity: 0 };
       entry.count++;
       const t = p.updated_date ? new Date(p.updated_date).getTime() : 0;
       if (t > entry.lastActivity) entry.lastActivity = t;
-      map.set(email, entry);
+      stats.set(email, entry);
     }
-    return [...map.values()].sort((a, b) => b.lastActivity - a.lastActivity);
-  }, [pageProjects, isAdmin]);
+    return users
+      .map((u) => {
+        const s = stats.get(u.email);
+        return {
+          email: u.email,
+          count: s?.count || 0,
+          lastActivity: s?.lastActivity || 0,
+        };
+      })
+      .sort((a, b) => {
+        // Active reps first (by most recent activity), then inactive (alpha).
+        if (a.count === 0 && b.count !== 0) return 1;
+        if (b.count === 0 && a.count !== 0) return -1;
+        if (a.count === 0 && b.count === 0) return a.email.localeCompare(b.email);
+        return b.lastActivity - a.lastActivity;
+      });
+  }, [pageProjects, users, isAdmin]);
 
   const allVisibleSelected =
     rows.length > 0 && rows.every((p) => selectedIds.has(p.id));

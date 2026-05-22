@@ -93,32 +93,35 @@ export function RepFilter({ reps, value, onChange, onImpersonate }) {
             No reps yet
           </DropdownMenuItem>
         ) : (
-          reps.map((r) => (
-            <div
-              key={r.email}
-              className="flex items-center gap-1 group"
-            >
-              <DropdownMenuItem
-                onClick={() => onChange(r.email)}
-                className="flex-1"
+          reps.map((r) => {
+            const inactive = r.count === 0;
+            return (
+              <div
+                key={r.email}
+                className="flex items-center gap-1 group"
               >
-                <span className="truncate">{r.email}</span>
-                <span className="ml-auto text-xs text-foreground/40 tabular-nums">
-                  {r.count}
-                </span>
-              </DropdownMenuItem>
-              {onImpersonate && (
-                <button
-                  type="button"
-                  onClick={() => onImpersonate(r.email)}
-                  className="px-2 py-1.5 rounded-sm text-foreground/40 hover:text-foreground hover:bg-foreground/5 transition-colors"
-                  title={`View as ${r.email}`}
+                <DropdownMenuItem
+                  onClick={() => onChange(r.email)}
+                  className={`flex-1 ${inactive ? "text-foreground/40" : ""}`}
                 >
-                  <Eye className="h-3 w-3" aria-hidden="true" />
-                </button>
-              )}
-            </div>
-          ))
+                  <span className="truncate">{r.email}</span>
+                  <span className="ml-auto text-xs text-foreground/40 tabular-nums">
+                    {r.count}
+                  </span>
+                </DropdownMenuItem>
+                {onImpersonate && (
+                  <button
+                    type="button"
+                    onClick={() => onImpersonate(r.email)}
+                    className="px-2 py-1.5 rounded-sm text-foreground/40 hover:text-foreground hover:bg-foreground/5 transition-colors"
+                    title={`View as ${r.email}`}
+                  >
+                    <Eye className="h-3 w-3" aria-hidden="true" />
+                  </button>
+                )}
+              </div>
+            );
+          })
         )}
       </DropdownMenuContent>
     </DropdownMenu>
