@@ -508,7 +508,12 @@ export default function Calculator() {
             <div className="flex flex-col items-center gap-3">
               <Button
                 size="lg"
-                onClick={() => handleNewProject('')}
+                onClick={() => {
+                  setSelectedProjectId(null);
+                  setProjectData({ ...EMPTY_PROJECT_DATA });
+                  setFormResetKey((prev) => prev + 1);
+                  setIsNewProject(true);
+                }}
                 data-testid="empty-state-new"
                 className="gap-2"
               >
