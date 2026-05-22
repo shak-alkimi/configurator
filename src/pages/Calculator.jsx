@@ -61,7 +61,6 @@ export default function Calculator() {
     if (id) next.set('project', id); else next.delete('project');
     setSearchParams(next, { replace: true });
   };
-  const [searchQuery, setSearchQuery] = useState('');
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const [hideExportTooltip, setHideExportTooltip] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -288,39 +287,6 @@ export default function Calculator() {
     }
   };
 
-  const handleSelectProject = (projectId) => {
-    setSelectedProjectId(projectId);
-    setIsNewProject(false);
-    setEditingDetails(false);
-  };
-
-  const handleEditDetails = (projectId) => {
-    const sameProject = selectedProjectId === projectId;
-    setSelectedProjectId(projectId);
-    setIsNewProject(false);
-    if (sameProject && editingDetails) {
-      const allFilled = ['project_name','sector','street','city','state','customer_name','customer_email','customer_phone']
-        .every(f => projectData[f]?.toString().trim());
-      if (allFilled) {
-        setEditingDetails(false);
-        return;
-      }
-    }
-    setEditingDetails(true);
-  };
-
-  const generateQuoteNumber = async () => {
-    const recentProjects = await base44.entities.Project.list('-created_date', 100);
-    const existingNumbers = recentProjects
-      .map(p => p.quote_number)
-      .filter(qn => qn && qn.startsWith('QUOTE-'))
-      .map(qn => parseInt(qn.replace('QUOTE-', ''), 10))
-      .filter(n => !isNaN(n));
-    
-    const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
-    return `QUOTE-${String(nextNumber).padStart(3, '0')}`;
-  };
-
   const handleSaveProject = async () => {
     if (!projectData.project_name) {
       toast.error('Project name is required');
@@ -369,27 +335,6 @@ export default function Calculator() {
   const confirmDeleteProject = () => {
     if (selectedProjectId) deleteProjectMutation.mutate(selectedProjectId);
     setDeleteConfirmOpen(false);
-  };
-
-  const handleUpdateStatus = async (projectId, newStatus) => {
-    try {
-      const updateData = { status: newStatus };
-      
-      // Generate quote number when project is approved. Guard the lookup —
-      // `projects` is React Query cache and may be stale or empty.
-      if (newStatus === 'approved') {
-        const project = projects.find(p => p.id === projectId);
-        if (project && !project.quote_number) {
-          updateData.quote_number = await generateQuoteNumber();
-        }
-      }
-      
-      await base44.entities.Project.update(projectId, updateData);
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast.success(`Project ${newStatus === 'approved' ? 'approved' : 'reverted to ' + newStatus}`);
-    } catch (error) {
-      toast.error(error?.message || 'Failed to update project status');
-    }
   };
 
   const performSubmit = async (driversOverride) => {
