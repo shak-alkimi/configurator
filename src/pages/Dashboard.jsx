@@ -40,19 +40,32 @@ function StatCounter({ value, label }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isAuthenticated } = useAuth();
 
-  const { data: projects = [], isLoading } = useQuery({
+  // Both queries gated on auth — Dashboard renders before AuthProvider settles
+  // its token on first paint, and unauthed Base44 entity reads silently return
+  // empty arrays (RLS treats no-user as no-access). Without the gate, every
+  // counter on the dashboard shows 0 even when the data exists.
+  const { data: projects = [], isLoading: projectsLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: () => base44.entities.Project.list('-updated_date'),
+    enabled: isAuthenticated,
   });
+
+  const { data: users = [], isLoading: usersLoading } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => base44.entities.User.list(),
+    enabled: isAuthenticated && isAdmin,
+  });
+
+  const isLoading = projectsLoading || (isAdmin && usersLoading);
 
   const counts = {
     estimates: projects.length,
     orders: projects.filter(p => p.status === 'submitted' || p.status === 'approved').length,
-    reps: isAdmin
-      ? new Set(projects.map(p => p.created_by).filter(Boolean)).size
-      : 0,
+    // Reps card: count non-admin users (the Reps page itself reads from the
+    // same source). Project-derived counting hid invited-but-inactive reps.
+    reps: isAdmin ? users.filter((u) => u.role !== 'admin').length : 0,
   };
 
   const currentMonth = format(new Date(), 'MMMM');
