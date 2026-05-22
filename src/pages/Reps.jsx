@@ -69,7 +69,10 @@ export default function Reps() {
     if (!email) return;
     setInviting(true);
     try {
-      await base44.auth.inviteUser(email, "user");
+      // Use the runtime endpoint (base44.users.inviteUser) — the auth-module
+      // version (`auth.inviteUser`) hits an admin-panel route that 401s for
+      // calls from a custom app, even with a valid admin Bearer token.
+      await base44.users.inviteUser(email, "user");
       toast.success(`Invitation sent to ${email}`);
       setInviteEmail("");
       setInviteOpen(false);
