@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { NavLink, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
@@ -65,7 +66,18 @@ function NavItem({ to, label, soon }) {
 }
 
 function AccountPill({ user, isAdmin, onSignOut, onSettings }) {
-  const label = user?.full_name ? titleCase(user.full_name) : (user?.email || "Account");
+  // Check for an admin-curated display-name override for THIS user. RLS lets
+  // any rep read their own RepProfile (matching their email).
+  const { data: ownProfile } = useQuery({
+    queryKey: ["repProfile", user?.email],
+    queryFn: async () => {
+      const rows = await base44.entities.RepProfile.filter({ user_email: user.email });
+      return rows?.[0] || null;
+    },
+    enabled: !!user?.email,
+  });
+  const override = ownProfile?.display_name;
+  const label = override || (user?.full_name ? titleCase(user.full_name) : (user?.email || "Account"));
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

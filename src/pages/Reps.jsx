@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Eye, Mail, UserPlus } from "lucide-react";
+import { Check, Eye, Mail, Pencil, UserPlus, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import PortalShell from "@/components/PortalShell";
@@ -12,9 +12,12 @@ import { titleCase } from "@/components/calculator/calculations";
 export default function Reps() {
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
+  const queryClient = useQueryClient();
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviting, setInviting] = useState(false);
+  const [editingEmail, setEditingEmail] = useState(null);
+  const [editName, setEditName] = useState("");
 
   const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ["users"],
@@ -26,6 +29,41 @@ export default function Reps() {
     queryKey: ["projects"],
     queryFn: () => base44.entities.Project.list("-updated_date"),
     enabled: isAdmin,
+  });
+
+  // Admin-curated display name overrides — RepProfile records keyed by email.
+  const { data: repProfiles = [] } = useQuery({
+    queryKey: ["repProfiles"],
+    queryFn: () => base44.entities.RepProfile.list(),
+    enabled: isAdmin,
+  });
+  const profileByEmail = useMemo(() => {
+    const m = new Map();
+    for (const p of repProfiles) m.set(p.user_email, p);
+    return m;
+  }, [repProfiles]);
+
+  const saveProfile = useMutation({
+    mutationFn: async ({ email, display_name }) => {
+      const existing = profileByEmail.get(email);
+      const trimmed = display_name.trim();
+      if (existing) {
+        if (!trimmed) {
+          return base44.entities.RepProfile.delete(existing.id);
+        }
+        return base44.entities.RepProfile.update(existing.id, { display_name: trimmed });
+      }
+      if (!trimmed) return null; // nothing to save
+      return base44.entities.RepProfile.create({ user_email: email, display_name: trimmed });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["repProfiles"] });
+      setEditingEmail(null);
+      toast.success("Display name updated");
+    },
+    onError: (e) => {
+      toast.error(e?.message || "Failed to update display name");
+    },
   });
 
   const isLoading = usersLoading || projectsLoading;
@@ -54,16 +92,19 @@ export default function Reps() {
           lastActivity: 0,
           statuses: { draft: 0, submitted: 0, approved: 0, shipped: 0 },
         };
+        const override = profileByEmail.get(u.email)?.display_name;
         return {
           email: u.email,
           fullName: u.full_name || "",
+          displayName: override || (u.full_name ? titleCase(u.full_name) : ""),
+          override,
           count: s.count,
           lastActivity: s.lastActivity,
           statuses: s.statuses,
         };
       })
       .sort((a, b) => b.lastActivity - a.lastActivity);
-  }, [users, projects]);
+  }, [users, projects, profileByEmail]);
 
   const handleInvite = async () => {
     const email = inviteEmail.trim().toLowerCase();
@@ -149,7 +190,7 @@ export default function Reps() {
                 <th className="text-right font-medium px-4 py-3">Approved</th>
                 <th className="text-right font-medium px-4 py-3">Shipped</th>
                 <th className="text-right font-medium px-4 py-3">Last activity</th>
-                <th className="w-12 px-4 py-3"></th>
+                <th className="w-20 px-4 py-3"></th>
               </tr>
             </thead>
             <tbody>
@@ -173,19 +214,53 @@ export default function Reps() {
                     className="border-b border-border last:border-b-0 hover:bg-foreground/[0.02] transition-colors"
                   >
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => filterTo(r.email)}
-                        className="text-left max-w-full truncate"
-                      >
-                        <div className="font-medium text-foreground hover:underline truncate">
-                          {r.fullName ? titleCase(r.fullName) : r.email}
-                        </div>
-                        {r.fullName && (
-                          <div className="text-xs text-foreground/40 truncate">
-                            {r.email}
+                      {editingEmail === r.email ? (
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            saveProfile.mutate({ email: r.email, display_name: editName });
+                          }}
+                          className="flex items-center gap-2"
+                        >
+                          <input
+                            autoFocus
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            placeholder={r.fullName ? titleCase(r.fullName) : r.email}
+                            className="flex-1 h-8 px-2 text-sm border border-border rounded-[3px] focus:outline-none focus:border-foreground"
+                          />
+                          <button
+                            type="submit"
+                            disabled={saveProfile.isPending}
+                            aria-label="Save display name"
+                            className="inline-flex items-center justify-center h-7 w-7 rounded-[3px] text-foreground/70 hover:text-foreground hover:bg-foreground/5 transition-colors"
+                          >
+                            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingEmail(null)}
+                            aria-label="Cancel edit"
+                            className="inline-flex items-center justify-center h-7 w-7 rounded-[3px] text-foreground/40 hover:text-foreground hover:bg-foreground/5 transition-colors"
+                          >
+                            <X className="h-3.5 w-3.5" aria-hidden="true" />
+                          </button>
+                        </form>
+                      ) : (
+                        <button
+                          onClick={() => filterTo(r.email)}
+                          className="text-left max-w-full truncate"
+                        >
+                          <div className="font-medium text-foreground hover:underline truncate">
+                            {r.displayName || r.email}
                           </div>
-                        )}
-                      </button>
+                          {r.displayName && (
+                            <div className="text-xs text-foreground/40 truncate">
+                              {r.email}
+                            </div>
+                          )}
+                        </button>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums">{r.count}</td>
                     <td className="px-4 py-3 text-right tabular-nums text-foreground/60">
@@ -206,14 +281,27 @@ export default function Reps() {
                         : <span className="text-foreground/30">No activity</span>}
                     </td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => viewAs(r.email)}
-                        aria-label={`View as ${r.email}`}
-                        className="inline-flex items-center justify-center h-7 w-7 rounded-[3px] border border-border text-foreground/70 hover:text-foreground hover:bg-foreground/5 transition-colors"
-                        title={`View as ${r.email}`}
-                      >
-                        <Eye className="h-3.5 w-3.5" aria-hidden="true" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => {
+                            setEditingEmail(r.email);
+                            setEditName(r.override || (r.fullName ? titleCase(r.fullName) : ""));
+                          }}
+                          aria-label={`Edit display name for ${r.email}`}
+                          className="inline-flex items-center justify-center h-7 w-7 rounded-[3px] text-foreground/40 hover:text-foreground hover:bg-foreground/5 transition-colors"
+                          title="Edit display name"
+                        >
+                          <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                        </button>
+                        <button
+                          onClick={() => viewAs(r.email)}
+                          aria-label={`View as ${r.email}`}
+                          className="inline-flex items-center justify-center h-7 w-7 rounded-[3px] border border-border text-foreground/70 hover:text-foreground hover:bg-foreground/5 transition-colors"
+                          title={`View as ${r.email}`}
+                        >
+                          <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
