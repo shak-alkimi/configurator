@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Save, KeyRound, PlugZap, CheckCircle2, XCircle } from "lucide-react";
+import PortalShell from "@/components/PortalShell";
 
 // Brand tokens (see Alkimi Brand Guidelines / memory:alkimi-brand-tokens):
 //   #252320 near-black, #C0BBB3 warm taupe, #DDDCDA light gray,
@@ -104,24 +105,29 @@ export default function Settings() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div
-          className="w-6 h-6 border-4 rounded-full animate-spin"
-          style={{ borderColor: SURFACE_BORDER, borderTopColor: INK }}
-        />
-      </div>
+      <PortalShell>
+        <div className="flex items-center justify-center h-64">
+          <div
+            className="w-6 h-6 border-4 rounded-full animate-spin"
+            style={{ borderColor: SURFACE_BORDER, borderTopColor: INK }}
+          />
+        </div>
+      </PortalShell>
     );
   }
 
   if (user?.role !== "admin") {
     return (
-      <div className="flex items-center justify-center h-64 text-sm" style={{ color: MUTED }}>
-        Access restricted to administrators.
-      </div>
+      <PortalShell>
+        <div className="flex items-center justify-center h-64 text-sm" style={{ color: MUTED }}>
+          Access restricted to administrators.
+        </div>
+      </PortalShell>
     );
   }
 
   return (
+    <PortalShell>
     <div className="max-w-2xl mx-auto p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold" style={{ color: INK }}>Settings</h1>
@@ -225,5 +231,6 @@ export default function Settings() {
         </CardContent>
       </Card>
     </div>
+    </PortalShell>
   );
 }
