@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { sortRows } from "./helpers";
+import { calculateTotalPrice } from "@/components/calculator/calculations";
 
 /**
  * Orchestrates the shared Projects-as-table experience used by Estimates / Orders.
@@ -68,6 +69,30 @@ export function useProjectsTable({ baseFilter, statuses }) {
     queryFn: () => base44.entities.Project.list("-updated_date"),
   });
 
+  // Fetch all tape runs so the table can show a per-project $ total. Grouped
+  // by project_id below and combined with each project's `drivers` to compute
+  // the same total the Materials/Summary card uses inside the Configurator.
+  const { data: allTapeRuns = [] } = useQuery({
+    queryKey: ["allTapeRuns"],
+    queryFn: () => base44.entities.TapeRun.list(),
+  });
+  const runsByProject = useMemo(() => {
+    const m = new Map();
+    for (const r of allTapeRuns) {
+      if (!r.project_id) continue;
+      if (!m.has(r.project_id)) m.set(r.project_id, []);
+      m.get(r.project_id).push(r);
+    }
+    return m;
+  }, [allTapeRuns]);
+  const projectsWithTotal = useMemo(
+    () => projects.map((p) => ({
+      ...p,
+      total: calculateTotalPrice(runsByProject.get(p.id) || [], p.drivers || []),
+    })),
+    [projects, runsByProject]
+  );
+
   // Source the rep filter dropdown from User entity (not project creators) so
   // accounts that have signed up but haven't created anything still appear.
   // Inactive accounts get greyed in the Toolbar's RepFilter.
@@ -78,8 +103,8 @@ export function useProjectsTable({ baseFilter, statuses }) {
   });
 
   const pageProjects = useMemo(
-    () => projects.filter(baseFilter),
-    [projects, baseFilter]
+    () => projectsWithTotal.filter(baseFilter),
+    [projectsWithTotal, baseFilter]
   );
 
   // Admins may also scope visible rows to a single rep (via the rep filter

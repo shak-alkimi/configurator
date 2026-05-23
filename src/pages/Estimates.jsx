@@ -111,6 +111,7 @@ export default function Estimates() {
           rowTestId="estimates-row"
           selectAllAriaLabel="Select all visible estimates"
           showOwner={t.isAdmin && !t.impersonateAs}
+          showTotal
         />
 
         {t.rows.length === 0 && !t.isLoading && (

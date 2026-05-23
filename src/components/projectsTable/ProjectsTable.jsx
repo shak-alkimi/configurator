@@ -17,8 +17,9 @@ export function ProjectsTable({
   rowTestId,
   selectAllAriaLabel,
   showOwner = false,
+  showTotal = false,
 }) {
-  const colCount = showOwner ? 7 : 6;
+  const colCount = 6 + (showOwner ? 1 : 0) + (showTotal ? 1 : 0);
   return (
     <div className="flex-1 min-h-0 overflow-y-auto border border-border rounded-[10px]">
       <table className="w-full text-sm" role="grid">
@@ -33,6 +34,9 @@ export function ProjectsTable({
             </th>
             <SortHeader label="Project" sortKeyName="project_name" {...{ sortKey, sortDir, onSort }} />
             <SortHeader label="Customer" sortKeyName="customer_name" {...{ sortKey, sortDir, onSort }} />
+            {showTotal && (
+              <SortHeader label="Total" sortKeyName="total" align="right" {...{ sortKey, sortDir, onSort }} />
+            )}
             {showOwner && (
               <SortHeader label="Owner" sortKeyName="created_by" {...{ sortKey, sortDir, onSort }} />
             )}
@@ -58,6 +62,7 @@ export function ProjectsTable({
                 onOpen={() => onOpen(p.id)}
                 rowTestId={rowTestId}
                 showOwner={showOwner}
+                showTotal={showTotal}
               />
             ))
           )}
@@ -94,7 +99,7 @@ function SortHeader({ label, sortKeyName, sortKey, sortDir, onSort, align = "lef
   );
 }
 
-function ProjectRow({ project: p, selected, onToggle, onOpen, rowTestId, showOwner }) {
+function ProjectRow({ project: p, selected, onToggle, onOpen, rowTestId, showOwner, showTotal }) {
   return (
     <tr
       data-testid={rowTestId}
@@ -118,6 +123,13 @@ function ProjectRow({ project: p, selected, onToggle, onOpen, rowTestId, showOwn
       <td className="px-4 py-3 cursor-pointer text-foreground/70" onClick={onOpen}>
         {p.customer_name || "—"}
       </td>
+      {showTotal && (
+        <td className="px-4 py-3 cursor-pointer text-right tabular-nums font-medium" onClick={onOpen}>
+          {Number.isFinite(p.total) && p.total > 0
+            ? `$${p.total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+            : <span className="text-foreground/30">—</span>}
+        </td>
+      )}
       {showOwner && (
         <td className="px-4 py-3 cursor-pointer text-foreground/60 truncate max-w-[200px]" onClick={onOpen} title={p.created_by || "—"}>
           {p.created_by || "—"}
