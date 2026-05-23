@@ -7,6 +7,7 @@ import { Eye, Mail, UserPlus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import PortalShell from "@/components/PortalShell";
+import { titleCase } from "@/components/calculator/calculations";
 
 export default function Reps() {
   const navigate = useNavigate();
@@ -177,7 +178,7 @@ export default function Reps() {
                         className="text-left max-w-full truncate"
                       >
                         <div className="font-medium text-foreground hover:underline truncate">
-                          {r.fullName || r.email}
+                          {r.fullName ? titleCase(r.fullName) : r.email}
                         </div>
                         {r.fullName && (
                           <div className="text-xs text-foreground/40 truncate">

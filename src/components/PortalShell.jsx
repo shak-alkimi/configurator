@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
+import { titleCase } from "@/components/calculator/calculations";
 import { DEPLOY_MARKER } from "@/lib/deploy-marker";
 import { ChevronDown, Eye, LogOut, Settings as SettingsIcon, X } from "lucide-react";
 import {
@@ -64,7 +65,7 @@ function NavItem({ to, label, soon }) {
 }
 
 function AccountPill({ user, isAdmin, onSignOut, onSettings }) {
-  const label = user?.full_name || user?.email || "Account";
+  const label = user?.full_name ? titleCase(user.full_name) : (user?.email || "Account");
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
