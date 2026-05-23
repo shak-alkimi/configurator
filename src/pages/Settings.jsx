@@ -128,7 +128,7 @@ export default function Settings() {
 
   return (
     <PortalShell>
-    <div className="max-w-2xl mx-auto p-8 space-y-6">
+    <div className="max-w-2xl mx-auto pt-[92px] px-8 pb-8 space-y-6">
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
