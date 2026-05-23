@@ -4,7 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import Settings from './pages/Settings';
 import Dashboard from './pages/Dashboard';
@@ -26,7 +26,11 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
-  const isLoginRoute = typeof window !== 'undefined' && window.location.pathname === '/signin';
+  // Use the router's reactive location — reading window.location directly
+  // doesn't trigger re-renders when <Navigate> changes the URL, which left
+  // the catch-all stuck on a stale value and never rendered /signin.
+  const location = useLocation();
+  const isLoginRoute = location.pathname === '/signin';
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
