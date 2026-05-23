@@ -5,6 +5,12 @@
     <link rel="icon" type="image/svg+xml" href="https://base44.com/logo_v2.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="/manifest.json" />
+    <!-- Tell browsers not to cache the HTML shell so reps clicking invite
+         links always pick up the latest bundle reference. The hashed JS/CSS
+         assets the HTML points to can still be cached aggressively. -->
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>Base44 APP</title>
   </head>
   <body>
