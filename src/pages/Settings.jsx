@@ -129,13 +129,6 @@ export default function Settings() {
   return (
     <PortalShell>
     <div className="max-w-2xl mx-auto p-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold" style={{ color: INK }}>Settings</h1>
-        <p className="text-sm mt-1" style={{ color: MUTED }}>
-          Manage integrations and credentials.
-        </p>
-      </div>
-
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
