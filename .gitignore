@@ -30,3 +30,4 @@ dist-ssr
 .env
 # Local Claude Code agent state
 .claude/
+scripts/.sos-token
