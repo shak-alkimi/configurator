@@ -1,5 +1,35 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+function sanitizeToken(raw) {
+  return (raw || '').replace(/[\s\u0000-\u001F\u007F]/g, '');
+}
+
+async function refreshAccessToken(base44, config) {
+  const res = await fetch('https://api.sosinventory.com/oauth2/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: config.refresh_token || '',
+      client_id: config.client_id || '',
+      client_secret: config.client_secret || '',
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Token refresh HTTP ${res.status}: ${body.slice(0, 200)}`);
+  }
+  const json = await res.json();
+  const newToken = json.access_token;
+  if (!newToken) throw new Error('Refresh response missing access_token');
+  await base44.asServiceRole.entities.IntegrationConfig.update(config.id, {
+    access_token: newToken,
+    ...(json.refresh_token ? { refresh_token: json.refresh_token } : {}),
+    ...(json.expires_in ? { token_expires_at: new Date(Date.now() + json.expires_in * 1000).toISOString() } : {}),
+  });
+  return newToken;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -13,10 +43,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'SOS IntegrationConfig not found' }, { status: 400 });
     }
     const config = configs[0];
-    const accessToken = config.access_token;
-    if (!accessToken) {
+    if (!config.access_token) {
       return Response.json({ error: 'SOS access token not configured' }, { status: 400 });
     }
+    let accessToken = sanitizeToken(config.access_token);
 
     // Fetch the project
     const project = await base44.asServiceRole.entities.Project.get(project_id);
@@ -50,14 +80,20 @@ Deno.serve(async (req) => {
       lines: lineItems
     };
 
-    const response = await fetch('https://api.sosinventory.com/api/v2/salesorder', {
+    const postOrder = (token) => fetch('https://api.sosinventory.com/api/v2/salesorder', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(salesOrder)
     });
+
+    let response = await postOrder(accessToken);
+    if (response.status === 401) {
+      accessToken = await refreshAccessToken(base44, config);
+      response = await postOrder(accessToken);
+    }
 
     const data = await response.json();
 
