@@ -64,16 +64,19 @@ async function syncProjectFromSOS(base44, project, getToken, onUnauthorized, dat
   const json = await res.json();
   const order = json?.data ?? json;
 
-  // Map SOS order status to Base44 project status
-  const SOS_STATUS_MAP = {
-    'Issued': 'submitted',
-    'Approved': 'approved',
-    'Shipped': 'shipped',
-    'Closed': 'shipped',
+  // Map SOS order status to Base44 project status using fuzzy substring match
+  // to handle variations like 'Open/Approved', 'Shipped/Closed', etc.
+  const mapToProjectStatus = (sosOrder, currentStatus) => {
+    const s = (sosOrder?.status || sosOrder?.statusDescription || '').toLowerCase();
+    if (s.includes('shipped') || s.includes('closed')) return 'shipped';
+    if (s.includes('approved') || s.includes('open')) {
+      return currentStatus === 'shipped' ? currentStatus : 'approved';
+    }
+    return null;
   };
 
   const updates = {};
-  const mappedStatus = SOS_STATUS_MAP[order?.status];
+  const mappedStatus = mapToProjectStatus(order, project.status);
   if (mappedStatus && mappedStatus !== project.status) {
     updates.status = mappedStatus;
   }
