@@ -79,24 +79,20 @@ async function syncProjectFromSOS(base44, project, getToken, onUnauthorized, dat
     return null;
   };
 
-  const updates = {};
+  const deltas = {};
   const mappedStatus = mapToProjectStatus(order, project.status);
   if (mappedStatus && mappedStatus !== project.status) {
-    updates.status = mappedStatus;
+    deltas.status = mappedStatus;
   }
   if (order?.trackingnumber && order.trackingnumber !== project.tracking_number) {
-    updates.tracking_number = order.trackingnumber;
-  }
-  updates.last_sos_sync_at = new Date().toISOString();
-  updates.last_sos_sync_error = null;
-
-  if (Object.keys(updates).length > 0) {
-    await base44.asServiceRole.entities.Project.update(project.id, updates, data_env);
+    deltas.tracking_number = order.trackingnumber;
   }
 
-  // Return only the business-logic deltas (not the housekeeping fields)
-  const { last_sos_sync_at, last_sos_sync_error, ...businessUpdates } = updates;
-  return businessUpdates;
+  if (Object.keys(deltas).length > 0) {
+    await base44.asServiceRole.entities.Project.update(project.id, deltas, data_env);
+  }
+
+  return deltas;
 }
 
 // ── Main handler ─────────────────────────────────────────────────────────────
