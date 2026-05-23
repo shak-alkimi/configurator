@@ -6,11 +6,29 @@
 export const SOS_API_BASE = 'https://api.sosinventory.com/api/v2';
 export const SOS_OAUTH_TOKEN_URL = 'https://api.sosinventory.com/oauth2/token';
 
+// Strip whitespace + ASCII control chars from a token string.
+// Tokens contain hyphens/underscores legitimately, so we keep those.
+// Defensive against bracketed-paste escapes and trailing newlines that
+// can leak in when an admin pastes credentials into the Settings form.
+// eslint-disable-next-line no-control-regex
+const sanitizeToken = (s) => (s || '').replace(/[\s\x00-\x1f\x7f]/g, '');
+
 export async function loadSOSConfig(base44, data_env) {
   const configs = await base44.asServiceRole.entities.IntegrationConfig.filter(
     { service: 'SOS' }, undefined, undefined, undefined, data_env
   );
-  return configs?.[0] || null;
+  const config = configs?.[0];
+  if (!config) return null;
+  // Return a sanitized clone so callers don't have to remember to clean
+  // tokens themselves. We intentionally only sanitize the token fields
+  // — other config fields (e.g. service, id) are passed through as-is.
+  return {
+    ...config,
+    access_token: sanitizeToken(config.access_token),
+    refresh_token: sanitizeToken(config.refresh_token),
+    client_id: sanitizeToken(config.client_id),
+    client_secret: sanitizeToken(config.client_secret),
+  };
 }
 
 // Refresh an expired SOS access token using the stored refresh_token, persist
