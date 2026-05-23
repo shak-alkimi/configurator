@@ -32,7 +32,10 @@ Deno.serve(async (req) => {
     }
 
     let token = config.access_token;
-    const ping = async () => fetch(`${SOS_API_BASE}/settings`, {
+    // Lightweight read that exists on every SOS account. `max=1` keeps the
+    // payload tiny — we only care about the HTTP status for a connectivity
+    // check, not the contents.
+    const ping = async () => fetch(`${SOS_API_BASE}/customer?max=1`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
