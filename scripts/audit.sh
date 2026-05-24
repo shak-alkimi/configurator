@@ -121,21 +121,13 @@ if [ "${1:-}" = "--commit" ]; then
   echo "Audit target:  commit $COMMIT_SHORT ($COMMIT_MSG)"
   echo "Repo HEAD:     $HEAD_SHORT"
   echo "----------"
-  exec codex review $CODEX_SANDBOX_FLAG --commit "$COMMIT_SHA" \
-    "Repository context for this review:
-  branch:       $BRANCH
-  HEAD commit:  $HEAD_SHA
-  target commit: $COMMIT_SHA ($COMMIT_MSG)
-
-Audit ONLY the change in target commit $COMMIT_SHORT. If your checkout does
-not contain that commit, STOP and report the mismatch — do not audit a
-substitute. Apply this lens: auth gaps, client-trusted inputs (data_env,
-project_id, anything else from request body), data-loss risk, schema/field
-mismatches, drift between source-of-truth and copies, OAuth refresh
-correctness, idempotency on writes, secret handling, error paths that
-swallow data, missing input validation. Report findings as P0/P1/P2 with
-file:line citations. Be specific. Skip stylistic-only findings unless they
-hide a bug."
+  # Note: codex review --commit and --base are mutually exclusive with a
+  # custom [PROMPT] argument — Codex enforces the diff scope itself and
+  # uses its built-in review flow. Standing instructions (the audit lens,
+  # output format, branch-discipline rule, etc.) live in AGENTS.md at the
+  # repo root, which Codex auto-loads on every invocation. Adding a custom
+  # prompt here would trip Codex's parser ("cannot be used with [PROMPT]").
+  exec codex review $CODEX_SANDBOX_FLAG --commit "$COMMIT_SHA"
 fi
 
 # --- Default: audit since last baseline ------------------------------------
@@ -174,24 +166,8 @@ echo "Files changed:"
 printf '%s\n' "$FILES_CHANGED" | sed 's/^/  /'
 echo "----------"
 
-exec codex review $CODEX_SANDBOX_FLAG --base "$BASE" \
-  "Repository context for this review:
-  branch:       $BRANCH
-  base commit:  $BASE_SHA ($BASE_MSG)
-  HEAD commit:  $HEAD_SHA ($HEAD_MSG)
-
-Audit ALL changes between base $BASE_SHORT and HEAD $HEAD_SHORT. Before
-auditing, confirm your checkout contains both commits. If either is
-missing, STOP and report the mismatch — do NOT audit a different snapshot
-in its place; we have been burned by that before. Files changed in this
-range:
-$(printf '%s\n' "$FILES_CHANGED" | sed 's/^/  /')
-
-Apply this lens: auth gaps, client-trusted inputs (data_env, project_id,
-anything else from request body), data-loss risk, schema/field mismatches,
-drift between source-of-truth and copies, OAuth refresh correctness,
-idempotency on writes, secret handling, error paths that swallow data,
-missing input validation. Report findings as P0/P1/P2 with file:line
-citations. Be specific and concrete. Skip stylistic-only findings unless
-they hide a bug. If a file in scope has no findings, say so explicitly
-rather than padding the report."
+# See the matching comment in the --commit branch above: codex review's
+# --base flag is mutually exclusive with [PROMPT]. Standing review
+# instructions (lens, format, branch-discipline, etc.) live in AGENTS.md
+# at the repo root and auto-load on every invocation.
+exec codex review $CODEX_SANDBOX_FLAG --base "$BASE"
