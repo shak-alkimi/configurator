@@ -10,6 +10,7 @@
 #   bash scripts/audit.sh                # audit since last "Stamp baseline" commit
 #   bash scripts/audit.sh <BASE>         # audit since given ref (sha, tag, branch)
 #   bash scripts/audit.sh --commit <SHA> # audit just one commit
+#   bash scripts/audit.sh --any-branch … # bypass the on-main safety check
 #
 # Requires: codex CLI installed (`npm i -g @openai/codex`) and authed
 # (`codex login`; ChatGPT subscription works, no API key needed).
@@ -21,20 +22,86 @@ if ! command -v codex >/dev/null 2>&1; then
   exit 127
 fi
 
-# Single-commit mode
+# --- Branch safety check ---------------------------------------------------
+# Codex previously audited stale code because it was reviewing
+# `codex-sync-baseline` while the real work lived on `main`. Refuse to run
+# unless we're on `main` AND up-to-date with origin, unless the caller
+# passes --any-branch first. This is the single biggest failure mode for
+# this workflow; the guard pays for itself the first time it fires.
+ALLOW_ANY_BRANCH="no"
+if [ "${1:-}" = "--any-branch" ]; then
+  ALLOW_ANY_BRANCH="yes"
+  shift
+fi
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+HEAD_SHA=$(git rev-parse HEAD)
+HEAD_SHORT=$(git rev-parse --short HEAD)
+
+if [ "$ALLOW_ANY_BRANCH" = "no" ] && [ "$BRANCH" != "main" ]; then
+  echo "ERROR: not on main (currently on '$BRANCH')." >&2
+  echo "Codex audits the checked-out tree; auditing a feature branch" >&2
+  echo "while the work has landed on main produces stale findings." >&2
+  echo "Either: (a) git checkout main && git pull, or (b) re-run with" >&2
+  echo "    bash scripts/audit.sh --any-branch [args]" >&2
+  exit 3
+fi
+
+# Fetch latest so the up-to-date check below is meaningful. Skip if no
+# remote (e.g. detached test env).
+if git remote get-url origin >/dev/null 2>&1; then
+  git fetch --quiet origin "$BRANCH" 2>/dev/null || true
+  LOCAL=$HEAD_SHA
+  REMOTE=$(git rev-parse "origin/$BRANCH" 2>/dev/null || echo "")
+  if [ -n "$REMOTE" ] && [ "$LOCAL" != "$REMOTE" ]; then
+    AHEAD=$(git rev-list --count "$REMOTE..$LOCAL" 2>/dev/null || echo "?")
+    BEHIND=$(git rev-list --count "$LOCAL..$REMOTE" 2>/dev/null || echo "?")
+    echo "WARN: local $BRANCH differs from origin/$BRANCH (ahead $AHEAD, behind $BEHIND)." >&2
+    echo "Codex will audit your local tree, which may not match what's pushed." >&2
+  fi
+fi
+
+# Refuse to run with dirty working tree — Codex's review of HEAD won't
+# include uncommitted changes, and you'd be auditing a snapshot you can't
+# point at by SHA later.
+if [ -n "$(git status --porcelain)" ]; then
+  echo "ERROR: working tree has uncommitted changes." >&2
+  echo "Commit or stash before auditing, so the audit corresponds to a SHA." >&2
+  git status --short >&2
+  exit 4
+fi
+
+# --- Single-commit mode ----------------------------------------------------
 if [ "${1:-}" = "--commit" ]; then
   if [ -z "${2:-}" ]; then
     echo "Usage: bash scripts/audit.sh --commit <SHA>" >&2
     exit 2
   fi
-  exec codex review --commit "$2" \
-    "Audit the change in this commit. Apply: auth gaps, client-trusted inputs,
-data-loss risk, schema/field mismatches, drift sources, OAuth refresh correctness,
-idempotency, secret handling. Report findings as P0/P1/P2 with file:line citations.
-Be specific. Skip findings that are stylistic-only unless they hide a bug."
+  COMMIT_SHA=$2
+  COMMIT_SHORT=$(git rev-parse --short "$COMMIT_SHA")
+  COMMIT_MSG=$(git log -1 --format='%s' "$COMMIT_SHA")
+  echo "Branch:        $BRANCH"
+  echo "Audit target:  commit $COMMIT_SHORT ($COMMIT_MSG)"
+  echo "Repo HEAD:     $HEAD_SHORT"
+  echo "----------"
+  exec codex review --commit "$COMMIT_SHA" \
+    "Repository context for this review:
+  branch:       $BRANCH
+  HEAD commit:  $HEAD_SHA
+  target commit: $COMMIT_SHA ($COMMIT_MSG)
+
+Audit ONLY the change in target commit $COMMIT_SHORT. If your checkout does
+not contain that commit, STOP and report the mismatch — do not audit a
+substitute. Apply this lens: auth gaps, client-trusted inputs (data_env,
+project_id, anything else from request body), data-loss risk, schema/field
+mismatches, drift between source-of-truth and copies, OAuth refresh
+correctness, idempotency on writes, secret handling, error paths that
+swallow data, missing input validation. Report findings as P0/P1/P2 with
+file:line citations. Be specific. Skip stylistic-only findings unless they
+hide a bug."
 fi
 
-# Default: find the most recent "Stamp baseline" commit and audit everything since
+# --- Default: audit since last baseline ------------------------------------
 if [ -n "${1:-}" ]; then
   BASE="$1"
 else
@@ -45,19 +112,37 @@ else
   fi
 fi
 
-SHORT=$(git rev-parse --short "$BASE")
-echo "Audit base: $SHORT ($(git log -1 --format='%s' "$BASE"))"
-echo "Audit head: $(git rev-parse --short HEAD) ($(git log -1 --format='%s'))"
-echo "Files changed since base:"
-git diff --name-only "$BASE"..HEAD | sed 's/^/  /'
+BASE_SHA=$(git rev-parse "$BASE")
+BASE_SHORT=$(git rev-parse --short "$BASE")
+BASE_MSG=$(git log -1 --format='%s' "$BASE")
+HEAD_MSG=$(git log -1 --format='%s' HEAD)
+FILES_CHANGED=$(git diff --name-only "$BASE"..HEAD)
+
+echo "Branch:     $BRANCH"
+echo "Audit base: $BASE_SHORT ($BASE_MSG)"
+echo "Audit head: $HEAD_SHORT ($HEAD_MSG)"
+echo "Files changed:"
+printf '%s\n' "$FILES_CHANGED" | sed 's/^/  /'
 echo "----------"
 
 exec codex review --base "$BASE" \
-  "Audit all changes between the base and HEAD. Apply this lens: auth gaps,
-client-trusted inputs (data_env, project_id, anything else from request body),
-data-loss risk, schema/field mismatches, drift between source-of-truth and copies,
-OAuth refresh correctness, idempotency on writes, secret handling, error paths
-that swallow data, missing input validation. Report findings as P0/P1/P2 with
-file:line citations. Be specific and concrete. Skip stylistic-only findings unless
-they hide a bug. If you cannot find issues in a file, say so explicitly rather
-than padding the report."
+  "Repository context for this review:
+  branch:       $BRANCH
+  base commit:  $BASE_SHA ($BASE_MSG)
+  HEAD commit:  $HEAD_SHA ($HEAD_MSG)
+
+Audit ALL changes between base $BASE_SHORT and HEAD $HEAD_SHORT. Before
+auditing, confirm your checkout contains both commits. If either is
+missing, STOP and report the mismatch — do NOT audit a different snapshot
+in its place; we have been burned by that before. Files changed in this
+range:
+$(printf '%s\n' "$FILES_CHANGED" | sed 's/^/  /')
+
+Apply this lens: auth gaps, client-trusted inputs (data_env, project_id,
+anything else from request body), data-loss risk, schema/field mismatches,
+drift between source-of-truth and copies, OAuth refresh correctness,
+idempotency on writes, secret handling, error paths that swallow data,
+missing input validation. Report findings as P0/P1/P2 with file:line
+citations. Be specific and concrete. Skip stylistic-only findings unless
+they hide a bug. If a file in scope has no findings, say so explicitly
+rather than padding the report."
