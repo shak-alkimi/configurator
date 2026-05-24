@@ -76,3 +76,54 @@ Use these tools when you need to inspect live app data without running the dev s
 
 - A standing audit of this repo (issues B1–B33, severity-grouped) lives at `C:\Users\shaki\alkimi-issues.md` — snapshot dated 2026-05-11. Verify line numbers before acting on a specific issue ID since the code may have shifted.
 - Vite plugin `@base44/vite-plugin` is doing more than bundling — it enables `hmrNotifier`, `navigationNotifier`, and `visualEditAgent` so the Base44 Builder can drive the dev server. Leave those flags alone unless you know why you're changing them.
+
+## Two-AI workflow
+
+This repo uses two AI agents with strict role separation:
+
+- **Claude Code** (CLI, this assistant) is the **implementer** — writes/edits code, commits, pushes.
+- **Codex** (CLI + Desktop) is the **independent auditor** — reviews diffs, reports findings as P0/P1/P2 with file:line citations, never edits code.
+
+Codex auto-loads [AGENTS.md](AGENTS.md) at the repo root, which encodes the audit lens, output format, branch-discipline rule, and the Windows-sandbox quirk note.
+
+To run an audit: `bash scripts/audit.sh` (audits since the last `Stamp baseline` commit). The script refuses to run if not on `main` or if the working tree is dirty. Findings come back as text; Claude Code triages them into the task list.
+
+## Memory & project context
+
+Persistent project memory lives in `~/.claude/projects/C--Users-shaki--claude/memory/alkimi_*.md`. Topics covered include brand tokens, dev-session setup, pricing source of truth, audit history, SOS integration plan, Base44 sync workflow, and known issues. New sessions should reference these files rather than re-asking the user.
+
+The same memory is wired into Cowork's Context panel for the Alkimi project — Cowork sessions read the same files. Memory written by Claude Code is visible to Cowork, and vice versa.
+
+## Identity & access
+
+- **Work email:** `shak@alkimiworks.com`.
+- **Personal email + Base44 admin owner:** `shakiluahmad@gmail.com`. Use this for prod app sign-in at https://light-calc-pro.base44.app — admin-only screens (e.g. `/settings`) gate on this account.
+- **GitHub:** authed as `shak-alkimi` via `gh auth login`; repo write scope.
+
+## Brand, design principles, IP
+
+- **Brand colors:** `#35790B` (green accent), `#252320` (near-black), plus neutrals `#DDDCDA` / `#EAEAE7` / `#C0BBB3`. No other hex values without checking memory:alkimi_brand_tokens.
+- **Typography:** Gellix only (DemiBold for hierarchy, Regular for body). Don't substitute system fonts.
+- **Configurator product naming:** branded **"Opus"** on customer-facing surfaces. Route is still `/configurator`.
+- **Patent intent:** the configurator/portal system is patent-pending. Flag before any public disclosure or open-source extraction.
+- **Optimization-first:** clean, efficient, minimal code as a primary hurdle — not a follow-up pass.
+- **AI/LLM-readiness:** every UI/UX/FE/BE/visual decision must be optimized for AI agents to read, parse, and engage with.
+
+## Base44 deployment workflow (draft/published split)
+
+Base44 has a **draft / published** split that applies to **both** the frontend AND server functions:
+
+- `git push` (and Builder/Cowork edits) deploy source to Base44's **draft runtime**.
+- The **Publish** button in the Builder promotes draft → production. **Required for functions to be live, not just the frontend.** A common failure mode is to commit + push, assume the production endpoint works, and get a 404. Always click Publish after a function change; wait for the success dialog ("Your app is published and live online!") before testing the prod endpoint.
+
+**`base44/shared/` is NOT bundled into Deno functions.** Any helper used by a server function must be inlined into that function's `entry.ts`. Tried and rejected: `import` from `../../shared/sos.js` produces `deploymentNotFound` at runtime. Learned the hard way 2026-05-23.
+
+**Stamp-baseline workflow** for the version-footer check: after a work commit, run `npm run stamp` to write the new HEAD SHA into [src/lib/deploy-marker.js](src/lib/deploy-marker.js) and [base44/functions/getVersion/entry.ts](base44/functions/getVersion/entry.ts), then commit as `Stamp <SHA> as baseline` and push. The portal footer's "check backend" button compares the two stamped values; ✓ means frontend SHA == backend SHA on the live deployment.
+
+## SOS Inventory integration (status: shipped to sandbox, hardening pending)
+
+**Shipped to production (2026-05-23):** admin-only `testSOSConnection` endpoint, Settings page with credential form + Test Connection button, all four SOS functions with sanitizeToken + OAuth refresh-on-401 + shared helpers inlined.
+
+**Pending hardening before pointing at a real SOS account** (full punch list in memory:alkimi-sos-pending and task list): auth checks + idempotency on `createSOSSalesOrder`, IntegrationConfig schema with admin-only RLS, Settings.jsx refactor so the browser never sees raw secrets, `reconcileSOSOrders` trigger validation, Project schema additions for SOS lifecycle fields, customer matching against real SOS customer IDs, error sanitization for non-admin contexts.
+
+**Sandbox vs production:** currently configured against SOS sandbox. Switchover requires rotating credentials AND completing the security hardening above.
