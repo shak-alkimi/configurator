@@ -31,3 +31,5 @@ dist-ssr
 # Local Claude Code agent state
 .claude/
 scripts/.sos-token
+scripts/.sos-spike-a-findings.md
+scripts/.codex-final-audit-prompt.txt

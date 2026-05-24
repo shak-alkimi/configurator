@@ -77,6 +77,10 @@ Use these tools when you need to inspect live app data without running the dev s
 - A standing audit of this repo (issues B1–B33, severity-grouped) lives at `C:\Users\shaki\alkimi-issues.md` — snapshot dated 2026-05-11. Verify line numbers before acting on a specific issue ID since the code may have shifted.
 - Vite plugin `@base44/vite-plugin` is doing more than bundling — it enables `hmrNotifier`, `navigationNotifier`, and `visualEditAgent` so the Base44 Builder can drive the dev server. Leave those flags alone unless you know why you're changing them.
 
+## Product direction
+
+Opus is the operational cockpit for the business — the daily operating surface for reps, clients, and admins. SOS and QBO remain systems of record; Opus surfaces decisions/actions and avoids cloning their UIs. No external CRM (Opus serves as operational CRM for now). Full strategic anchor in memory:alkimi-product-direction — defer to it when scope/ownership/UI direction questions arise.
+
 ## Two-AI workflow
 
 This repo uses two AI agents with strict role separation:

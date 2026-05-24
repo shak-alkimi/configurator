@@ -49,6 +49,15 @@ When reviewing, apply this lens in order of severity. P0/P1/P2 classification ex
 
 Skip stylistic findings unless they hide a bug. Do not pad reports.
 
+## Product direction audit lens
+
+Strategic anchor lives in memory:alkimi-product-direction (do not duplicate the full doc here; this section captures only the audit-relevant principles). When reviewing code or design, flag violations of:
+
+- **Opus is the daily operating surface.** Workflows that send users to SOS/QBO for routine daily tasks (vs setup/reconciliation/exceptions) should be flagged — surface them in Opus instead.
+- **Do not clone SOS/QBO/CRM screens.** Code that replicates a full SOS/QBO interaction surface inside Opus is scope creep. Pulling specific state + actions is correct; rebuilding their UIs is not.
+- **Surface source-of-truth boundaries.** Any UI surface displaying mirrored data without a sync status, last-synced time, or external ID where useful should be flagged as P1. Reps and admins need to know what's live vs stale.
+- **Flag designs that create silent divergence** between Opus and systems of record. Storing copies of SOS-owned data on the Opus side without a clear sync path back, or accepting edits on SOS-owned fields without write-through, is a P0 finding.
+
 ## Alkimi-specific audit triggers
 
 Beyond the general audit lens, also flag these patterns that have specific consequences in this codebase:
