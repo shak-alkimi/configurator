@@ -77,6 +77,14 @@ These have bitten us; flag them when relevant:
 - **Entity RLS lives in `*.jsonc` files** under `base44/entities/`. Missing schema file = unverifiable RLS. Always check the schema file exists for any entity the code references.
 - **GitHub ↔ Base44 is bidirectional.** Builder/AI-builder edits commit back to GitHub. Always `git pull --ff-only` at the start of an audit session to ensure local matches the Builder's view.
 
+## Windows host quirk (informational)
+
+On this user's Windows install, Codex CLI's sandbox modes (`read-only`, `workspace-write`) emit a `windows sandbox: spawn setup refresh` error and refuse to run shell commands. This was confirmed 2026-05-23. It does NOT affect `codex review`, which uses an internal file-read path that doesn't go through the sandbox-spawned shell. It DOES affect `codex exec` when the prompt requires running shell commands.
+
+If you (Codex) see `windows sandbox: spawn setup refresh` in your own exec logs during a review, ignore it — your file-read path is unaffected. Continue the audit using your built-in file inspection. Do not flag it as a finding (it's a Codex-side infrastructure note, not a finding about the user's code).
+
+For ad-hoc `codex exec` interactions where shell commands matter, the human can run `scripts/audit.sh --unsandboxed …` which passes `--dangerously-bypass-approvals-and-sandbox`. That is opt-in and not the default.
+
 ## How findings flow back
 
 Findings become tasks in Claude Code's task list (managed via `TaskCreate`/`TaskUpdate`). The implementer triages, clusters related items, and confirms with the user before bulk-creating if there are more than ~3 findings. Severity is preserved — don't soft-pedal P0s.

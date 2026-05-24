@@ -7,10 +7,15 @@
 #   as P0/P1/P2 items; this script never edits code.
 #
 # Usage:
-#   bash scripts/audit.sh                # audit since last "Stamp baseline" commit
-#   bash scripts/audit.sh <BASE>         # audit since given ref (sha, tag, branch)
-#   bash scripts/audit.sh --commit <SHA> # audit just one commit
-#   bash scripts/audit.sh --any-branch … # bypass the on-main safety check
+#   bash scripts/audit.sh                 # audit since last "Stamp baseline" commit
+#   bash scripts/audit.sh <BASE>          # audit since given ref (sha, tag, branch)
+#   bash scripts/audit.sh --commit <SHA>  # audit just one commit
+#   bash scripts/audit.sh --any-branch …  # bypass the on-main safety check
+#   bash scripts/audit.sh --unsandboxed … # pass --dangerously-bypass-approvals-and-sandbox
+#                                         # to Codex (Windows sandbox-bug workaround;
+#                                         # rarely needed for `codex review`)
+# Flags may be combined and given in any order before the optional BASE arg
+# or --commit <SHA>.
 #
 # Requires: codex CLI installed (`npm i -g @openai/codex`) and authed
 # (`codex login`; ChatGPT subscription works, no API key needed).
@@ -29,9 +34,36 @@ fi
 # passes --any-branch first. This is the single biggest failure mode for
 # this workflow; the guard pays for itself the first time it fires.
 ALLOW_ANY_BRANCH="no"
-if [ "${1:-}" = "--any-branch" ]; then
-  ALLOW_ANY_BRANCH="yes"
-  shift
+UNSANDBOXED="no"
+# Parse flags in any order. Two opt-ins, both off by default:
+#   --any-branch   bypass the main-only check (intentional feature-branch audits)
+#   --unsandboxed  pass --dangerously-bypass-approvals-and-sandbox to Codex
+#                  (workaround for the Windows sandbox "spawn setup refresh" bug
+#                  observed 2026-05-23; Codex's read-only and workspace-write
+#                  modes both fail to initialize on this Windows install, so any
+#                  Codex shell exec produces stderr noise. codex review uses an
+#                  internal file-read path that's NOT affected, so this flag is
+#                  rarely needed for `bash scripts/audit.sh`. It's wired in
+#                  primarily so the same script can run ad-hoc codex exec calls
+#                  if you ever swap the subcommand. Use --unsandboxed only when
+#                  Codex needs to spawn shell commands AND you've reviewed the
+#                  prompt to confirm it's not asking Codex to do anything
+#                  destructive.)
+while [ $# -gt 0 ] && [[ "$1" == --* ]]; do
+  case "$1" in
+    --any-branch)  ALLOW_ANY_BRANCH="yes"; shift ;;
+    --unsandboxed) UNSANDBOXED="yes"; shift ;;
+    --commit)      break ;;   # leave --commit + its arg for the commit-mode block
+    *) echo "ERROR: unknown flag '$1'" >&2; exit 2 ;;
+  esac
+done
+
+if [ "$UNSANDBOXED" = "yes" ]; then
+  echo "WARN: running Codex with --dangerously-bypass-approvals-and-sandbox." >&2
+  echo "Codex can spawn arbitrary shell commands in your repo. Review the prompt." >&2
+  CODEX_SANDBOX_FLAG="--dangerously-bypass-approvals-and-sandbox"
+else
+  CODEX_SANDBOX_FLAG=""
 fi
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
@@ -89,7 +121,7 @@ if [ "${1:-}" = "--commit" ]; then
   echo "Audit target:  commit $COMMIT_SHORT ($COMMIT_MSG)"
   echo "Repo HEAD:     $HEAD_SHORT"
   echo "----------"
-  exec codex review --commit "$COMMIT_SHA" \
+  exec codex review $CODEX_SANDBOX_FLAG --commit "$COMMIT_SHA" \
     "Repository context for this review:
   branch:       $BRANCH
   HEAD commit:  $HEAD_SHA
@@ -142,7 +174,7 @@ echo "Files changed:"
 printf '%s\n' "$FILES_CHANGED" | sed 's/^/  /'
 echo "----------"
 
-exec codex review --base "$BASE" \
+exec codex review $CODEX_SANDBOX_FLAG --base "$BASE" \
   "Repository context for this review:
   branch:       $BRANCH
   base commit:  $BASE_SHA ($BASE_MSG)
