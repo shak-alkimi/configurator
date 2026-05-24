@@ -11,6 +11,21 @@ This project uses a deliberate two-AI workflow:
 
 If you are an agent other than Codex and you are about to suggest a code change, first ask whether the user wants you in implementer mode or auditor mode. Don't assume.
 
+## Project context
+
+Alkimi is a B2B LED tape-light lighting company. This repo holds a quoting + portal app for sales reps, branded **"Opus"** on customer-facing surfaces (route stays `/configurator` internally). The configurator/portal system is **patent-pending** — flag any code path that exposes patent-pending logic publicly (un-gated public routes, leaked product schemas in static/marketing builds, configurator UI rendered without auth).
+
+User identity:
+
+- `shak@alkimiworks.com` — work email; primary identity for git/GitHub commits.
+- `shakiluahmad@gmail.com` — Base44 admin owner; used for prod sign-in and gating admin-only screens. Code that grants admin power via any other path (hardcoded email match, env-var bypass, debug flag in production) is a **P0 finding**.
+
+Deployed surfaces:
+
+- Production app: `https://light-calc-pro.base44.app`
+- Base44 Builder: `https://app.base44.com/apps/698fc81203f85a20f281d9dc`
+- GitHub: `shak-alkimi/configurator` on `main`
+
 ## Branch / checkout discipline
 
 - **Audits run from `main` only.** The `scripts/audit.sh` wrapper enforces this; if you are invoked outside the wrapper, verify with `git rev-parse --abbrev-ref HEAD` before reviewing. Auditing a feature branch while work has landed on `main` produces stale findings and wastes both agents' cycles. This has happened before (2026-05-23, `codex-sync-baseline` mismatch); the guard exists because of that incident.
@@ -33,6 +48,17 @@ When reviewing, apply this lens in order of severity. P0/P1/P2 classification ex
 - **Missing input validation.** Required fields not checked. Numeric fields not bounded. Enum fields not validated against allowed values.
 
 Skip stylistic findings unless they hide a bug. Do not pad reports.
+
+## Alkimi-specific audit triggers
+
+Beyond the general audit lens, also flag these patterns that have specific consequences in this codebase:
+
+- **Brand violations.** Any hex value in CSS/JSX outside the approved palette (`#35790B`, `#252320`, `#DDDCDA`, `#EAEAE7`, `#C0BBB3`). Font-family declarations that substitute or fall back away from Gellix. Tailwind utilities that pull from slate/gray palettes when our neutrals are defined. — P2 typically, P1 if it shipped to a customer-facing surface.
+- **Patent-exposure risks.** Public/unauthenticated routes that render configurator UI; marketing-build artifacts that bundle patent-pending logic; any new public entry point that doesn't gate on auth. — P0.
+- **`IntegrationConfig` direct entity access from the browser.** `src/pages/Settings.jsx` and similar admin-side surfaces should not call `base44.entities.IntegrationConfig.filter(...).update(...)` directly — secrets (`access_token`, `refresh_token`, `client_secret`) round-trip as plain JSON over the wire and live in browser memory. Should flow through an admin-only function instead. — P0 until task #30 lands.
+- **Pricing-constants drift across three duplicated locations.** [src/components/calculator/constants.jsx](src/components/calculator/constants.jsx), [base44/functions/exportProjectPDF/entry.ts](base44/functions/exportProjectPDF/entry.ts), [base44/functions/exportProjectCSV/entry.ts](base44/functions/exportProjectCSV/entry.ts). Any change in one not mirrored in the other two. — P1.
+- **`Project` status / SOS lifecycle fields written but not declared in schema.** Code writes `shipped`, `in_fulfillment`, `sos_order_id`, `tracking_number`, `last_sos_sync_at`, `last_sos_sync_error` to `Project` records; these aren't currently in [base44/entities/Project.jsonc](base44/entities/Project.jsonc). Flag any expansion of this pattern until task #32 lands.
+- **"Apply fix" actions in Codex Desktop.** If the UI offers an "Apply fix", "Rewrite", or similar one-click code-modification action on a finding, do NOT use it. Findings must flow through Claude Code (the implementer) so the two-AI separation holds and audits remain independent of implementation. Report the finding as text and stop.
 
 ## Diff scope and what to inspect
 
