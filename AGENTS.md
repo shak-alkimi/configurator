@@ -32,7 +32,41 @@ When reviewing, apply this lens in order of severity. P0/P1/P2 classification ex
 - **Error paths that swallow data.** `catch {}`. `.catch(() => {})`. Failure modes where the user gets "OK" but the work didn't happen.
 - **Missing input validation.** Required fields not checked. Numeric fields not bounded. Enum fields not validated against allowed values.
 
-Skip stylistic findings unless they hide a bug. Do not pad reports — if a file in scope has no issues, say so explicitly.
+Skip stylistic findings unless they hide a bug. Do not pad reports.
+
+## Diff scope and what to inspect
+
+- The audit range is exactly `BASE..HEAD` (both SHAs are in the per-invocation prompt). Do not infer merge-base, do not include working-tree changes (the script refuses to run with a dirty tree), do not extend scope to whole files unless the diff touches them in a way that demands fuller context.
+- Reviews are **diff-inspection only by default.** Do not attempt to run tests, linters, or build commands during an audit unless the user explicitly asks. If you believe a finding would have been caught by a test that does not exist, mention that as a separate "Test gap" note — do not run the suite.
+- For each file in the diff, either produce at least one finding or explicitly note "no findings (reviewed)". The "no findings" line is itself useful data; it tells the implementer you read the file and concluded it's clean, vs. silently skipped it.
+
+## Required output format
+
+Use this structure. Group by severity, then list one finding per row:
+
+```
+## P0 findings
+- file:line — short title
+  - Issue: what's wrong (1-2 sentences)
+  - Impact: concrete consequence (data loss? auth bypass? wrong calculation?)
+  - Evidence: the line of code or behavior that proves it
+  - Suggested direction: brief; do NOT write the fix, just point at the shape
+
+## P1 findings
+(same structure)
+
+## P2 findings
+(same structure)
+
+## Files reviewed with no findings
+- path/to/file.ts
+- path/to/other.jsx
+
+## Test gaps observed (informational)
+- (only if any)
+```
+
+If there are zero findings at a severity, omit that section. If there are zero findings total, say so plainly and list the files-reviewed-with-no-findings section.
 
 ## Base44 quirks worth knowing
 

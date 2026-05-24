@@ -38,6 +38,11 @@ BRANCH=$(git rev-parse --abbrev-ref HEAD)
 HEAD_SHA=$(git rev-parse HEAD)
 HEAD_SHORT=$(git rev-parse --short HEAD)
 
+if ! git cat-file -e "${HEAD_SHA}^{commit}" 2>/dev/null; then
+  echo "ERROR: HEAD commit $HEAD_SHA is not resolvable. Repo state is broken." >&2
+  exit 6
+fi
+
 if [ "$ALLOW_ANY_BRANCH" = "no" ] && [ "$BRANCH" != "main" ]; then
   echo "ERROR: not on main (currently on '$BRANCH')." >&2
   echo "Codex audits the checked-out tree; auditing a feature branch" >&2
@@ -114,6 +119,18 @@ fi
 
 BASE_SHA=$(git rev-parse "$BASE")
 BASE_SHORT=$(git rev-parse --short "$BASE")
+
+# Verify both endpoints of the audit range actually exist locally as
+# commits. If we can't resolve them, Codex (reviewing the same checkout)
+# can't either — better to fail loudly than send Codex a prompt naming
+# SHAs it cannot find.
+for sha in "$BASE_SHA" "$HEAD_SHA"; do
+  if ! git cat-file -e "${sha}^{commit}" 2>/dev/null; then
+    echo "ERROR: commit $sha is not present in the local repo." >&2
+    echo "Refusing to invoke Codex with a SHA the checkout cannot resolve." >&2
+    exit 5
+  fi
+done
 BASE_MSG=$(git log -1 --format='%s' "$BASE")
 HEAD_MSG=$(git log -1 --format='%s' HEAD)
 FILES_CHANGED=$(git diff --name-only "$BASE"..HEAD)
