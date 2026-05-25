@@ -2,4 +2,4 @@
 // Both the frontend (PortalShell footer) and the backend (getVersion function)
 // read this value indirectly via the same stamp script, so when they match
 // it proves the same commit reached both layers.
-export const DEPLOY_MARKER = '807007d';
+export const DEPLOY_MARKER = 'f06a5da';

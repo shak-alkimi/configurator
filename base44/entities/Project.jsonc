@@ -14,6 +14,32 @@
 // SOS lifecycle fields are set by Opus code only (admin role via service-role
 // where appropriate). Reps cannot edit these — schema RLS gates Project edits to
 // owner/admin; sync code uses asServiceRole.
+//
+// FIELD-LEVEL WRITE BOUNDARY (task #91 — Codex P0 from Phase 1):
+// Base44 RLS is operation-scoped only (no per-field rules — verified via
+// list_entity_schemas across all 7 live entities). To keep reps from silently
+// mutating SOS-owned + sync-metadata fields, create/update are LOCKED TO ADMIN
+// at the entity level. Legitimate rep create/update flows through the
+// writeProjectAsOwner server function (base44/functions/writeProjectAsOwner)
+// which:
+//   - authenticates via base44.auth.me(),
+//   - fetches the project via service-role and enforces created_by===user.email
+//     OR user.role==='admin' for updates,
+//   - applies a STRICT allowlist of Opus-owned keys (project_name, customer_*,
+//     street/city/state, sector, notes, status, drivers, and quote_number on
+//     create only),
+//   - restricts status writes to {draft, submitted, approved} — in_fulfillment
+//     and shipped are SOS-driven via reconcileSOSOrders/fetchSOSOrderStatus,
+//   - hard-rejects unknown keys with 400 (no silent drop — hides bugs and
+//     policy violations per Codex pass 2),
+//   - validates drivers structure (max 50, bounded numerics, known sub-keys),
+//   - server-sets created_by on create (never trusts body).
+// Admins retain the option to mutate directly via SDK (the admin allowance in
+// the RLS rules below covers Base44 Builder UI edits + admin-side tooling).
+//
+// ANY NEW FIELD added to this schema must also be classified into the writeProjectAsOwner
+// allowlist (writable by reps) OR explicitly excluded (sync/admin-only). Schema-only
+// addition is a P0 audit finding per AGENTS.md.
 {
   "name": "Project",
   "type": "object",
@@ -163,21 +189,14 @@
     "project_name"
   ],
   "rls": {
-    "create": {
-      "created_by": "{{user.email}}"
-    },
+    "create": { "user_condition": { "role": "admin" } },
     "read": {
       "$or": [
         { "created_by": "{{user.email}}" },
         { "user_condition": { "role": "admin" } }
       ]
     },
-    "update": {
-      "$or": [
-        { "created_by": "{{user.email}}" },
-        { "user_condition": { "role": "admin" } }
-      ]
-    },
+    "update": { "user_condition": { "role": "admin" } },
     "delete": {
       "$or": [
         { "created_by": "{{user.email}}" },

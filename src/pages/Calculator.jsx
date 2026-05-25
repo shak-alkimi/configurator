@@ -112,14 +112,23 @@ export default function Calculator() {
     enabled: !!selectedProjectId,
   });
 
-  // Create/Update project mutation
+  // Create/Update project mutation.
+  // Routes through writeProjectAsOwner (task #91) because Project.create/update
+  // RLS is admin-only at the entity level — reps can't call the SDK directly
+  // anymore. The function enforces an allowlist of Opus-owned fields so this
+  // path can never set sos_* / sync-metadata / SOS-driven status values.
   const saveProjectMutation = useMutation({
     mutationFn: async (data) => {
-      if (isNewProject) {
-        return await base44.entities.Project.create(data);
-      } else {
-        return await base44.entities.Project.update(selectedProjectId, data);
+      const op = isNewProject ? 'create' : 'update';
+      const body = op === 'create'
+        ? { op, patch: data }
+        : { op, projectId: selectedProjectId, patch: data };
+      const response = await base44.functions.invoke('writeProjectAsOwner', body);
+      const result = response?.data;
+      if (!result?.ok) {
+        throw new Error(result?.error || 'Failed to save project');
       }
+      return result.project;
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
@@ -216,8 +225,18 @@ export default function Calculator() {
   // Update drivers — optimistic local update, persisted through a tracked mutation
   // with rollback so a failed save doesn't leave the UI ahead of the server.
   const updateDriversMutation = useMutation({
-    mutationFn: ({ projectId, drivers }) =>
-      base44.entities.Project.update(projectId, { drivers }),
+    mutationFn: async ({ projectId, drivers }) => {
+      // Drivers writes go through writeProjectAsOwner (task #91) because
+      // Project.update RLS is admin-only. drivers structure is server-validated.
+      const response = await base44.functions.invoke('writeProjectAsOwner', {
+        op: 'update',
+        projectId,
+        patch: { drivers },
+      });
+      const result = response?.data;
+      if (!result?.ok) throw new Error(result?.error || 'Failed to update drivers');
+      return result.project;
+    },
     onMutate: ({ drivers }) => {
       const previousDrivers = projectData.drivers;
       setProjectData(prev => ({ ...prev, drivers }));
@@ -297,11 +316,20 @@ export default function Calculator() {
     }
 
     try {
-      const created = await base44.entities.Project.create({
-        project_name: seedName,
-        status: 'draft',
-        drivers: [{ id: String(Date.now()), name: 'Driver 1', maxWatts: 96 }]
+      // Project.create RLS is admin-only after task #91 — route through
+      // writeProjectAsOwner so reps can create projects. created_by is set
+      // server-side from auth context (never trusted from body).
+      const response = await base44.functions.invoke('writeProjectAsOwner', {
+        op: 'create',
+        patch: {
+          project_name: seedName,
+          status: 'draft',
+          drivers: [{ id: String(Date.now()), name: 'Driver 1', maxWatts: 96 }],
+        },
       });
+      const result = response?.data;
+      if (!result?.ok) throw new Error(result?.error || 'Failed to create draft');
+      const created = result.project;
       await queryClient.invalidateQueries({ queryKey: ['projects'] });
       setProjectData(created);
       setSelectedProjectId(created.id);

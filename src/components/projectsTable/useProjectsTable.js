@@ -214,8 +214,21 @@ export function useProjectsTable({ baseFilter, statuses }) {
 
   const updateStatus = useMutation({
     mutationFn: async ({ ids, status }) => {
+      // Project.update RLS is admin-only after task #91 — route through
+      // writeProjectAsOwner. status values are server-restricted to
+      // {draft, submitted, approved}; in_fulfillment/shipped are SOS-driven
+      // and will reject with 400 if accidentally passed.
       await Promise.all(
-        ids.map((id) => base44.entities.Project.update(id, { status }))
+        ids.map(async (id) => {
+          const response = await base44.functions.invoke('writeProjectAsOwner', {
+            op: 'update',
+            projectId: id,
+            patch: { status },
+          });
+          const result = response?.data;
+          if (!result?.ok) throw new Error(result?.error || 'Failed to update status');
+          return result.project;
+        })
       );
     },
     onSuccess: () => {
