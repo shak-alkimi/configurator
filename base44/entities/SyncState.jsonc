@@ -1,0 +1,149 @@
+// SyncState entity — per-module cursor + concurrency state for SOS sync functions.
+// Created by task #38. Design spec is task #78 + memory:alkimi-sos-sync-design
+// "Updates after Codex audit" / SyncState section.
+//
+// One row per (service, module, data_env) combination. Example: ('SOS', 'customer',
+// 'prod'). Atomic compare-and-set locking via Base44 entities.SyncState.updateMany
+// (proven atomic CAS in #78 Step 0 spike, see memory:alkimi-sos-sync-design "Task #78
+// Step 0 findings" section).
+//
+// CURSOR ADVANCEMENT (per Spike E findings):
+//   At start of run: capture cursor_value = (now UTC) - cursor_safety_margin_seconds.
+//   Run all pages. On full success: persist cursor_value as new updatedsince for next run.
+//   On any page failure: do NOT advance — next run replays from previous cursor.
+//   Default safety margin: 30 seconds. Adjustable via cursor_safety_margin_seconds field.
+//
+// ATOMIC LOCK ACQUISITION (per #78 Step 0 spike):
+//   Acquire: entities.SyncState.updateMany(
+//     {service:X, module:Y, data_env:Z,
+//      $or:[{is_locked:false}, {lock_acquired_at:{$lt:now-5min}}]},
+//     {$set:{is_locked:true, lock_acquired_at:now, lock_owner_run_id:<uuid>}})
+//   Result.updated === 1 → acquired; 0 → another run holds; abort.
+//   Release: entities.SyncState.updateMany(
+//     {service:X, module:Y, data_env:Z, lock_owner_run_id:<my_uuid>},
+//     {$set:{is_locked:false, lock_owner_run_id:null}})
+//   Owner-scoped to prevent releasing someone else's lock.
+//
+// CURSOR SELF-VALIDATION (per Spike G — per-function checklist item #9):
+//   Sync functions MUST log per-run {totalCount, start, cursor_value, count_returned,
+//   first_record_id, last_record_id}. Alarm on: totalCount growth, first-page-ID
+//   stability across runs (canonical silent-ignore signal), start>totalCount returning
+//   data. Canary pattern recommended (one stable record fetched directly to confirm
+//   cursor filtering works).
+//
+// ADMIN-ONLY RLS. No rep access. Read by Sync Health card (#89).
+{
+  "name": "SyncState",
+  "type": "object",
+  "properties": {
+    "service": {
+      "type": "string",
+      "enum": ["SOS"],
+      "description": "External service identifier. Currently SOS-only. Add future services here (QBO, etc.) by extending enum."
+    },
+    "module": {
+      "type": "string",
+      "enum": [
+        "customer",
+        "estimate",
+        "salesorder",
+        "invoice",
+        "salesreceipt",
+        "payment",
+        "shipment"
+      ],
+      "description": "Module within the service. Matches SOS API endpoint name. Each gets its own SyncState row per data_env."
+    },
+    "data_env": {
+      "type": "string",
+      "enum": ["prod", "staging", "dev"],
+      "default": "prod",
+      "description": "Deployment environment. SERVER-DERIVED per per-function checklist item #4; never accept from request body. Composite key with service+module."
+    },
+
+    // --- Cursor state ---
+    "cursor_type": {
+      "type": "string",
+      "enum": ["timestamp", "updated_since", "page_token", "full_sweep"],
+      "default": "updated_since",
+      "description": "How to interpret cursor_value. Spike A confirmed SOS uses updated_since (lowercase, no underscore in the query param) — keep this as the dominant strategy. Other values reserved for future SOS endpoints if needed."
+    },
+    "cursor_value": {
+      "type": "string",
+      "description": "Opaque cursor per cursor_type. For updated_since: ISO timestamp string in UTC (YYYY-MM-DDTHH:MM:SS, no timezone suffix — SOS expects this format per Spike A docs)."
+    },
+    "cursor_safety_margin_seconds": {
+      "type": "number",
+      "default": 30,
+      "description": "Subtracted from now() at run start to produce next cursor_value. 30s default per Spike E findings (INCLUSIVE boundary at second granularity, no commit lag observed). Adjustable knob per Codex pass 5 P2 — can roll back to 60s+ if production telemetry shows records-missed events. Tightening to 5s possible after stable production data."
+    },
+
+    // --- Run history (last run + last success diverge if last run failed) ---
+    "last_run_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp of the most recent run start (success or failure)."
+    },
+    "last_success_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp of the most recent SUCCESSFUL run completion. Used by Sync Health card to compute staleness."
+    },
+    "last_error": {
+      "type": "string",
+      "description": "Sanitized error from the most recent failed run (per per-function checklist item #6 + task #33). Admin-visible only. Empty when last run succeeded."
+    },
+    "last_error_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp of the most recent run failure. Empty when last run succeeded."
+    },
+    "next_run_after": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Backoff hint. Earliest time the next scheduled run should fire. Set after throttle hits or failures with exponential backoff."
+    },
+
+    // --- Concurrency lock state (atomic CAS via updateMany) ---
+    "is_locked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Lock state. Set true atomically via updateMany during lock acquisition. Released by lock owner at run end. Stale-lock detection: any acquisition attempt treats locks with lock_acquired_at older than 5 minutes as stale and overrides."
+    },
+    "lock_acquired_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when current lock was acquired. Used for stale-lock detection (5-min timeout)."
+    },
+    "lock_owner_run_id": {
+      "type": "string",
+      "description": "UUID of the run currently holding the lock. Release operation is owner-scoped (UPDATE ... WHERE lock_owner_run_id=<my_uuid>) to prevent one run releasing another's lock."
+    },
+
+    // --- Backfill coordination ---
+    "backfill_in_progress": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set true during a backfill task (#69-#73, #90). Disables cursor advancement during the backfill window. Scheduled sweeps yield to backfill via the atomic lock above (the lock acquisition query naturally excludes locked rows)."
+    },
+
+    // --- Orphan observations (per Spike C + #79 orphan-policy decision) ---
+    "orphan_observations": {
+      "type": "array",
+      "description": "SOS records found during reconcile/backfill that don't match any Opus mirror (e.g., SOS Sales Orders with no matching Opus Project per #79 policy). Format: '<sos_id>:<observed_at_ISO>'. Trimmed to last 50 entries to avoid unbounded growth. Admin-visible in Sync Health card (#89). Replaces the originally-proposed Phase 8 Activity-based orphan surfacing.",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "service",
+    "module"
+  ],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read":   { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}
