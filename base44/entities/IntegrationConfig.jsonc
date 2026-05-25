@@ -1,0 +1,67 @@
+// IntegrationConfig entity — OAuth credentials for external integrations (SOS, future QBO, etc).
+// Formalized in repo by task #29 (the entity already existed implicitly in production from the
+// SOS Settings page work; this file locks the schema + RLS in source control so they can be audited).
+//
+// SECURITY-SENSITIVE: this entity stores plaintext access_token, refresh_token, client_secret.
+// Multiple downstream tasks address this:
+//   - #16 — move to vault / encryption at rest (production-blocker per G1 release gate)
+//   - #30 — refactor Settings.jsx to read/write via admin-only function instead of direct entity
+//           access, so secrets never round-trip to the browser
+//   - #17 — rotate credentials on sandbox → production transition (blocked by #16)
+//
+// RLS is admin-only on every CRUD operation per design (memory:alkimi-sos-sync-design and
+// the per-function checklist). Sync functions read tokens via base44.asServiceRole; admin-only
+// query functions are the only callable path for human reads.
+//
+// AUDIT FLAGS (per AGENTS.md Alkimi-specific audit triggers):
+//   - Any code that returns access_token / refresh_token / client_secret to a non-admin
+//     surface (rep portal, public route, browser-side entity read) is a P0 finding.
+//   - Any console.log / error message / sync_error storing these values verbatim is a P0.
+//   - Any new field added here must declare clearly whether it's a secret or not (see notes
+//     vs token_expires_at distinction below).
+{
+  "name": "IntegrationConfig",
+  "type": "object",
+  "properties": {
+    "service": {
+      "type": "string",
+      "description": "Integration identifier. e.g. 'SOS', 'QBO', 'EasyPost'. Filters when querying — each integration has its own row."
+    },
+
+    // --- Secrets (P0 if leaked to non-admin context) ---
+    "access_token": {
+      "type": "string",
+      "description": "SECRET. OAuth bearer token. Sanitize before any logging or non-admin response. Refreshed automatically on 401 by sync functions (per per-function checklist item #2)."
+    },
+    "refresh_token": {
+      "type": "string",
+      "description": "SECRET. OAuth refresh token. Used to mint new access_tokens. Even more sensitive than access_token (longer-lived, can be used to mint many tokens). NEVER expose to any non-admin path."
+    },
+    "client_id": {
+      "type": "string",
+      "description": "SECRET (treat as sensitive). OAuth client identifier registered with the external service."
+    },
+    "client_secret": {
+      "type": "string",
+      "description": "SECRET. OAuth client secret. Paired with client_id for token refresh. Maximum sensitivity."
+    },
+    "token_expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Non-secret metadata. ISO timestamp when access_token expires. Used by sync functions to proactively refresh before hitting 401."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Non-secret admin notes about this integration. Free-text, intended for human reference (e.g. 'Sandbox account, rotate before prod cutover'). Admin-edit, admin-read only via RLS."
+    }
+  },
+  "required": [
+    "service"
+  ],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read":   { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}
