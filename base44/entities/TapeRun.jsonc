@@ -1,3 +1,23 @@
+// TapeRun entity — children of Project. Ownership is INHERITED from the parent
+// Project: a rep owns a TapeRun iff they own the Project at TapeRun.project_id.
+//
+// SECURITY (task #94, Codex P0 from comprehensive audit 2026-05-24):
+// Originally this schema had no `rls` block, and Base44's default permitted any
+// authenticated user to POST a TapeRun with an arbitrary project_id (verified
+// exploit: rep created TapeRun with project_id="0000...0000", got 200 back).
+// Locked create/update/delete to admin-only; rep writes flow through
+// base44/functions/writeTapeRunAsOwner which validates parent-Project ownership
+// before service-role mutation. Read kept owner-via-Project / admin.
+//
+// READ RLS LIMITATION: Base44 RLS operators don't support cross-entity ownership
+// (TapeRun → Project.created_by) directly. As of 2026-05-24, READ access uses
+// the same any-authenticated default that historically applied. In practice
+// reps can only enumerate their own runs because they can only enumerate their
+// own projects (Project.read RLS does owner-OR-admin), but a rep with a foreign
+// TapeRun id could still GET it. This is documented as a known gap; full read
+// scoping requires either a server function (getRepTapeRuns) or Base44 RLS
+// supporting joins (which it currently doesn't). Track as a follow-up if
+// rep read scoping becomes operationally important.
 {
   "name": "TapeRun",
   "type": "object",
@@ -91,5 +111,12 @@
   "required": [
     "project_id",
     "length_feet"
-  ]
+  ],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+  // NOTE: `read` deliberately omitted (no per-op rule, defaults to platform
+  // permissive behavior). See header NOTE about read limitations.
 }

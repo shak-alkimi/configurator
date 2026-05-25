@@ -166,9 +166,20 @@ export default function Calculator() {
     },
   });
 
-  // Create tape run mutation
+  // TapeRun mutations all route through writeTapeRunAsOwner (task #94) — the
+  // entity create/update/delete RLS is admin-only, and the gateway validates
+  // parent-Project ownership before any service-role write. Same shape as
+  // writeProjectAsOwner (#91). Errors bubble up via the standard ok/error
+  // envelope.
+  const invokeTapeRunGateway = async (body) => {
+    const response = await base44.functions.invoke('writeTapeRunAsOwner', body);
+    const result = response?.data;
+    if (!result?.ok) throw new Error(result?.error || 'TapeRun write failed');
+    return result;
+  };
+
   const createTapeRunMutation = useMutation({
-    mutationFn: (runData) => base44.entities.TapeRun.create(runData),
+    mutationFn: (runData) => invokeTapeRunGateway({ op: 'create', patch: runData }).then(r => r.tapeRun),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
       toast.success('Tape run added');
@@ -178,9 +189,8 @@ export default function Calculator() {
     },
   });
 
-  // Update tape run mutation
   const updateTapeRunMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.TapeRun.update(id, data),
+    mutationFn: ({ id, data }) => invokeTapeRunGateway({ op: 'update', runId: id, patch: data }).then(r => r.tapeRun),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
       if (!variables?.silent) toast.success('Tape run updated');
@@ -190,9 +200,8 @@ export default function Calculator() {
     },
   });
 
-  // Delete tape run mutation
   const deleteTapeRunMutation = useMutation({
-    mutationFn: (runId) => base44.entities.TapeRun.delete(runId),
+    mutationFn: (runId) => invokeTapeRunGateway({ op: 'delete', runId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tapeRuns', selectedProjectId] });
       toast.success('Tape run deleted');
@@ -203,16 +212,18 @@ export default function Calculator() {
   });
 
   // Reorder tape runs mutation.
-  // Updates are sequential rather than Promise.all so a mid-batch failure stops
-  // immediately instead of letting partial writes commit while later ones race.
+  // Batched through the gateway's 'reorder' op — one server roundtrip instead
+  // of N sequential writes. The gateway pre-validates ownership for every
+  // target before applying any update, so a partial write on a foreign run is
+  // impossible.
   const reorderTapeRunsMutation = useMutation({
     mutationFn: async (reorderedRuns) => {
-      for (let i = 0; i < reorderedRuns.length; i++) {
-        await base44.entities.TapeRun.update(reorderedRuns[i].id, {
-          order: i,
-          driver_group: reorderedRuns[i].driver_group ?? '',
-        });
-      }
+      const updates = reorderedRuns.map((run, i) => ({
+        runId: run.id,
+        order: i,
+        driver_group: run.driver_group ?? '',
+      }));
+      await invokeTapeRunGateway({ op: 'reorder', updates });
     },
     onMutate: async (newReorderedRuns) => {
       await queryClient.cancelQueries({ queryKey: ['tapeRuns', selectedProjectId] });
@@ -408,9 +419,14 @@ export default function Calculator() {
     // Bump every run with order > insertAfterOrder so the dup sits directly after.
     const toBump = tapeRuns.filter(r => (r.order ?? 0) > insertAfterOrder);
     try {
-      await Promise.all(
-        toBump.map(r => base44.entities.TapeRun.update(r.id, { order: (r.order ?? 0) + 1 }))
-      );
+      // Bump existing runs via the gateway's batched reorder op (task #94).
+      // One server call, atomic ownership check across all targets.
+      if (toBump.length > 0) {
+        await invokeTapeRunGateway({
+          op: 'reorder',
+          updates: toBump.map(r => ({ runId: r.id, order: (r.order ?? 0) + 1 })),
+        });
+      }
       await createTapeRunMutation.mutateAsync({
         run_name: run.run_name,
         length_feet: run.length_feet,
