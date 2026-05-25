@@ -1,9 +1,24 @@
-// Single source of truth for pricing constants used by both the frontend
-// (`src/components/calculator/constants.jsx`) and the Base44 server functions
-// (`base44/functions/exportProject{PDF,CSV}/entry.ts`).
+// Canonical pricing constants. FRONTEND-ONLY IMPORT.
 //
-// Plain ES module so it imports cleanly in both Vite (frontend) and Deno
-// (Base44 functions). Don't add JSX, TypeScript syntax, or Node-only APIs.
+// PRIOR ASSUMPTION (proved wrong 2026-05-25, root cause of tasks #11 + #98):
+// This file was originally meant to be shared between the frontend and the
+// Base44 Deno functions. It is NOT. Per memory:alkimi-base44-sync, Base44's
+// Deno bundler cannot resolve relative imports out of base44/shared/, so
+// `import ... from '../../shared/pricing.js'` in any function silently fails
+// the draft deploy and production serves stale/broken — every call 500s.
+//
+// CURRENT USAGE:
+//   - src/components/calculator/constants.jsx — imports from here (via Vite,
+//     which resolves fine).
+//   - base44/functions/exportProjectPDF/entry.ts — INLINES this content.
+//   - base44/functions/exportProjectCSV/entry.ts — INLINES this content.
+//
+// AUDIT (AGENTS.md Alkimi-specific trigger): edits here MUST be mirrored to
+// both Deno function copies. Duplication is the cost of the platform
+// limitation. Do NOT add new Deno function imports from this file.
+//
+// Plain ES module so the Vite-side import resolves cleanly. Don't add JSX,
+// TypeScript syntax, or Node-only APIs.
 
 export const TAPE_SPECS = {
   "300lm (3.0w/ft)": {

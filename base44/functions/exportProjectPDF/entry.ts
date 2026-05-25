@@ -1,20 +1,48 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { jsPDF } from 'npm:jspdf@4.0.0';
-import {
-    TAPE_SPECS,
-    CHANNEL_SPECS,
-    DRIVER_SPECS,
-    DEFAULT_DRIVER_MAX_WATTS,
-    DRIVER_LOAD_FACTOR,
-    SPOOL_LENGTH_FEET,
-    CLIPS_PER_SECTION,
-    CLIPS_PER_SET,
-    CLIP_SET_PRICE,
-    SHIPPING_RATE,
-} from '../../shared/pricing.js';
+
+// ROOT CAUSE OF #11 (verified 2026-05-25 via deploy probe + memory:alkimi-base44-sync):
+// Previously this function imported pricing constants from
+// ../../shared/pricing.js. Base44's Deno bundler cannot resolve relative imports
+// out of base44/shared/, so the draft deploy silently failed and production
+// kept serving a stale/broken bundle — every owner export returned 500. Per
+// the documented pattern (already applied to all SOS functions), the fix is
+// to INLINE the constants here. The frontend
+// (src/components/calculator/constants.jsx) still imports from
+// base44/shared/pricing.js via Vite, which resolves it fine.
+//
+// AUDIT (AGENTS.md Alkimi-specific trigger): if you edit the inlined
+// constants here, also mirror the change to:
+//   - base44/functions/exportProjectCSV/entry.ts (same inlined block)
+//   - base44/shared/pricing.js (frontend canonical source)
+//   - src/components/calculator/constants.jsx (frontend consumer)
+// pricing.js is the canonical reference; the Deno copies are a
+// platform-imposed duplicate per Base44 bundler limitations.
+
+const TAPE_SPECS: Record<string, { price_per_foot: number; watts_per_foot: number; lumens_per_foot: number }> = {
+    '300lm (3.0w/ft)': { price_per_foot: 10, watts_per_foot: 3.0, lumens_per_foot: 300 },
+    '360lm (3.6w/ft)': { price_per_foot: 11, watts_per_foot: 3.6, lumens_per_foot: 360 },
+    '600lm (6.0w/ft)': { price_per_foot: 12, watts_per_foot: 6.0, lumens_per_foot: 600 },
+};
+const CHANNEL_SPECS: Record<string, { price_per_foot: number; clips_per_4ft: number }> = {
+    corner: { price_per_foot: 10, clips_per_4ft: 4 },
+    surface: { price_per_foot: 8, clips_per_4ft: 4 },
+    none: { price_per_foot: 0, clips_per_4ft: 0 },
+};
+const DRIVER_SPECS: Record<number, { max_watts: number; price: number; name: string }> = {
+    60: { max_watts: 60, price: 55, name: '60W Driver' },
+    96: { max_watts: 96, price: 65, name: '96W Driver' },
+};
+const DEFAULT_DRIVER_MAX_WATTS = 96;
+const DRIVER_LOAD_FACTOR = 0.8;
+const CLIPS_PER_SECTION = 4;
+const CLIPS_PER_SET = 12;
+const CLIP_SET_PRICE = 15;
+const SPOOL_LENGTH_FEET = 16 + (4 / 12);
+const SHIPPING_RATE = 0.10;
 
 // Marker so we can confirm the deployed bundle has this revision.
-const FN_VERSION = 'pdf-rewrite-v1';
+const FN_VERSION = 'pdf-inlined-pricing-v2';
 
 Deno.serve(async (req) => {
     let phase = 'init';
