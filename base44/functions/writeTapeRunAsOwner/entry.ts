@@ -102,9 +102,15 @@ Deno.serve(async (req) => {
       const safe = { ...patch };
       delete safe.id;
       delete safe.created_by; // never trust body
-      // Service-role create stamps created_by as the service identity, which
-      // breaks rep-attribution and audit trail. Explicitly set from auth.
-      safe.created_by = user.email;
+      // PLATFORM LIMITATION (verified 2026-05-25): Base44's asServiceRole.create
+      // stamps created_by = service identity ("service+...@no-reply.base44.com")
+      // regardless of any value passed in the body. Per-record rep attribution
+      // is therefore NOT recoverable on this entity via the gateway. Grep
+      // confirms nothing in the codebase reads TapeRun.created_by today, so
+      // this is cosmetic-only. If rep attribution becomes operationally
+      // important (audit log, rep-filter UI), add a parallel custom field
+      // (e.g. author_email) to the schema and set it here from user.email —
+      // Base44 does not block custom-field writes via service role.
       const created = await base44.asServiceRole.entities.TapeRun.create(safe);
       return Response.json({ ok: true, tapeRun: created });
     }
