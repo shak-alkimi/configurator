@@ -57,6 +57,20 @@ Deno.serve(async (req) => {
 
         phase = 'unwrap-project';
         const projectRaw = projects[0];
+
+        // OWNERSHIP CHECK (task #20 — Codex P0 from comprehensive audit 2026-05-24).
+        // Auth was already enforced above (line 35), but we were fetching the
+        // project via service-role and exporting unconditionally. Any
+        // authenticated user who knew/guessed a project_id could download
+        // another rep's customer + project data as PDF. Enforce that the caller
+        // is the owner OR an admin BEFORE rendering.
+        {
+          const isAdmin = user.role === 'admin';
+          const isOwner = projectRaw?.created_by && projectRaw.created_by === user.email;
+          if (!isAdmin && !isOwner) {
+            return Response.json({ error: 'Not authorized for this project', fnVersion: FN_VERSION }, { status: 403 });
+          }
+        }
         probe.projectRawType = typeof projectRaw;
         probe.projectRawKeys = projectRaw && typeof projectRaw === 'object' ? Object.keys(projectRaw).slice(0, 20) : null;
         if (!projectRaw || typeof projectRaw !== 'object') {

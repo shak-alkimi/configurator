@@ -21,20 +21,35 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { project_id, data_env } = await req.json();
+        const body = await req.json().catch(() => ({}));
+        const { project_id } = body || {};
+        // data_env intentionally NOT read from body (Codex P0 pattern — see #22).
 
         if (!project_id) {
             return Response.json({ error: 'Project ID required' }, { status: 400 });
         }
 
-        const projects = await base44.asServiceRole.entities.Project.filter({ id: project_id }, undefined, undefined, undefined, data_env);
-        
+        const projects = await base44.asServiceRole.entities.Project.filter({ id: project_id });
+
         if (!projects || projects.length === 0) {
             return Response.json({ error: 'Project not found' }, { status: 404 });
         }
-        
+
         const project = projects[0];
-        const tapeRuns = await base44.asServiceRole.entities.TapeRun.filter({ project_id }, undefined, undefined, undefined, data_env);
+
+        // OWNERSHIP CHECK (task #21 — Codex P0 from comprehensive audit 2026-05-24).
+        // Auth was already enforced (line 18). Fetching via service-role and
+        // exporting unconditionally meant any authenticated user knowing a
+        // project_id could pull another rep's customer + tape-run data as CSV.
+        {
+          const isAdmin = user.role === 'admin';
+          const isOwner = project?.created_by && project.created_by === user.email;
+          if (!isAdmin && !isOwner) {
+            return Response.json({ error: 'Not authorized for this project' }, { status: 403 });
+          }
+        }
+
+        const tapeRuns = await base44.asServiceRole.entities.TapeRun.filter({ project_id });
 
         // Build CSV
         let csv = '';
