@@ -13,10 +13,13 @@ import {
   statusLabel,
 } from "@/components/projectsTable";
 
-// "shipped" is SOS-driven (set by reconcileSOSOrders), not a rep/admin bulk action.
-// Bulk menu offers only the manually-settable Opus statuses per writeProjectAsOwner
-// allowlist (task #91 + #92 follow-up).
-const STATUSES = ["draft", "submitted", "approved"];
+// Page-wide status set drives filter pill counts in useProjectsTable. Keep
+// "shipped" here so shipped projects still appear and their count is computed.
+// The narrower BULK_ACTION_STATUSES below feeds the BulkActionBar — shipped
+// is SOS-driven (set by reconcileSOSOrders), not a manual rep/admin action,
+// and writeProjectAsOwner would 400 on it anyway (task #91 + #92 follow-up).
+const STATUSES = ["draft", "submitted", "approved", "shipped"];
+const BULK_ACTION_STATUSES = ["draft", "submitted", "approved"];
 const PILL_ITEMS = [
   { key: "all", label: "All" },
   { key: "draft", label: "Draft" },
@@ -79,7 +82,7 @@ export default function Estimates() {
         {t.selectedIds.size > 0 && (
           <BulkActionBar
             count={t.selectedIds.size}
-            statuses={STATUSES}
+            statuses={BULK_ACTION_STATUSES}
             onClear={t.clearSelection}
             onStatusChange={(status) => {
               const count = t.selectedIds.size;
