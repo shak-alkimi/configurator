@@ -13,7 +13,10 @@ import {
   statusLabel,
 } from "@/components/projectsTable";
 
-const STATUSES = ["draft", "submitted", "approved", "shipped"];
+// "shipped" is SOS-driven (set by reconcileSOSOrders), not a rep/admin bulk action.
+// Bulk menu offers only the manually-settable Opus statuses per writeProjectAsOwner
+// allowlist (task #91 + #92 follow-up).
+const STATUSES = ["draft", "submitted", "approved"];
 const PILL_ITEMS = [
   { key: "all", label: "All" },
   { key: "draft", label: "Draft" },

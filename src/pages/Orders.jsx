@@ -13,7 +13,11 @@ import {
   statusLabel,
 } from "@/components/projectsTable";
 
+// Page filter set — "shipped" is included here so shipped orders show up in the
+// Orders view. The BulkActionBar gets a narrower list below (no "shipped"),
+// because "shipped" is SOS-driven via reconcileSOSOrders, not a manual action.
 const STATUSES = ["submitted", "approved", "shipped"];
+const BULK_ACTION_STATUSES = ["submitted", "approved"];
 const PILL_ITEMS = [
   { key: "all", label: "All" },
   { key: "submitted", label: "Submitted" },
@@ -75,7 +79,7 @@ export default function Orders() {
         {t.selectedIds.size > 0 && (
           <BulkActionBar
             count={t.selectedIds.size}
-            statuses={STATUSES}
+            statuses={BULK_ACTION_STATUSES}
             onClear={t.clearSelection}
             onStatusChange={(status) => {
               const count = t.selectedIds.size;

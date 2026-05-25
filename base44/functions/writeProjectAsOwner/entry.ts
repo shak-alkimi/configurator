@@ -29,6 +29,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 //   - created_by is server-set from auth context on create. Never trusted from body.
 //   - On update, the existing project is fetched via service role and ownership
 //     verified (created_by === user.email OR user.role === 'admin') BEFORE mutate.
+//   - data_env is NOT accepted from the request body (Codex P0 follow-up to #91,
+//     same pattern as #14/#22). Service-role calls run in Base44's default env.
+//     Once #22 establishes a server-derive-from-request pattern for env routing,
+//     wire that in here too.
 //
 // Response:
 //   200 { ok: true, project: <record> }
@@ -122,7 +126,9 @@ Deno.serve(async (req) => {
 
     let body;
     try { body = await req.json(); } catch { body = {}; }
-    const { op, projectId, patch, data_env } = body || {};
+    const { op, projectId, patch } = body || {};
+    // data_env intentionally NOT destructured — client-controlled env routing
+    // is a P0 in this codebase (see header comment + tasks #14/#22).
 
     if (op !== 'create' && op !== 'update') {
       return err(400, 'bad_request', "op must be 'create' or 'update'");
@@ -165,7 +171,7 @@ Deno.serve(async (req) => {
 
     // --- UPDATE path ---
     if (op === 'update') {
-      const existing = await base44.asServiceRole.entities.Project.get(projectId, data_env);
+      const existing = await base44.asServiceRole.entities.Project.get(projectId);
       if (!existing) {
         return err(404, 'not_found', 'Project not found');
       }
@@ -179,7 +185,7 @@ Deno.serve(async (req) => {
       delete safePatch.created_by;
       delete safePatch.id;
 
-      const updated = await base44.asServiceRole.entities.Project.update(projectId, safePatch, data_env);
+      const updated = await base44.asServiceRole.entities.Project.update(projectId, safePatch);
       return Response.json({ ok: true, project: updated });
     }
 
@@ -198,7 +204,7 @@ Deno.serve(async (req) => {
     // Strip id if a client tried to set it
     delete createPayload.id;
 
-    const created = await base44.asServiceRole.entities.Project.create(createPayload, data_env);
+    const created = await base44.asServiceRole.entities.Project.create(createPayload);
     return Response.json({ ok: true, project: created });
   } catch (error) {
     // Surface the message but mark it internal so callers don't conflate it with

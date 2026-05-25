@@ -117,12 +117,24 @@ export default function Calculator() {
   // RLS is admin-only at the entity level — reps can't call the SDK directly
   // anymore. The function enforces an allowlist of Opus-owned fields so this
   // path can never set sos_* / sync-metadata / SOS-driven status values.
+  //
+  // projectData is the full hydrated record (id, created_by, timestamps, possibly
+  // sos_*). The server hard-rejects unknown keys per allowlist, so we MUST trim
+  // to the writable-by-rep set here before sending — otherwise legitimate edits
+  // 400 with disallowed_key. Mirrors the server allowlist in writeProjectAsOwner.
   const saveProjectMutation = useMutation({
     mutationFn: async (data) => {
+      const PATCH_KEYS = ['project_name','customer_name','customer_email','customer_phone',
+        'street','city','state','sector','notes','status','drivers'];
+      const patch = Object.fromEntries(
+        PATCH_KEYS.filter(k => data?.[k] !== undefined).map(k => [k, data[k]])
+      );
       const op = isNewProject ? 'create' : 'update';
+      // quote_number is writable only on create per server policy
+      if (op === 'create' && data?.quote_number !== undefined) patch.quote_number = data.quote_number;
       const body = op === 'create'
-        ? { op, patch: data }
-        : { op, projectId: selectedProjectId, patch: data };
+        ? { op, patch }
+        : { op, projectId: selectedProjectId, patch };
       const response = await base44.functions.invoke('writeProjectAsOwner', body);
       const result = response?.data;
       if (!result?.ok) {
