@@ -53,7 +53,8 @@ Deno.serve(async (req) => {
 
     // Fetch the project FIRST (before any IntegrationConfig touch) so we can
     // gate on ownership before exposing any side effects.
-    const project = await base44.asServiceRole.entities.Project.get(project_id);
+    // Base44 Project.get(id) throws on missing — catch so we return clean 404.
+    const project = await base44.asServiceRole.entities.Project.get(project_id).catch(() => null);
     if (!project) {
       return Response.json({ error: 'Project not found' }, { status: 404 });
     }

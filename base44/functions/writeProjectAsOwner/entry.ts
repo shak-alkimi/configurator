@@ -171,7 +171,9 @@ Deno.serve(async (req) => {
 
     // --- UPDATE path ---
     if (op === 'update') {
-      const existing = await base44.asServiceRole.entities.Project.get(projectId);
+      // Base44's Project.get(id) THROWS on missing; catch so we return 404
+      // instead of bubbling to the outer 500 handler.
+      const existing = await base44.asServiceRole.entities.Project.get(projectId).catch(() => null);
       if (!existing) {
         return err(404, 'not_found', 'Project not found');
       }

@@ -58,7 +58,9 @@ function err(status, code, message) {
 }
 
 async function checkProjectOwnership(base44, projectId, user) {
-  const project = await base44.asServiceRole.entities.Project.get(projectId);
+  // Base44's Project.get(id) THROWS on missing. Catch and treat as not-found
+  // so we return a clean 404 instead of bubbling to the outer 500 handler.
+  const project = await base44.asServiceRole.entities.Project.get(projectId).catch(() => null);
   if (!project) return { ok: false, status: 404, code: 'project_not_found', message: 'Parent project not found' };
   const isAdmin = user.role === 'admin';
   const isOwner = project.created_by && project.created_by === user.email;
@@ -99,6 +101,10 @@ Deno.serve(async (req) => {
       if (!own.ok) return err(own.status, own.code, own.message);
       const safe = { ...patch };
       delete safe.id;
+      delete safe.created_by; // never trust body
+      // Service-role create stamps created_by as the service identity, which
+      // breaks rep-attribution and audit trail. Explicitly set from auth.
+      safe.created_by = user.email;
       const created = await base44.asServiceRole.entities.TapeRun.create(safe);
       return Response.json({ ok: true, tapeRun: created });
     }
@@ -109,7 +115,7 @@ Deno.serve(async (req) => {
       if (!runId) return err(400, 'bad_request', 'runId required for update');
       const v = validatePatch(patch, TAPERUN_UPDATABLE_KEYS);
       if (!v.ok) return err(400, 'invalid_patch', v.message);
-      const existing = await base44.asServiceRole.entities.TapeRun.get(runId);
+      const existing = await base44.asServiceRole.entities.TapeRun.get(runId).catch(() => null);
       if (!existing) return err(404, 'not_found', 'TapeRun not found');
       const own = await checkProjectOwnership(base44, existing.project_id, user);
       if (!own.ok) return err(own.status, own.code, own.message);
@@ -124,7 +130,7 @@ Deno.serve(async (req) => {
     if (op === 'delete') {
       const { runId } = body;
       if (!runId) return err(400, 'bad_request', 'runId required for delete');
-      const existing = await base44.asServiceRole.entities.TapeRun.get(runId);
+      const existing = await base44.asServiceRole.entities.TapeRun.get(runId).catch(() => null);
       if (!existing) return err(404, 'not_found', 'TapeRun not found');
       const own = await checkProjectOwnership(base44, existing.project_id, user);
       if (!own.ok) return err(own.status, own.code, own.message);
@@ -154,7 +160,7 @@ Deno.serve(async (req) => {
       // the existing per-op cost the previous client code already paid.)
       const projectOwnershipCache = new Map();
       for (const u of updates) {
-        const existing = await base44.asServiceRole.entities.TapeRun.get(u.runId);
+        const existing = await base44.asServiceRole.entities.TapeRun.get(u.runId).catch(() => null);
         if (!existing) return err(404, 'not_found', `TapeRun ${u.runId} not found`);
         let own = projectOwnershipCache.get(existing.project_id);
         if (!own) {
