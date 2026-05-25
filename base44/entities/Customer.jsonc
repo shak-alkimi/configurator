@@ -1,0 +1,178 @@
+// Customer entity — Hybrid SOS-mirror + Opus-owned operational/CRM fields. Task #39.
+// Field ownership is durable in this header comment (per Codex pass 2 durability requirement)
+// AND repeated as per-property inline annotations, so future implementers see the rules
+// without cross-referencing memory.
+//
+// HYBRID OWNERSHIP MODEL (memory:alkimi-sos-sync-design Customer module):
+// SOS is master for canonical identity/contact/accounting fields. Opus adds operational-only
+// fields alongside. Inbound sync (syncSOSCustomers #41) touches ONLY SOS-owned + sync metadata
+// fields. Outbound write-through (pushCustomerEdit #42) sends ONLY SOS-owned fields. Opus-owned
+// operational + CRM fields are NEVER touched by sync code.
+//
+// FIELD OWNERSHIP TABLE (canonical reference; mirror this in sync function allowlists):
+// ┌────────────────────────────────┬──────────────────────────────┬────────────────────────────┐
+// │ Field                          │ Category                     │ Authority                  │
+// ├────────────────────────────────┼──────────────────────────────┼────────────────────────────┤
+// │ sos_id                         │ Linkage (unique-indexed)     │ SOS (set on create)        │
+// │ sos_number                     │ SOS-owned                    │ SOS                        │
+// │ name                           │ SOS-owned                    │ SOS (admin edit→write-thru)│
+// │ email                          │ SOS-owned                    │ SOS (admin edit→write-thru)│
+// │ phone                          │ SOS-owned                    │ SOS (admin edit→write-thru)│
+// │ billing_address                │ SOS-owned                    │ SOS (admin edit→write-thru)│
+// │ shipping_address               │ SOS-owned                    │ SOS (admin edit→write-thru)│
+// │ internal_notes                 │ Opus-owned operational       │ Opus (admin + rep edit)    │
+// │ relationship_notes             │ Opus-owned operational       │ Opus (admin + rep edit)    │
+// │ tags                           │ Opus-owned operational       │ Opus (admin only)          │
+// │ lead_source                    │ Opus-owned operational       │ Opus (admin only)          │
+// │ follow_up_date                 │ Opus-owned CRM               │ Opus (admin + rep edit)    │
+// │ last_contacted_at              │ Opus-owned CRM (derived)     │ Opus (system from Activity)│
+// │ customer_status                │ Opus-owned CRM               │ Opus (admin only)          │
+// │ client_communication_status    │ Opus-owned CRM (derived)     │ Opus (system from Activity)│
+// │ sync_status                    │ Sync metadata                │ Opus (sync code only)      │
+// │ sync_error                     │ Sync metadata                │ Opus (sync code only)      │
+// │ last_synced_at                 │ Sync metadata                │ Opus (sync code only)      │
+// └────────────────────────────────┴──────────────────────────────┴────────────────────────────┘
+//
+// DELIBERATELY OMITTED (Codex decision pass 2): assigned_rep_email. Rep visibility derived
+// via Project.created_by → Project.customer_sos_id join. Revisit only if a query/performance
+// problem emerges; until then, single source of truth via Project linkage.
+//
+// RLS STRATEGY (initial — see open question below):
+// Admin-only on all CRUD for v1. Rep-filtered visibility deferred to dedicated server functions
+// (similar to #88 admin-only financial query functions pattern). This is the SAFE START — rep
+// access is added via functions that do the Project.created_by → customer_sos_id linkage filter
+// server-side. Direct entity RLS for rep access is hard to express in Base44 because it requires
+// a join through another entity (Project). Avoiding that complexity for now.
+//
+// OPEN QUESTION (deferred): if reps need direct entity-level read access to their customers
+// (e.g., for autocomplete in the configurator), either (a) add a server function getRepCustomers
+// that does the join, or (b) denormalize assigned_rep_email back onto Customer with the trade-off
+// Codex flagged. Decision goes into a follow-up task; not blocking the v1 schema.
+//
+// ENFORCEMENT: sync functions reference this header comment AND maintain an explicit allowlist
+// constant of fields they touch. Any new field added to the schema must also be added to the
+// ownership table here AND the relevant sync allowlist — schema-only addition (without ownership
+// classification) is a P0 audit finding per AGENTS.md.
+{
+  "name": "Customer",
+  "type": "object",
+  "properties": {
+
+    // === LINKAGE ===
+    "sos_id": {
+      "type": "string",
+      "description": "Linkage. SOS internal ID. Unique-indexed. Set on first sync (inbound) or first upsertSOSCustomer call (outbound from #40). Used as upsert key by syncSOSCustomers (#41)."
+    },
+    "sos_number": {
+      "type": "string",
+      "description": "SOS-owned. Human-readable customer number from SOS. Display-only."
+    },
+
+    // === SOS-OWNED (inbound sync writes; admin edit → outbound write-through to SOS) ===
+    "name": {
+      "type": "string",
+      "description": "SOS-owned. Customer's canonical name. Admin edit triggers pushCustomerEdit (#42) write-through to SOS."
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "SOS-owned. Customer email. Admin edit → write-through."
+    },
+    "phone": {
+      "type": "string",
+      "description": "SOS-owned. Customer phone. Admin edit → write-through."
+    },
+    "billing_address": {
+      "type": "object",
+      "description": "SOS-owned. Billing address object matching SOS's address shape. Admin edit → write-through.",
+      "properties": {
+        "line1": { "type": "string" },
+        "line2": { "type": "string" },
+        "city": { "type": "string" },
+        "stateProvince": { "type": "string" },
+        "postalCode": { "type": "string" },
+        "country": { "type": "string" }
+      }
+    },
+    "shipping_address": {
+      "type": "object",
+      "description": "SOS-owned. Shipping address. Admin edit → write-through.",
+      "properties": {
+        "line1": { "type": "string" },
+        "line2": { "type": "string" },
+        "city": { "type": "string" },
+        "stateProvince": { "type": "string" },
+        "postalCode": { "type": "string" },
+        "country": { "type": "string" }
+      }
+    },
+
+    // === OPUS-OWNED OPERATIONAL (NEVER touched by inbound sync; never sent outbound) ===
+    "internal_notes": {
+      "type": "string",
+      "description": "Opus-owned operational. Internal admin/rep notes about the customer. Admin + assigned rep editable (rep edit access via server function once #88-style query function is built; v1 admin-only via direct entity RLS). NEVER touched by sync code."
+    },
+    "relationship_notes": {
+      "type": "string",
+      "description": "Opus-owned operational. Context/relationship notes. Admin + assigned rep editable. NEVER touched by sync code."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Opus-owned operational. Free-form admin tags. Admin only.",
+      "items": { "type": "string" }
+    },
+    "lead_source": {
+      "type": "string",
+      "description": "Opus-owned operational. How this customer was acquired. Admin only."
+    },
+
+    // === OPUS-OWNED CRM (cockpit additions per memory:alkimi-product-direction) ===
+    "follow_up_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Opus-owned CRM. When admin/rep should next contact this customer. Admin + assigned rep editable. Drives Customers dashboard card (#67) 'follow-ups due' list."
+    },
+    "last_contacted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Opus-owned CRM (system-derived). Most recent Activity entry timestamp scoped to this customer. NOT manually editable. Computed by Activity auto-events (#62)."
+    },
+    "customer_status": {
+      "type": "string",
+      "enum": ["lead", "active", "dormant", "inactive"],
+      "default": "active",
+      "description": "Opus-owned CRM. Lifecycle state. Admin only. Drives Customer card filtering in dashboard."
+    },
+    "client_communication_status": {
+      "type": "string",
+      "enum": ["current", "awaiting_response", "needs_followup", "stale"],
+      "description": "Opus-owned CRM (system-derived). Computed from Activity + follow_up_date. NOT manually maintained for v1 (manual override capability deferred post-MVP)."
+    },
+
+    // === SYNC METADATA (managed by sync functions only) ===
+    "last_synced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Sync metadata. ISO timestamp when sync code last touched this row. Set by syncSOSCustomers (#41) on every sync. Note: this is LOCAL touch time, not SOS's modification time (SOS doesn't expose per-record updated timestamps per Spike A finding — sos_updated_at field was dropped from the design)."
+    },
+    "sync_status": {
+      "type": "string",
+      "enum": ["ok", "pending", "error"],
+      "default": "ok",
+      "description": "Sync metadata. Last sync outcome. Drives Sync Health card (#89)."
+    },
+    "sync_error": {
+      "type": "string",
+      "description": "Sync metadata. Sanitized last-sync error message (per #33). Admin-visible only; rep-facing surfaces show generic 'sync issue' when non-empty."
+    }
+  },
+  "required": [
+    "sos_id"
+  ],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read":   { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}
