@@ -38,17 +38,20 @@ UNSANDBOXED="no"
 # Parse flags in any order. Two opt-ins, both off by default:
 #   --any-branch   bypass the main-only check (intentional feature-branch audits)
 #   --unsandboxed  pass --dangerously-bypass-approvals-and-sandbox to Codex
-#                  (workaround for the Windows sandbox "spawn setup refresh" bug
-#                  observed 2026-05-23; Codex's read-only and workspace-write
-#                  modes both fail to initialize on this Windows install, so any
-#                  Codex shell exec produces stderr noise. codex review uses an
-#                  internal file-read path that's NOT affected, so this flag is
-#                  rarely needed for `bash scripts/audit.sh`. It's wired in
-#                  primarily so the same script can run ad-hoc codex exec calls
-#                  if you ever swap the subcommand. Use --unsandboxed only when
-#                  Codex needs to spawn shell commands AND you've reviewed the
-#                  prompt to confirm it's not asking Codex to do anything
-#                  destructive.)
+#                  (workaround for the Windows sandbox "spawn setup refresh" bug.
+#                  First confirmed on this user's install 2026-05-23; later
+#                  reported as reproducible on Windows 11 Pro x86_64 with Codex
+#                  CLI 0.133.0, so it's a broader Codex bug not limited to one
+#                  host or arch. Both read-only and workspace-write sandbox
+#                  modes fail before shell execution; danger-full-access works.
+#                  codex review uses an internal file-read path that is NOT
+#                  affected, so this flag is rarely needed for `bash scripts/
+#                  audit.sh`. It's wired in primarily so the same script can
+#                  run ad-hoc codex exec calls if you ever swap the subcommand.
+#                  Use --unsandboxed only when Codex needs to spawn shell
+#                  commands AND you've reviewed the prompt to confirm it's
+#                  not asking Codex to do anything destructive. See AGENTS.md
+#                  "Windows host quirk" for the canonical writeup.)
 while [ $# -gt 0 ] && [[ "$1" == --* ]]; do
   case "$1" in
     --any-branch)  ALLOW_ANY_BRANCH="yes"; shift ;;

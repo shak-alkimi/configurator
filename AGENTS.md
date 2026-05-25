@@ -114,11 +114,29 @@ These have bitten us; flag them when relevant:
 
 ## Windows host quirk (informational)
 
-On this user's Windows install, Codex CLI's sandbox modes (`read-only`, `workspace-write`) emit a `windows sandbox: spawn setup refresh` error and refuse to run shell commands. This was confirmed 2026-05-23. It does NOT affect `codex review`, which uses an internal file-read path that doesn't go through the sandbox-spawned shell. It DOES affect `codex exec` when the prompt requires running shell commands.
+On Windows, Codex CLI sandbox modes (`read-only`, `workspace-write`) can fail before shell execution with:
 
-If you (Codex) see `windows sandbox: spawn setup refresh` in your own exec logs during a review, ignore it — your file-read path is unaffected. Continue the audit using your built-in file inspection. Do not flag it as a finding (it's a Codex-side infrastructure note, not a finding about the user's code).
+`windows sandbox: spawn setup refresh`
 
-For ad-hoc `codex exec` interactions where shell commands matter, the human can run `scripts/audit.sh --unsandboxed …` which passes `--dangerously-bypass-approvals-and-sandbox`. That is opt-in and not the default.
+This was first confirmed on this user's Windows install on 2026-05-23, and later reported as reproducible on Windows 11 Pro x86_64 with Codex CLI 0.133.0 (GitHub issue / Codex support email). The issue is therefore not limited to ARM64 and may not be intermittent.
+
+Observed behavior:
+- `--sandbox read-only` fails
+- `--sandbox workspace-write` fails
+- `danger-full-access` works
+- `codex doctor` may still report a healthy install
+
+This does NOT necessarily affect `codex review` paths that use internal file inspection rather than sandbox-spawned shell commands. It DOES affect `codex exec` when the prompt requires shell commands.
+
+Downstream impact: the `openai/codex-plugin-cc` Claude Code plugin may return empty or incomplete reviews on Windows if it hard-codes `sandbox: "read-only"`.
+
+If Codex sees `windows sandbox: spawn setup refresh` during a review, ignore it as infrastructure noise and continue using available file inspection paths. Do not flag it as a code finding.
+
+For ad-hoc `codex exec` workflows where shell commands matter, use an explicit unsandboxed path such as:
+
+`scripts/audit.sh --unsandboxed ...`
+
+That is opt-in and not the default.
 
 ## How findings flow back
 
