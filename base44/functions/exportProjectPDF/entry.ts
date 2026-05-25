@@ -65,8 +65,11 @@ Deno.serve(async (req) => {
         // another rep's customer + project data as PDF. Enforce that the caller
         // is the owner OR an admin BEFORE rendering.
         {
+          // Defend against Base44's optional wrapper shape (this function
+          // unwraps projectRaw.data later — handle both shapes here too).
+          const createdBy = projectRaw?.data?.created_by ?? projectRaw?.created_by;
           const isAdmin = user.role === 'admin';
-          const isOwner = projectRaw?.created_by && projectRaw.created_by === user.email;
+          const isOwner = createdBy && createdBy === user.email;
           if (!isAdmin && !isOwner) {
             return Response.json({ error: 'Not authorized for this project', fnVersion: FN_VERSION }, { status: 403 });
           }

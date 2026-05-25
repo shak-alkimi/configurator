@@ -42,8 +42,11 @@ Deno.serve(async (req) => {
         // exporting unconditionally meant any authenticated user knowing a
         // project_id could pull another rep's customer + tape-run data as CSV.
         {
+          // Defend against Base44's optional wrapper shape (rest of this
+          // function uses project.data.* — confirmed by Codex pass).
+          const createdBy = project?.data?.created_by ?? project?.created_by;
           const isAdmin = user.role === 'admin';
-          const isOwner = project?.created_by && project.created_by === user.email;
+          const isOwner = createdBy && createdBy === user.email;
           if (!isAdmin && !isOwner) {
             return Response.json({ error: 'Not authorized for this project' }, { status: 403 });
           }
