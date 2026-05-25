@@ -1,3 +1,19 @@
+// Project entity — primary Opus business record. Per memory:alkimi-sos-sync-design
+// the Project IS the SOS sales-order mirror for Opus-originated orders (no separate
+// SalesOrder entity — task #79 documents the policy). SOS lifecycle fields below
+// are mirrored from SOS via reconcileSOSOrders + fetchSOSOrderStatus, and written
+// by pushProjectToSOS (#43) on POST success.
+//
+// Status enum semantics:
+//   draft           — being edited in the configurator, not yet submitted
+//   submitted       — sent for approval; pushProjectToSOS posts as SOS Estimate
+//   approved        — approved by admin; pushProjectToSOS posts as SOS SalesOrder
+//   in_fulfillment  — SalesOrder open in SOS, no shipment yet (set by reconcile)
+//   shipped         — at least one Shipment exists for this order (set by reconcile)
+//
+// SOS lifecycle fields are set by Opus code only (admin role via service-role
+// where appropriate). Reps cannot edit these — schema RLS gates Project edits to
+// owner/admin; sync code uses asServiceRole.
 {
   "name": "Project",
   "type": "object",
@@ -34,56 +50,11 @@
     "state": {
       "type": "string",
       "enum": [
-        "AL",
-        "AK",
-        "AZ",
-        "AR",
-        "CA",
-        "CO",
-        "CT",
-        "DE",
-        "FL",
-        "GA",
-        "HI",
-        "ID",
-        "IL",
-        "IN",
-        "IA",
-        "KS",
-        "KY",
-        "LA",
-        "ME",
-        "MD",
-        "MA",
-        "MI",
-        "MN",
-        "MS",
-        "MO",
-        "MT",
-        "NE",
-        "NV",
-        "NH",
-        "NJ",
-        "NM",
-        "NY",
-        "NC",
-        "ND",
-        "OH",
-        "OK",
-        "OR",
-        "PA",
-        "RI",
-        "SC",
-        "SD",
-        "TN",
-        "TX",
-        "UT",
-        "VT",
-        "VA",
-        "WA",
-        "WV",
-        "WI",
-        "WY"
+        "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+        "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+        "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+        "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+        "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
       ],
       "description": "State"
     },
@@ -108,10 +79,12 @@
       "enum": [
         "draft",
         "submitted",
-        "approved"
+        "approved",
+        "in_fulfillment",
+        "shipped"
       ],
       "default": "draft",
-      "description": "Project status"
+      "description": "Project status. draft→submitted→approved are Opus-driven (rep + admin actions). in_fulfillment + shipped are SOS-driven (set by reconcileSOSOrders based on Shipment data per task #59)."
     },
     "drivers": {
       "type": "array",
@@ -130,6 +103,60 @@
           }
         }
       }
+    },
+    "share_token": {
+      "type": "string",
+      "description": "Unguessable token for public share link; null/absent means not shared"
+    },
+
+    // --- SOS lifecycle fields (added by task #32; mirrored from SOS or written by Opus sync code) ---
+    // Each field is annotated with its authority per the design's field-ownership pattern.
+
+    "sos_estimate_id": {
+      "type": "string",
+      "description": "Linkage (SOS-authoritative on create). Set by pushProjectToSOS #43 after successful POST /estimate. Identifies the SOS Estimate record corresponding to this Project's submitted stage. Empty/null until first push to SOS."
+    },
+    "sos_estimate_number": {
+      "type": "string",
+      "description": "SOS-owned. The human-readable estimate number returned by SOS on POST /estimate. Used in admin reporting + cross-reference to SOS UI."
+    },
+    "sos_estimate_status_at_push": {
+      "type": "string",
+      "description": "Sync metadata (Opus-set). Snapshot of SOS-side estimate status at the moment Opus pushed it. Used for forensic comparison if status drifts later."
+    },
+    "sos_order_id": {
+      "type": "string",
+      "description": "Linkage (SOS-authoritative on create). Set by pushProjectToSOS #43 after successful POST /salesorder. Used as upsert key by reconcileSOSOrders + idempotency check (#13) — if set, refuse duplicate POST."
+    },
+    "sos_order_number": {
+      "type": "string",
+      "description": "SOS-owned. Human-readable salesorder number returned by SOS on POST /salesorder."
+    },
+    "sos_status": {
+      "type": "string",
+      "description": "SOS-owned (via reconcileSOSOrders polling). The raw SOS-side salesorder status as last observed. Distinct from Project.status which is the Opus-side workflow state — sos_status is informational/diagnostic."
+    },
+    "tracking_number": {
+      "type": "string",
+      "description": "SOS-owned (denormalized from Shipment per task #59 for rep portal display). Canonical source is the linked Shipment record; this field is a convenience cache."
+    },
+    "last_sos_sync_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Sync metadata. ISO timestamp of the most recent successful sync touch by reconcileSOSOrders or fetchSOSOrderStatus."
+    },
+    "last_sos_sync_error": {
+      "type": "string",
+      "description": "Sync metadata. Last sanitized sync error message (per task #33). Admin-visible only; rep-facing surfaces show a generic 'sync issue' when this is non-empty."
+    },
+    "sos_push_in_progress": {
+      "type": "boolean",
+      "description": "Concurrency guard (Opus-set). True while pushProjectToSOS #43 is mid-execution. Paired with sos_push_in_progress_at for stale-lock detection."
+    },
+    "sos_push_in_progress_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Concurrency guard (Opus-set). ISO timestamp when sos_push_in_progress was set true. Any retry attempt treats locks older than 5 minutes as stale and proceeds (taking a fresh lock). Prevents permanent block from a failed push."
     }
   },
   "required": [
@@ -141,38 +168,20 @@
     },
     "read": {
       "$or": [
-        {
-          "created_by": "{{user.email}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
+        { "created_by": "{{user.email}}" },
+        { "user_condition": { "role": "admin" } }
       ]
     },
     "update": {
       "$or": [
-        {
-          "created_by": "{{user.email}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
+        { "created_by": "{{user.email}}" },
+        { "user_condition": { "role": "admin" } }
       ]
     },
     "delete": {
       "$or": [
-        {
-          "created_by": "{{user.email}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
+        { "created_by": "{{user.email}}" },
+        { "user_condition": { "role": "admin" } }
       ]
     }
   }
