@@ -33,9 +33,35 @@ async function refreshAccessToken(base44, config) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // AUTH + OWNERSHIP (task #12 — Codex P0 from comprehensive audit 2026-05-24).
+    // Previously this function had no auth check, so any caller knowing/guessing
+    // a project_id could create a SOS sales order from another rep's project
+    // data. Require login + project ownership (or admin) before any service-role
+    // read or upstream POST.
+    const user = await base44.auth.me();
+    if (!user || !user.email) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const payload = await req.json();
     // Support both automation payload (event.entity_id) and direct invocation ({ project_id })
     const project_id = payload.event?.entity_id || payload.project_id;
+    if (!project_id) {
+      return Response.json({ error: 'project_id required' }, { status: 400 });
+    }
+
+    // Fetch the project FIRST (before any IntegrationConfig touch) so we can
+    // gate on ownership before exposing any side effects.
+    const project = await base44.asServiceRole.entities.Project.get(project_id);
+    if (!project) {
+      return Response.json({ error: 'Project not found' }, { status: 404 });
+    }
+    const isAdmin = user.role === 'admin';
+    const isOwner = project.created_by && project.created_by === user.email;
+    if (!isAdmin && !isOwner) {
+      return Response.json({ error: 'Not authorized for this project' }, { status: 403 });
+    }
 
     // Fetch SOS credentials from IntegrationConfig
     const configs = await base44.asServiceRole.entities.IntegrationConfig.filter({ service: 'SOS' });
@@ -47,12 +73,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'SOS access token not configured' }, { status: 400 });
     }
     let accessToken = sanitizeToken(config.access_token);
-
-    // Fetch the project
-    const project = await base44.asServiceRole.entities.Project.get(project_id);
-    if (!project) {
-      return Response.json({ error: 'Project not found' }, { status: 404 });
-    }
 
     // Fetch tape runs for this project
     const runs = await base44.asServiceRole.entities.TapeRun.filter({ project_id });
