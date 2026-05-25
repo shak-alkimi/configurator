@@ -50,7 +50,7 @@ async function refreshAccessToken(base44, config) {
 
 // Maps a SOS sales order payload to Base44 Project fields that may have changed.
 // Returns an object of only the fields that differ from the current project.
-async function syncProjectFromSOS(base44, project, getToken, onUnauthorized, data_env) {
+async function syncProjectFromSOS(base44, project, getToken, onUnauthorized) {
   const fetchOrder = async () => fetch(`${SOS_API_BASE}/salesorder/${project.sos_order_id}`, {
     headers: { Authorization: `Bearer ${sanitizeToken(getToken())}` },
   });
@@ -89,7 +89,7 @@ async function syncProjectFromSOS(base44, project, getToken, onUnauthorized, dat
   }
 
   if (Object.keys(deltas).length > 0) {
-    await base44.asServiceRole.entities.Project.update(project.id, deltas, data_env);
+    await base44.asServiceRole.entities.Project.update(project.id, deltas);
   }
 
   return deltas;
@@ -104,17 +104,29 @@ async function safeJson(req) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const payload = await safeJson(req);
-    const data_env = payload?.data_env;
+
+    // AUTH (task #31 — Codex P0 from comprehensive audit 2026-05-24).
+    // This is a service-role mass sync over every active project. Without an
+    // auth check, any unauthenticated caller could force cross-environment
+    // reconciliation, persist raw sync errors into last_sos_sync_error, and
+    // burn through SOS rate limits. Require admin to invoke. The scheduler/
+    // automation system fires this as a system context (admin role).
+    const user = await base44.auth.me();
+    if (!user || !user.email) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (user.role !== 'admin') {
+      return Response.json({ error: 'Admin role required' }, { status: 403 });
+    }
+
+    await safeJson(req); // consume body (data_env intentionally not read — #22)
 
     const config = await loadSOSConfig(base44);
     if (!config) {
       return Response.json({ error: 'SOS IntegrationConfig not found' }, { status: 400 });
     }
 
-    const projects = await base44.asServiceRole.entities.Project.filter(
-      {}, undefined, undefined, undefined, data_env
-    );
+    const projects = await base44.asServiceRole.entities.Project.filter({});
     const active = (projects || []).filter(p =>
       ACTIVE_STATUSES.includes(p.status) && p.sos_order_id
     );
@@ -128,14 +140,13 @@ Deno.serve(async (req) => {
     for (const project of active) {
       results.polled++;
       try {
-        const updates = await syncProjectFromSOS(base44, project, getToken, onUnauthorized, data_env);
+        const updates = await syncProjectFromSOS(base44, project, getToken, onUnauthorized);
         if (Object.keys(updates).length > 0) results.updated++;
       } catch (error) {
         results.errors.push({ id: project.id, message: error.message });
         await base44.asServiceRole.entities.Project.update(
           project.id,
           { last_sos_sync_at: new Date().toISOString(), last_sos_sync_error: error.message },
-          data_env
         ).catch(() => {}); // swallow secondary failure
       }
     }
