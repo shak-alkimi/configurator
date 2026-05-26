@@ -1,0 +1,147 @@
+// Item entity — Read-only SOS Inventory mirror. Phase 4.6 (post-pushProjectToSOS).
+//
+// STATUS: DESIGN DRAFT (2026-05-25). NOT YET DEPLOYED.
+// Do not call create_entity_schema for this entity until task #100 is in_progress.
+// This .jsonc lands in the repo as the design source-of-truth so future implementers
+// can verify against it; the live schema deploy is gated on the Phase 4.6 kickoff.
+//
+// SCOPE BOUNDARY (per Codex + user strategy 2026-05-25):
+// SOS is the inventory system of record. Opus PULLS only — never edits quantities,
+// prices, or any inventory data. Corrections happen in SOS Inventory's admin UI.
+// This is a pure SOS-mirror entity — no "Opus-owned" or "hybrid" fields like
+// Customer has. Every field below is either SOS-owned (read-only mirror) or sync
+// metadata (set by Opus sync code only).
+//
+// WHY THIS EXISTS:
+//   - Reps need availability data while quoting in the Configurator ("is this in
+//     stock?" without leaving Opus)
+//   - Admins need inventory health on the dashboard without opening SOS
+//   - Approval workflow can show fulfillment risk before approving an order
+//   - QBO bookkeeping continues to flow via SOS→QBO native sync — no QBO touch here
+//
+// SYNC STRATEGY (post-Spike A finding: SOS does NOT expose per-record updated
+// timestamps reliably — see memory:alkimi-sos-sync-design Customer module):
+// Items can't use the updated_since cursor pattern. Instead:
+//   - Scheduled FULL SWEEP on hourly cadence (Alkimi's inventory is small — few
+//     hundred SKUs at most — full sweep is cheap)
+//   - Upsert by sos_id; mark missing-from-sweep items as active:false
+//   - Track via SyncState with cursor_type:"full_sweep"
+//
+// SECURITY MODEL (per established gateway pattern from #91 + #94):
+// Entity-level RLS is admin-only for all CRUD. Reps access a subset of fields
+// (name, sku, quantity_available, status) through a dedicated server function
+// (getItemForConfigurator — task #102). The function returns ONLY rep-safe
+// fields; never exposes unit_cost. Admins can call entities.Item.filter directly.
+//
+// FIELD OWNERSHIP TABLE:
+// ┌────────────────────────────────┬──────────────────────────────┬────────────────────────────┐
+// │ Field                          │ Category                     │ Authority                  │
+// ├────────────────────────────────┼──────────────────────────────┼────────────────────────────┤
+// │ sos_id                         │ Linkage (unique-indexed)     │ SOS (set on first sync)    │
+// │ item_number                    │ SOS-owned                    │ SOS                        │
+// │ sku                            │ SOS-owned                    │ SOS                        │
+// │ name                           │ SOS-owned                    │ SOS                        │
+// │ description                    │ SOS-owned                    │ SOS                        │
+// │ category                       │ SOS-owned                    │ SOS                        │
+// │ quantity_available             │ SOS-owned                    │ SOS                        │
+// │ quantity_on_hand               │ SOS-owned                    │ SOS                        │
+// │ quantity_committed             │ SOS-owned                    │ SOS                        │
+// │ reorder_point                  │ SOS-owned                    │ SOS                        │
+// │ unit_price                     │ SOS-owned (rep-visible)      │ SOS                        │
+// │ unit_cost                      │ SOS-owned (ADMIN-ONLY)       │ SOS — never to reps        │
+// │ active                         │ SOS-owned                    │ SOS                        │
+// │ last_synced_at                 │ Sync metadata                │ Opus (sync code only)      │
+// │ sync_status                    │ Sync metadata                │ Opus (sync code only)      │
+// │ sync_error                     │ Sync metadata                │ Opus (sync code only)      │
+// └────────────────────────────────┴──────────────────────────────┴────────────────────────────┘
+//
+// DELIBERATELY OMITTED:
+//   - sos_updated_at — SOS doesn't expose per-record updated timestamps for items
+//     (per Spike A findings). Full-sweep cadence eliminates the need.
+//   - Any "Opus-owned" operational/CRM fields — Items are pure mirrors. If
+//     reps/admins need to annotate items, escalate to a scope decision rather
+//     than expanding this entity.
+//
+// AUDIT TRIGGER (per AGENTS.md Alkimi-specific): any new field added here must
+// be classified as SOS-owned OR sync-metadata. Anything else is scope creep.
+{
+  "name": "Item",
+  "type": "object",
+  "properties": {
+    "sos_id": {
+      "type": "string",
+      "description": "Linkage. SOS internal item ID. Unique-indexed. Set on first sync. Used as upsert key by syncSOSItems (#101)."
+    },
+    "item_number": {
+      "type": "string",
+      "description": "SOS-owned. Human-readable item number from SOS."
+    },
+    "sku": {
+      "type": "string",
+      "description": "SOS-owned. SKU code. Rep-visible via getItemForConfigurator."
+    },
+    "name": {
+      "type": "string",
+      "description": "SOS-owned. Display name. Rep-visible."
+    },
+    "description": {
+      "type": "string",
+      "description": "SOS-owned. Long-form description. Rep-visible."
+    },
+    "category": {
+      "type": "string",
+      "description": "SOS-owned. Item category/family. Rep-visible."
+    },
+    "quantity_available": {
+      "type": "number",
+      "description": "SOS-owned. on_hand minus committed. The number that matters for 'can I sell this?'. Rep-visible — drives the configurator availability indicator."
+    },
+    "quantity_on_hand": {
+      "type": "number",
+      "description": "SOS-owned. Total physical stock. Admin view; useful for inventory health card. Rep does not need this."
+    },
+    "quantity_committed": {
+      "type": "number",
+      "description": "SOS-owned. Allocated to open sales orders. Admin diagnostic."
+    },
+    "reorder_point": {
+      "type": "number",
+      "description": "SOS-owned. Threshold at which SOS flags 'reorder needed'. Drives low-stock warnings."
+    },
+    "unit_price": {
+      "type": "number",
+      "description": "SOS-owned. Default sell price. Rep-visible (reps already see pricing in configurator constants)."
+    },
+    "unit_cost": {
+      "type": "number",
+      "description": "SOS-owned. ADMIN-ONLY. Cost basis for margin calculations. NEVER exposed via getItemForConfigurator. Audit trigger: any code path returning Item to a rep context that includes this field is a P0 finding."
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "SOS-owned. Whether the item is active/sellable in SOS. Items missing from a full-sweep get active:false (soft-delete pattern)."
+    },
+    "last_synced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Sync metadata. Local timestamp of most recent successful sync touch."
+    },
+    "sync_status": {
+      "type": "string",
+      "enum": ["ok", "pending", "error"],
+      "default": "ok",
+      "description": "Sync metadata. Last sync outcome. Drives Sync Health card (#68/#89) and Inventory card."
+    },
+    "sync_error": {
+      "type": "string",
+      "description": "Sync metadata. Sanitized last-sync error. Admin-visible only."
+    }
+  },
+  "required": ["sos_id"],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read":   { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}
