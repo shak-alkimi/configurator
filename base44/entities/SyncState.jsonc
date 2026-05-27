@@ -127,6 +127,13 @@
       "description": "Set true during a backfill task (#69-#73, #90). Disables cursor advancement during the backfill window. Scheduled sweeps yield to backfill via the atomic lock above (the lock acquisition query naturally excludes locked rows)."
     },
 
+    // --- Enable / disable switch (added 2026-05-27 with #41 syncSOSCustomers) ---
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Soft disable switch. When false the sync function returns early with action 'disabled' and does NOT call the external service. Admin flips via Builder UI or future Sync Health card. Default true so the field is opt-out, not opt-in (existing rows without this field act as enabled — backward compatible with #38's original schema). Independent of is_locked and backfill_in_progress; disabling overrides those."
+    },
+
     // --- Orphan observations (per Spike C + #79 orphan-policy decision) ---
     "orphan_observations": {
       "type": "array",
