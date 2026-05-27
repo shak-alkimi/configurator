@@ -373,6 +373,23 @@ Deno.serve(async (req) => {
       throw new Error(sanitizeSOSError('SOS customer update failed', putRes.status));
     }
 
+    // P1 fix from Codex audit of #42 (commit 016a889..ca668f4 range):
+    // SOS can return HTTP 200 with an error envelope ({status: 'error' |
+    // 'invalid' | 'failed', data: null, message: '...'}). Without this
+    // check, the function would treat the PUT as successful and mark the
+    // Opus mirror sync_status='ok' despite SOS rejecting the change —
+    // creating silent mirror divergence on validation failures (e.g.
+    // empty required name). Mirrors the envelope check already used by
+    // upsertSOSCustomer's createSOSCustomer helper.
+    const envelopeStatus = putRes.bodyJson?.status;
+    if (envelopeStatus === 'error' || envelopeStatus === 'invalid' || envelopeStatus === 'failed') {
+      // Concurrency / stale-version errors already handled above by the
+      // dedicated 409 path — those return without reaching this point.
+      // Any other envelope-level failure throws into the outer catch so
+      // sync_error gets persisted on the Opus row.
+      throw new Error(sanitizeSOSError('SOS customer update rejected', putRes.status));
+    }
+
     // 11. Parse PUT response and update Opus mirror — restrict to requested
     // fields + always-safe sos_number refresh.
     const sosUpdated = putRes.bodyJson?.data ?? putRes.bodyJson;
