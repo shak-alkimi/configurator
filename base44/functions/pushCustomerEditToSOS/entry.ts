@@ -162,27 +162,40 @@ function sanitizeAddress(addr) {
   return out;
 }
 
-// Build the outbound SOS payload for the requested subset of fields.
-// Reads current Opus row values for the requested fields; applies the
-// outbound key-rename + sanitization. NEVER sends fields not in `requestedFields`.
-function buildSOSUpdatePayload(opusCustomer, requestedFields, sosId, syncToken) {
-  const payload = {
-    id: Number(sosId),
-    syncToken: syncToken,
-  };
+// Build the outbound SOS payload using READ-MODIFY-WRITE semantics.
+//
+// Bug discovered during #42 live exercise: SOS PUT is a FULL-REPLACE
+// operation, not a partial update. Unspecified fields in the PUT body
+// are CLEARED on the SOS side. A partial PUT of `{id, syncToken, name}`
+// against customer 4 cleared email, phone, billing, shipping — fields
+// the admin never intended to touch.
+//
+// Fix: start from the current SOS state (sosCurrent, fetched in the
+// GET-before-PUT step), then overwrite ONLY the allowlisted fields with
+// Opus values. Unspecified SOS fields round-trip unchanged.
+//
+// This still respects the "never send Opus-owned CRM fields to SOS" rule
+// because sosCurrent only contains SOS-owned fields (it came from SOS).
+function buildSOSUpdatePayload(sosCurrent, opusCustomer, requestedFields) {
+  // Start from a shallow copy of the current SOS state. This preserves
+  // every SOS-owned field the admin didn't request to change.
+  const payload = { ...sosCurrent };
+
+  // syncToken stays as-is from sosCurrent (must match what SOS has). id
+  // also stays as-is — sosCurrent.id is authoritative.
 
   for (const field of requestedFields) {
     const sosKey = OPUS_TO_SOS_KEY[field] || field;
     if (field === 'billing_address' || field === 'shipping_address') {
-      const addr = sanitizeAddress(opusCustomer[field]);
-      // Allow {} to clear address on SOS side, mirror of #41 inbound semantics.
-      payload[sosKey] = addr;
+      // Empty {} legitimately clears the address (mirror of #41 inbound
+      // three-state semantics). Never null — that confuses SOS.
+      payload[sosKey] = sanitizeAddress(opusCustomer[field]) || {};
     } else {
       const raw = opusCustomer[field];
       const max = field === 'email' ? EMAIL_MAX_LENGTH
                 : field === 'phone' ? PHONE_MAX_LENGTH
                 : NAME_MAX_LENGTH;
-      // SOS supports clearing scalar fields with empty string — mirror that.
+      // SOS supports clearing scalar fields with empty string.
       if (raw === null || raw === undefined || (typeof raw === 'string' && raw.trim() === '')) {
         payload[sosKey] = '';
       } else {
@@ -331,8 +344,15 @@ Deno.serve(async (req) => {
     }
     const syncToken = sosCurrent.syncToken;
 
-    // 8. Build PUT payload from Opus row values, restricted to requested fields.
-    const putPayload = buildSOSUpdatePayload(opusCustomer, requestedFields, opusCustomer.sos_id, syncToken);
+    // 8. Build PUT payload via READ-MODIFY-WRITE: spread the current SOS
+    // state, overwrite the allowlisted fields with Opus values. This is
+    // required because SOS PUT is full-replace; partial PUTs clear all
+    // unspecified fields. Discovered during #42 live exercise.
+    const putPayload = buildSOSUpdatePayload(sosCurrent, opusCustomer, requestedFields);
+    // Defensive: id/syncToken should be on sosCurrent already, but make
+    // the requirement explicit so future refactors don't accidentally drop them.
+    if (typeof putPayload.id !== 'number') putPayload.id = Number(opusCustomer.sos_id);
+    if (typeof putPayload.syncToken !== 'number') putPayload.syncToken = syncToken;
 
     // 9. PUT /customer/<sos_id>
     const putRes = await callSOS(base44, config, 'PUT',
