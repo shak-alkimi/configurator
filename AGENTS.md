@@ -146,5 +146,7 @@ Findings become tasks in Claude Code's task list (managed via `TaskCreate`/`Task
 
 - `memory:alkimi-audit-workflow` — full workflow doc, more detail than this file
 - `memory:alkimi-base44-sync` — sync mechanics and version-stamp protocol
-- `memory:alkimi-sos-pending` — open SOS integration work + design questions
+- `memory:alkimi-rollout-plan` — phases, release gates, critical path (replaces the retired alkimi-sos-pending punch list)
+- `memory:alkimi-audit-status` — current ✅ done vs ⏳ open snapshot
+- `memory:alkimi-sos-sync-design` — module specs, field ownership, spike findings
 - `memory:alkimi-design-principles` — UI/UX/brand standards (less relevant to audits but worth knowing for context)

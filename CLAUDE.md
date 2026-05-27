@@ -128,6 +128,6 @@ Base44 has a **draft / published** split that applies to **both** the frontend A
 
 **Shipped to production (2026-05-23):** admin-only `testSOSConnection` endpoint, Settings page with credential form + Test Connection button, all four SOS functions with sanitizeToken + OAuth refresh-on-401 + shared helpers inlined.
 
-**Pending hardening before pointing at a real SOS account** (full punch list in memory:alkimi-sos-pending and task list): auth checks + idempotency on `createSOSSalesOrder`, IntegrationConfig schema with admin-only RLS, Settings.jsx refactor so the browser never sees raw secrets, `reconcileSOSOrders` trigger validation, Project schema additions for SOS lifecycle fields, customer matching against real SOS customer IDs, error sanitization for non-admin contexts.
+**Pending hardening before pointing at a real SOS account** (full picture in memory:alkimi-rollout-plan + memory:alkimi-audit-status + the task list): auth checks + idempotency on `createSOSSalesOrder`, IntegrationConfig schema with admin-only RLS, Settings.jsx refactor so the browser never sees raw secrets, `reconcileSOSOrders` trigger validation, Project schema additions for SOS lifecycle fields, customer matching against real SOS customer IDs, error sanitization for non-admin contexts.
 
 **Sandbox vs production:** currently configured against SOS sandbox. Switchover requires rotating credentials AND completing the security hardening above.
