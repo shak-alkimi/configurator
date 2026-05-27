@@ -126,32 +126,44 @@ Deno.serve(async (req) => {
       });
     }
 
-    // No-op payload: set name to itself. Minimum data shape.
-    const noopPayload = { name: currentName };
+    // Payloads to try, in order. First wins.
+    const syncToken = obj?.syncToken;
+    const attempts = [
+      { label: 'PUT_with_id_and_syncToken', method: 'PUT', path: `/customer/${encodeURIComponent(sosId)}`,
+        body: { id: Number(sosId), name: currentName, ...(syncToken !== undefined ? { syncToken } : {}) } },
+      { label: 'PUT_with_id_only', method: 'PUT', path: `/customer/${encodeURIComponent(sosId)}`,
+        body: { id: Number(sosId), name: currentName } },
+      { label: 'PUT_without_id', method: 'PUT', path: `/customer/${encodeURIComponent(sosId)}`,
+        body: { name: currentName } },
+      { label: 'POST_with_id', method: 'POST', path: '/customer',
+        body: { id: Number(sosId), name: currentName } },
+    ];
 
-    // 2. Try PUT /customer/<id>
-    const putRes = await callSOS(base44, config, 'PUT', `/customer/${encodeURIComponent(sosId)}`, noopPayload);
-    const putOk = putRes.status >= 200 && putRes.status < 300;
-
-    let postRes = null;
-    let postOk = false;
-    if (!putOk) {
-      // 3. Fallback: POST /customer with {id} + name in body.
-      postRes = await callSOS(base44, config, 'POST', '/customer', { id: Number(sosId), ...noopPayload });
-      postOk = postRes.status >= 200 && postRes.status < 300;
+    const results = [];
+    let winner = null;
+    for (const a of attempts) {
+      const r = await callSOS(base44, config, a.method, a.path, a.body);
+      const ok = r.status >= 200 && r.status < 300 && r.bodyJson?.status !== 'failed' && r.bodyJson?.status !== 'invalid';
+      results.push({
+        label: a.label,
+        method: a.method,
+        status: r.status,
+        body_snippet: safeSnippet(r.bodyText),
+        ok,
+      });
+      if (ok && !winner) {
+        winner = a.label;
+        // Don't break — we want to see all responses for documentation
+      }
     }
-
-    let recommendedVerb = 'inconclusive';
-    if (putOk) recommendedVerb = 'PUT';
-    else if (postOk) recommendedVerb = 'POST';
 
     return Response.json({
       ok: true,
       get_status: getRes.status,
       get_top_level_keys: topLevelKeys,
-      put: { status: putRes.status, body_snippet: safeSnippet(putRes.bodyText) },
-      post: postRes ? { status: postRes.status, body_snippet: safeSnippet(postRes.bodyText) } : null,
-      recommended_verb: recommendedVerb,
+      sync_token_present: syncToken !== undefined,
+      attempts: results,
+      recommended_verb_pattern: winner || 'inconclusive',
     });
   } catch (error) {
     return err(500, 'internal', 'Internal error during probe');
