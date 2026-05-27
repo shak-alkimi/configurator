@@ -40,11 +40,20 @@ async function refreshAccessToken(base44, config) {
   const json = await res.json();
   const newToken = json.access_token;
   if (!newToken) throw new Error('Refresh response missing access_token');
-  await base44.asServiceRole.entities.IntegrationConfig.update(config.id, {
+  const patch = {
     access_token: newToken,
     ...(json.refresh_token ? { refresh_token: json.refresh_token } : {}),
     ...(json.expires_in ? { token_expires_at: new Date(Date.now() + json.expires_in * 1000).toISOString() } : {}),
-  });
+  };
+  await base44.asServiceRole.entities.IntegrationConfig.update(config.id, patch);
+  // P1 fix from #112 (Codex audit of #41): mutate `config` in place so
+  // subsequent callSOS invocations read the fresh token. Without this, a
+  // multi-call SOS session that triggers a 401 would re-read the stale
+  // access_token from `config` on the next call, and — if SOS rotated the
+  // refresh_token — fail outright on the next 401.
+  config.access_token = newToken;
+  if (json.refresh_token) config.refresh_token = json.refresh_token;
+  if (json.expires_in) config.token_expires_at = patch.token_expires_at;
   return newToken;
 }
 
