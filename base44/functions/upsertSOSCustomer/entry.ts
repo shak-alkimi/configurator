@@ -253,6 +253,12 @@ async function findExistingSOSCustomer(
     const seenMatches: any[] = [];
     let start = 1;
     let pagesScanned = 0;
+    // Track exhaustion vs cap-hit separately (#109 P2 fix from Codex audit
+    // of 04a83c5): if reachedEnd fires on exactly page SEARCH_MAX_PAGES we
+    // exit the loop legitimately and the post-loop cap throw must NOT fire.
+    // The throw only applies when we ran out of budget with more data
+    // still available on the SOS side.
+    let exhaustedNaturally = false;
 
     while (pagesScanned < SEARCH_MAX_PAGES) {
       const path = `/customer?start=${start}&maxresults=${SEARCH_PAGE_SIZE}`;
@@ -280,7 +286,10 @@ async function findExistingSOSCustomer(
       // Pagination invariant per Spike A: end-of-data signals.
       const reachedEnd = count < SEARCH_PAGE_SIZE
         || (totalCount !== null && start + SEARCH_PAGE_SIZE > totalCount);
-      if (reachedEnd) break;
+      if (reachedEnd) {
+        exhaustedNaturally = true;
+        break;
+      }
 
       start += SEARCH_PAGE_SIZE;
     }
@@ -290,8 +299,11 @@ async function findExistingSOSCustomer(
       return { sos_id: String(m.id), sos_number: m.number ? String(m.number) : undefined };
     }
 
-    // If we hit the page cap without resolving, refuse to guess.
-    if (pagesScanned >= SEARCH_MAX_PAGES) {
+    // Only throw if we exited the loop because of the cap (still more
+    // SOS data available we couldn't scan). If we naturally exhausted —
+    // even if that happened on the last allowed page — fall through to
+    // return null and let the caller create.
+    if (!exhaustedNaturally && pagesScanned >= SEARCH_MAX_PAGES) {
       throw new Error(
         `Name search exceeded ${SEARCH_PAGE_SIZE * SEARCH_MAX_PAGES} customers without resolving '${name}' — ` +
         `manual reconciliation required (either set Customer.email for deterministic lookup or set Customer.sos_id by hand)`
