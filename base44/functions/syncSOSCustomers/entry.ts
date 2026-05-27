@@ -107,11 +107,21 @@ async function refreshAccessToken(base44, config) {
   const json = await res.json();
   const newToken = json.access_token;
   if (!newToken) throw new Error('Refresh response missing access_token');
-  await base44.asServiceRole.entities.IntegrationConfig.update(config.id, {
+  const patch = {
     access_token: newToken,
     ...(json.refresh_token ? { refresh_token: json.refresh_token } : {}),
     ...(json.expires_in ? { token_expires_at: new Date(Date.now() + json.expires_in * 1000).toISOString() } : {}),
-  });
+  };
+  await base44.asServiceRole.entities.IntegrationConfig.update(config.id, patch);
+  // P1 fix from Codex audit of #41 (commit 09449dc..ff6e0dc): mutate `config`
+  // in place so subsequent callSOS invocations read the fresh token. Without
+  // this, a multi-page sweep that triggers a 401 on page N would re-read the
+  // stale access_token from `config` on page N+1, and — if SOS rotated the
+  // refresh_token — fail outright on the next 401 because the in-memory
+  // refresh_token is also stale.
+  config.access_token = newToken;
+  if (json.refresh_token) config.refresh_token = json.refresh_token;
+  if (json.expires_in) config.token_expires_at = patch.token_expires_at;
   return newToken;
 }
 
@@ -186,6 +196,35 @@ function sanitizeAddress(addr) {
   return out;
 }
 
+// Apply a single SOS scalar field to the patch. Three-state semantics
+// (P2 fix from Codex audit of #41):
+//   - key ABSENT from sosCustomer  → don't touch Opus (preserves the mirror)
+//   - key present and non-empty    → write the clamped value
+//   - key present but null/empty   → CLEAR the Opus value (SOS cleared it)
+// This ensures cleared SOS-owned fields propagate to the mirror.
+function applyMirrorScalarField(patch, sosCustomer, sosKey, opusKey, max) {
+  if (!(sosKey in sosCustomer)) return;
+  const raw = sosCustomer[sosKey];
+  if (raw === null || raw === undefined) {
+    patch[opusKey] = '';
+    return;
+  }
+  // sos_number may arrive as a number from SOS; coerce to string first.
+  const asString = typeof raw === 'string' ? raw : String(raw);
+  const clamped = clampString(asString, max);
+  patch[opusKey] = clamped === null ? '' : clamped;
+}
+
+// Apply an address. Symmetric three-state semantics:
+//   - key absent       → don't touch Opus
+//   - key present      → write sanitized object (may be {} if SOS cleared)
+// sanitizeAddress returns {} for an object with no non-empty inner fields,
+// which writes an empty address to Opus — clearing the mirror.
+function applyMirrorAddressField(patch, sosCustomer, sosKey, opusKey) {
+  if (!(sosKey in sosCustomer)) return;
+  patch[opusKey] = sanitizeAddress(sosCustomer[sosKey]) || {};
+}
+
 // Build the patch to apply to the matched Opus Customer row. SOS-owned
 // fields only; the allowlist enforces no leakage of unknown SOS fields
 // into Opus.
@@ -196,29 +235,14 @@ function buildOpusPatch(sosCustomer, nowIso) {
     last_synced_at: nowIso,
   };
 
-  const name = clampString(sosCustomer.name, NAME_MAX_LENGTH);
-  if (name) patch.name = name;
-
-  const email = clampString(sosCustomer.email, EMAIL_MAX_LENGTH);
-  if (email) patch.email = email;
-
-  const phone = clampString(sosCustomer.phone, PHONE_MAX_LENGTH);
-  if (phone) patch.phone = phone;
-
-  const sosNumber = clampString(
-    sosCustomer.number != null ? String(sosCustomer.number) : null,
-    SOS_NUMBER_MAX_LENGTH,
-  );
-  if (sosNumber) patch.sos_number = sosNumber;
+  applyMirrorScalarField(patch, sosCustomer, 'name', 'name', NAME_MAX_LENGTH);
+  applyMirrorScalarField(patch, sosCustomer, 'email', 'email', EMAIL_MAX_LENGTH);
+  applyMirrorScalarField(patch, sosCustomer, 'phone', 'phone', PHONE_MAX_LENGTH);
+  applyMirrorScalarField(patch, sosCustomer, 'number', 'sos_number', SOS_NUMBER_MAX_LENGTH);
 
   // Address rename: SOS.billing → Opus.billing_address (per SOS_TO_OPUS_KEY).
-  for (const sosKey of ['billing', 'shipping']) {
-    const opusKey = SOS_TO_OPUS_KEY[sosKey];
-    if (sosCustomer[sosKey] !== undefined) {
-      const sanitized = sanitizeAddress(sosCustomer[sosKey]);
-      if (sanitized !== null) patch[opusKey] = sanitized;
-    }
-  }
+  applyMirrorAddressField(patch, sosCustomer, 'billing', SOS_TO_OPUS_KEY.billing);
+  applyMirrorAddressField(patch, sosCustomer, 'shipping', SOS_TO_OPUS_KEY.shipping);
 
   return patch;
 }
@@ -246,6 +270,8 @@ async function ensureSyncStateRow(base44) {
     is_locked: false,
     backfill_in_progress: false,
     enabled: true,
+    pagination_resume_start: 0,
+    pending_cursor_value: '',
   });
   return created;
 }
@@ -357,23 +383,39 @@ Deno.serve(async (req) => {
       return err(400, 'integration_not_configured', 'SOS IntegrationConfig missing or has no access_token');
     }
 
-    // 8. Compute next cursor BEFORE the run. We capture (now - safety_margin)
-    // at run START so that records modified during the sweep are not skipped
-    // on next run (per Spike E findings).
+    // 8. Cursor + resume state. P1 fix from Codex audit of #41: when a
+    // previous run hit SYNC_MAX_PAGES, it persisted pagination_resume_start
+    // and pending_cursor_value. This run continues from that offset using
+    // the SAME updatedsince + the SAME pending nextCursor — preventing the
+    // infinite loop bug (re-processing first 10000 records forever) AND
+    // preventing a data-loss gap when the cursor finally advances.
     const safetyMarginSeconds = typeof syncStateRow.cursor_safety_margin_seconds === 'number'
       ? syncStateRow.cursor_safety_margin_seconds
       : DEFAULT_CURSOR_SAFETY_MARGIN_SECONDS;
-    const cursorAtRunStart = new Date(Date.now() - safetyMarginSeconds * 1000);
-    // SOS expects 'YYYY-MM-DDTHH:MM:SS' in UTC, no timezone suffix per
-    // Spike A docs. Strip milliseconds + 'Z' since SOS may or may not parse.
-    const nextCursorValue = cursorAtRunStart.toISOString().replace(/\.\d{3}Z$/, '');
+
+    const isResuming = typeof syncStateRow.pagination_resume_start === 'number'
+      && syncStateRow.pagination_resume_start > 1
+      && isNonEmptyString(syncStateRow.pending_cursor_value);
+
+    let nextCursorValue;
+    if (isResuming) {
+      // Use the pending cursor stored at the cap-hit run; do NOT recompute
+      // from `now` (would leave a data-loss gap).
+      nextCursorValue = syncStateRow.pending_cursor_value;
+    } else {
+      const cursorAtRunStart = new Date(Date.now() - safetyMarginSeconds * 1000);
+      // SOS expects 'YYYY-MM-DDTHH:MM:SS' in UTC, no timezone suffix per
+      // Spike A docs. Strip milliseconds + 'Z' since SOS may or may not parse.
+      nextCursorValue = cursorAtRunStart.toISOString().replace(/\.\d{3}Z$/, '');
+    }
 
     const cursorValue = isNonEmptyString(syncStateRow.cursor_value)
       ? syncStateRow.cursor_value
       : null;
 
-    // 9. Sweep paginated SOS customer list.
-    let start = 1;
+    // 9. Sweep paginated SOS customer list. Resume from stored offset if a
+    // previous run hit the cap; otherwise start at 1.
+    let start = isResuming ? syncStateRow.pagination_resume_start : 1;
     let pagesScanned = 0;
     let exhaustedNaturally = false;
     let totalSeen = 0;
@@ -460,24 +502,27 @@ Deno.serve(async (req) => {
       start += SYNC_PAGE_SIZE;
     }
 
-    // 10. Cursor advancement rules:
-    //   - Naturally exhausted → advance to nextCursorValue.
-    //   - Cap hit (more pages exist) → do NOT advance. Next run replays.
-    //   - Per-row errors present BUT pagination exhausted → still advance.
-    //     The errors are persisted on individual Opus rows; replaying the
-    //     cursor would re-fetch the same SOS rows but they'd fail again,
-    //     producing churn. Per-row errors are NOT cursor failures.
-    // (Sanity preserved by per-row sync_status='error' which surfaces to
-    // the admin via Customer.sync_error.)
+    // 10. Cursor advancement rules (P1 fix from Codex audit of #41):
+    //   - Naturally exhausted → advance cursor_value to nextCursorValue
+    //     AND clear pagination_resume_start + pending_cursor_value.
+    //   - Cap hit → persist `start` (next offset to resume from) + the
+    //     nextCursorValue (so the eventual exhaustion advances to the
+    //     correct cursor without a data-loss gap). cursor_value stays put.
+    //   - Per-row errors are NOT cursor failures: persisted on individual
+    //     Opus rows; cursor still advances on natural exhaustion.
     const finalPatch = {};
     if (exhaustedNaturally) {
       finalPatch.cursor_value = nextCursorValue;
+      finalPatch.pagination_resume_start = 0;  // cleared (default-treated as 1)
+      finalPatch.pending_cursor_value = '';     // cleared
       finalPatch.last_success_at = new Date().toISOString();
       finalPatch.last_error = '';
       finalPatch.last_error_at = '';
     } else {
-      // Cap hit — record but don't advance.
-      finalPatch.last_error = `Sweep cap hit after ${pagesScanned} pages (${pagesScanned * SYNC_PAGE_SIZE} records scanned); cursor not advanced. Re-run to continue.`;
+      // Cap hit. Persist progress so next run resumes mid-sweep.
+      finalPatch.pagination_resume_start = start;       // next offset
+      finalPatch.pending_cursor_value = nextCursorValue; // promote on eventual exhaustion
+      finalPatch.last_error = `Sweep cap hit after ${pagesScanned} pages (${pagesScanned * SYNC_PAGE_SIZE} records scanned); resume offset persisted. Re-run to continue.`;
       finalPatch.last_error_at = new Date().toISOString();
     }
 
@@ -493,6 +538,8 @@ Deno.serve(async (req) => {
       pages_scanned: pagesScanned,
       exhausted_naturally: exhaustedNaturally,
       cursor_advanced: exhaustedNaturally,
+      resumed_from_offset: isResuming ? syncStateRow.pagination_resume_start : null,
+      pagination_resume_start: exhaustedNaturally ? null : start,
     });
   } catch (error) {
     // Generic outer catch — never echo error.message (per #107 lesson:

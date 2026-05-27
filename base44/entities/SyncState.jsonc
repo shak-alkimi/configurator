@@ -127,6 +127,23 @@
       "description": "Set true during a backfill task (#69-#73, #90). Disables cursor advancement during the backfill window. Scheduled sweeps yield to backfill via the atomic lock above (the lock acquisition query naturally excludes locked rows)."
     },
 
+    // --- Mid-sweep resume state (added 2026-05-27 with #111 fix for Codex P1 on #41) ---
+    // When a sync function hits its per-run page cap before SOS exhaustion,
+    // it persists the next pagination offset + the pending cursor value
+    // (instead of advancing cursor_value). The next run reads both and
+    // continues from that offset against the SAME updatedsince. Once the
+    // resumed sweep naturally exhausts, the function clears both fields
+    // AND advances cursor_value to pending_cursor_value — closing the gap
+    // for the next regular sweep.
+    "pagination_resume_start": {
+      "type": "number",
+      "description": "If > 1, the next sync run starts from this pagination offset (instead of 1) using the unchanged cursor_value. Set when the previous run hit SYNC_MAX_PAGES. Cleared when the resumed run naturally exhausts."
+    },
+    "pending_cursor_value": {
+      "type": "string",
+      "description": "Cursor value to promote to cursor_value once the resumed sweep completes naturally. Set alongside pagination_resume_start when a run hits the page cap. Allows the cursor to advance to the time the cap-hit run started (not the resume-run start), preventing data-loss gaps between cap-hit and resume completion."
+    },
+
     // --- Enable / disable switch (added 2026-05-27 with #41 syncSOSCustomers) ---
     "enabled": {
       "type": "boolean",
