@@ -146,9 +146,15 @@ function clampString(s, max) {
   return t.length > max ? t.slice(0, max) : t;
 }
 
-// SOS customer address shape (verified during #40 live exercise): five line
-// slots (line1..line5) plus city, stateProvince, postalCode, country.
-const ADDR_FIELDS = ['line1', 'line2', 'line3', 'line4', 'line5', 'city', 'stateProvince', 'postalCode', 'country'];
+// Outbound allowlist for SOS address fields. Locked to the shape declared
+// in Customer.jsonc (line1, line2, city, stateProvince, postalCode, country)
+// per Codex P2 finding 2026-05-27 — forwarding undeclared nested fields
+// breaks the entity-schema source-of-truth contract.
+//
+// NOTE: SOS itself accepts line1..line5. If Opus ever needs to mirror more
+// than two lines, extend the Customer.jsonc billing_address/shipping_address
+// `properties` block AND this allowlist together in the same change.
+const ADDR_FIELDS = ['line1', 'line2', 'city', 'stateProvince', 'postalCode', 'country'];
 
 function sanitizeAddress(addr) {
   if (!addr || typeof addr !== 'object') return null;
