@@ -35,7 +35,7 @@ const SOS_OWNED_OUTBOUND_FIELDS = [
   'phone',
   'billing_address',
   'shipping_address',
-] as const;
+];
 
 // SOS API + idempotency strategy per Spike A + Spike D findings.
 const SOS_API_BASE = 'https://api.sosinventory.com/api/v2';
@@ -57,18 +57,18 @@ const SEARCH_MAX_PAGES = 25;  // 25 * 200 = 5000 customer ceiling
 // (#108 P2 fix). 5min is generous given normal #40 runtime is sub-second.
 const STALE_LOCK_THRESHOLD_MS = 5 * 60 * 1000;
 
-function err(status: number, code: string, message: string) {
+function err(status, code, message) {
   return Response.json({ ok: false, code, error: message }, { status });
 }
 
 // ── Auth + IntegrationConfig (same pattern as testSOSConnection) ────────────
 
-async function loadSOSConfig(base44: any) {
+async function loadSOSConfig(base44) {
   const configs = await base44.asServiceRole.entities.IntegrationConfig.filter({ service: 'SOS' });
   return configs?.[0] ?? null;
 }
 
-async function refreshAccessToken(base44: any, config: any): Promise<string> {
+async function refreshAccessToken(base44, config) {
   const res = await fetch('https://api.sosinventory.com/oauth2/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -95,15 +95,15 @@ async function refreshAccessToken(base44: any, config: any): Promise<string> {
   return newToken;
 }
 
-function sanitizeToken(raw: unknown): string {
-  return String(raw || '').replace(new RegExp('[\\s\\x00-\\x1F\\x7F]', 'g'), '');
+function sanitizeToken(raw) {
+  return String(raw || '').replace(/[\s\x00-\x1F\x7F]/g, '');
 }
 
 // ── Sanitized SOS error surfacing ────────────────────────────────────────────
 
 // Map raw SOS / network errors to admin-visible sanitized strings. Never
 // surface response bodies that might contain tokens or internal IDs.
-function sanitizeSOSError(prefix: string, status?: number, _bodyText?: string): string {
+function sanitizeSOSError(prefix, status) {
   if (status !== undefined) {
     return `${prefix} (HTTP ${status})`;
   }
@@ -112,20 +112,20 @@ function sanitizeSOSError(prefix: string, status?: number, _bodyText?: string): 
 
 // ── Field validation + sanitization ──────────────────────────────────────────
 
-function isNonEmptyString(v: unknown): v is string {
+function isNonEmptyString(v) {
   return typeof v === 'string' && v.trim().length > 0;
 }
 
-function clampString(s: unknown, max: number): string | null {
+function clampString(s, max) {
   if (typeof s !== 'string') return null;
   const t = s.trim();
   if (t.length === 0) return null;
   return t.length > max ? t.slice(0, max) : t;
 }
 
-function sanitizeAddress(addr: any): Record<string, string> | null {
+function sanitizeAddress(addr) {
   if (!addr || typeof addr !== 'object') return null;
-  const out: Record<string, string> = {};
+  const out = {};
   for (const k of ['line1', 'line2', 'city', 'stateProvince', 'postalCode', 'country']) {
     const max = k === 'line1' || k === 'line2' ? ADDR_LINE_MAX_LENGTH : ADDR_FIELD_MAX_LENGTH;
     const v = clampString(addr[k], max);
@@ -137,8 +137,8 @@ function sanitizeAddress(addr: any): Record<string, string> | null {
 // Build the outbound payload from an Opus Customer row, using only SOS-owned
 // fields per the ownership table. Defense-in-depth against accidental leakage
 // of Opus-owned operational/CRM fields to SOS.
-function buildSOSPayload(opusCustomer: any): Record<string, unknown> {
-  const payload: Record<string, unknown> = {};
+function buildSOSPayload(opusCustomer) {
+  const payload = {};
   for (const field of SOS_OWNED_OUTBOUND_FIELDS) {
     const raw = opusCustomer[field];
     if (field === 'billing_address' || field === 'shipping_address') {
@@ -157,17 +157,11 @@ function buildSOSPayload(opusCustomer: any): Record<string, unknown> {
 
 // ── SOS call helpers (with one auto-refresh on 401 per per-function checklist) ──
 
-async function callSOS(
-  base44: any,
-  config: any,
-  method: 'GET' | 'POST',
-  path: string,
-  bodyJson?: Record<string, unknown>,
-): Promise<{ status: number; bodyText: string; bodyJson: any | null }> {
+async function callSOS(base44, config, method, path, bodyJson) {
   let token = sanitizeToken(config.access_token);
 
   const fire = async () => {
-    const opts: RequestInit = {
+    const opts = {
       method,
       headers: {
         Authorization: `Bearer ${token}`,
@@ -185,17 +179,17 @@ async function callSOS(
   }
 
   const bodyText = await response.text();
-  let bodyJson: any = null;
-  try { bodyJson = JSON.parse(bodyText); } catch { /* leave null */ }
+  let parsedBody = null;
+  try { parsedBody = JSON.parse(bodyText); } catch { /* leave null */ }
 
   // SOS throttle quirk per Spike A: 200 + body message "Throttle limit exceeded".
   // Surface as caller-visible non-2xx so caller can retry. For #40's first
   // version we don't retry; future enhancement can add backoff loop.
-  if (response.status === 200 && bodyJson?.message === 'Throttle limit exceeded') {
-    return { status: 429, bodyText, bodyJson };
+  if (response.status === 200 && parsedBody?.message === 'Throttle limit exceeded') {
+    return { status: 429, bodyText, bodyJson: parsedBody };
   }
 
-  return { status: response.status, bodyText, bodyJson };
+  return { status: response.status, bodyText, bodyJson: parsedBody };
 }
 
 // Search SOS for an existing customer by email (deterministic) then by
@@ -209,11 +203,7 @@ async function callSOS(
 // the match. If we still don't find a precise match, fall back to name
 // search. If neither finds a unique match, return null and caller will
 // create a fresh customer.
-async function findExistingSOSCustomer(
-  base44: any,
-  config: any,
-  opusCustomer: any,
-): Promise<{ sos_id: string; sos_number?: string } | null> {
+async function findExistingSOSCustomer(base44, config, opusCustomer) {
   const email = clampString(opusCustomer.email, EMAIL_MAX_LENGTH);
   const name = clampString(opusCustomer.name, NAME_MAX_LENGTH);
 
@@ -223,7 +213,7 @@ async function findExistingSOSCustomer(
     const res = await callSOS(base44, config, 'GET', path);
     if (res.status === 200 && Array.isArray(res.bodyJson?.data)) {
       // Defensive: filter client-side in case SOS silently ignored the email param.
-      const matches = res.bodyJson.data.filter((c: any) =>
+      const matches = res.bodyJson.data.filter((c) =>
         typeof c?.email === 'string' && c.email.trim().toLowerCase() === email.toLowerCase()
       );
       if (matches.length === 1) {
@@ -250,7 +240,7 @@ async function findExistingSOSCustomer(
   // (#108 P1 fix — original code checked only page 1).
   if (name) {
     const targetName = name.toLowerCase();
-    const seenMatches: any[] = [];
+    const seenMatches = [];
     let start = 1;
     let pagesScanned = 0;
     // Track exhaustion vs cap-hit separately (#109 P2 fix from Codex audit
@@ -315,11 +305,7 @@ async function findExistingSOSCustomer(
   return null;
 }
 
-async function createSOSCustomer(
-  base44: any,
-  config: any,
-  payload: Record<string, unknown>,
-): Promise<{ sos_id: string; sos_number?: string }> {
+async function createSOSCustomer(base44, config, payload) {
   const res = await callSOS(base44, config, 'POST', '/customer', payload);
   if (res.status !== 200 || !res.bodyJson || res.bodyJson.status === 'error') {
     throw new Error(sanitizeSOSError('SOS customer create failed', res.status));
@@ -341,8 +327,8 @@ async function createSOSCustomer(
 // ── Main handler ─────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
-  let opusCustomerId: string | null = null;
-  let base44: any = null;
+  let opusCustomerId = null;
+  let base44 = null;
 
   try {
     base44 = createClientFromRequest(req);
@@ -353,7 +339,7 @@ Deno.serve(async (req) => {
     if (user.role !== 'admin') return err(403, 'forbidden', 'Admin role required');
 
     // 2. Parse + validate input. opus_customer_id is the ONLY accepted field.
-    let body: any = {};
+    let body = {};
     try { body = await req.json(); } catch { body = {}; }
     opusCustomerId = body?.opus_customer_id;
     if (!isNonEmptyString(opusCustomerId)) {
@@ -440,8 +426,8 @@ Deno.serve(async (req) => {
     // not #40 itself.
     const found = await findExistingSOSCustomer(base44, config, opusCustomer);
 
-    let result: { sos_id: string; sos_number?: string };
-    let action: 'linked' | 'created';
+    let result;
+    let action;
 
     if (found) {
       result = found;
@@ -468,7 +454,7 @@ Deno.serve(async (req) => {
       customer_sos_number: result.sos_number || null,
       action,
     });
-  } catch (error: any) {
+  } catch (error) {
     // Sanitize + persist a sync_error row state so admins can see what failed
     // without us swallowing the failure. The error message itself is sanitized
     // by sanitizeSOSError before throw points — but defense in depth: trim
