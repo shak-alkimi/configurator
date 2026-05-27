@@ -50,6 +50,7 @@ function redactedShape(service: string, config: any) {
     has_access_token: isNonEmptyString(config?.access_token),
     has_refresh_token: isNonEmptyString(config?.refresh_token),
     has_client_secret: isNonEmptyString(config?.client_secret),
+    has_client_id: isNonEmptyString(config?.client_id),
     client_id: isNonEmptyString(config?.client_id) ? config.client_id : null,
     access_token_last4: last4(config?.access_token),
     token_expires_at: config?.token_expires_at || null,

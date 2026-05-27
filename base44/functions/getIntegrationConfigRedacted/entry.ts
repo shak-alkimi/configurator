@@ -75,6 +75,7 @@ Deno.serve(async (req) => {
         has_access_token: isNonEmptyString(config.access_token),
         has_refresh_token: isNonEmptyString(config.refresh_token),
         has_client_secret: isNonEmptyString(config.client_secret),
+        has_client_id: isNonEmptyString(config.client_id),
         // client_id is the OAuth "username" half — not a secret; show full value
         // so the admin can verify they're connected to the right app/account.
         client_id: isNonEmptyString(config.client_id) ? config.client_id : null,
