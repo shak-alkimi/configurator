@@ -44,7 +44,18 @@ const EMAIL_MAX_LENGTH = 320;
 const PHONE_MAX_LENGTH = 80;
 const ADDR_LINE_MAX_LENGTH = 200;
 const ADDR_FIELD_MAX_LENGTH = 80;
-const SEARCH_PAGE_SIZE = 50;
+// SOS supports up to 200 per page (Spike A); we use that so a >200-customer
+// account paginates fewer times and stays under the 500ms rate-limit pressure.
+const SEARCH_PAGE_SIZE = 200;
+// Safety cap on name-search pagination. If a SOS account ever has more than
+// SEARCH_PAGE_SIZE * SEARCH_MAX_PAGES customers AND the target match isn't
+// found, throw "manual reconciliation required" rather than blindly creating
+// a duplicate (#108 P1 fix; original 1da302d only checked page 1).
+const SEARCH_MAX_PAGES = 25;  // 25 * 200 = 5000 customer ceiling
+// Stale-lock recovery window. If a Customer row is stuck at sync_status =
+// 'pending' for longer than this, treat as a crashed prior run and override
+// (#108 P2 fix). 5min is generous given normal #40 runtime is sub-second.
+const STALE_LOCK_THRESHOLD_MS = 5 * 60 * 1000;
 
 function err(status: number, code: string, message: string) {
   return Response.json({ ok: false, code, error: message }, { status });
@@ -230,27 +241,63 @@ async function findExistingSOSCustomer(
     }
   }
 
-  // Step 2: search by name (exact match, case-insensitive).
+  // Step 2: search by name (exact match, case-insensitive). SOS doesn't
+  // document a name filter, so we paginate through the customer list and
+  // filter client-side. Per Spike A pagination invariant (start 1-based,
+  // terminate when count < maxresults OR start + maxresults > totalCount).
+  // Capped at SEARCH_MAX_PAGES; if exceeded without finding a match, throw
+  // "manual reconciliation required" rather than create a duplicate
+  // (#108 P1 fix — original code checked only page 1).
   if (name) {
-    // SOS doesn't document a name filter; use generic list + client filter.
-    const path = `/customer?maxresults=${SEARCH_PAGE_SIZE}`;
-    const res = await callSOS(base44, config, 'GET', path);
-    if (res.status === 200 && Array.isArray(res.bodyJson?.data)) {
-      const matches = res.bodyJson.data.filter((c: any) =>
-        typeof c?.name === 'string' && c.name.trim().toLowerCase() === name.toLowerCase()
-      );
-      if (matches.length === 1) {
-        const m = matches[0];
-        return { sos_id: String(m.id), sos_number: m.number ? String(m.number) : undefined };
+    const targetName = name.toLowerCase();
+    const seenMatches: any[] = [];
+    let start = 1;
+    let pagesScanned = 0;
+
+    while (pagesScanned < SEARCH_MAX_PAGES) {
+      const path = `/customer?start=${start}&maxresults=${SEARCH_PAGE_SIZE}`;
+      const res = await callSOS(base44, config, 'GET', path);
+      if (res.status !== 200) {
+        throw new Error(sanitizeSOSError('SOS search by name failed', res.status));
       }
-      if (matches.length > 1) {
-        // Multiple name matches → ambiguous; require manual reconciliation
-        // rather than guessing. Caller surfaces in sync_error.
-        throw new Error(`Multiple SOS customers match name '${name}' — manual reconciliation required`);
+      const data = Array.isArray(res.bodyJson?.data) ? res.bodyJson.data : [];
+      const count = typeof res.bodyJson?.count === 'number' ? res.bodyJson.count : data.length;
+      const totalCount = typeof res.bodyJson?.totalCount === 'number' ? res.bodyJson.totalCount : null;
+
+      for (const c of data) {
+        if (typeof c?.name === 'string' && c.name.trim().toLowerCase() === targetName) {
+          seenMatches.push(c);
+          // Short-circuit on ambiguity — multiple matches is a manual-
+          // reconciliation case, no need to scan further pages.
+          if (seenMatches.length > 1) {
+            throw new Error(`Multiple SOS customers match name '${name}' — manual reconciliation required`);
+          }
+        }
       }
-    } else if (res.status !== 200) {
-      throw new Error(sanitizeSOSError('SOS search by name failed', res.status));
+
+      pagesScanned += 1;
+
+      // Pagination invariant per Spike A: end-of-data signals.
+      const reachedEnd = count < SEARCH_PAGE_SIZE
+        || (totalCount !== null && start + SEARCH_PAGE_SIZE > totalCount);
+      if (reachedEnd) break;
+
+      start += SEARCH_PAGE_SIZE;
     }
+
+    if (seenMatches.length === 1) {
+      const m = seenMatches[0];
+      return { sos_id: String(m.id), sos_number: m.number ? String(m.number) : undefined };
+    }
+
+    // If we hit the page cap without resolving, refuse to guess.
+    if (pagesScanned >= SEARCH_MAX_PAGES) {
+      throw new Error(
+        `Name search exceeded ${SEARCH_PAGE_SIZE * SEARCH_MAX_PAGES} customers without resolving '${name}' — ` +
+        `manual reconciliation required (either set Customer.email for deterministic lookup or set Customer.sos_id by hand)`
+      );
+    }
+    // Walked all pages, no match → caller will proceed to create.
   }
 
   return null;
@@ -332,10 +379,48 @@ Deno.serve(async (req) => {
       return err(400, 'integration_not_configured', 'SOS IntegrationConfig missing or has no access_token');
     }
 
-    // 7. Mark Opus row as in-flight so a mid-call failure is visible to admins.
-    await base44.asServiceRole.entities.Customer.update(opusCustomerId, {
-      sync_status: 'pending',
-    });
+    // 7. ACQUIRE LOCK via atomic CAS (#108 P2 fix). Two concurrent upserts
+    // for the same opus_customer_id could otherwise both pass the empty-
+    // sos_id pre-check and both call SOS create → duplicate customer.
+    //
+    // Strategy (per #78 Step 0 spike — Base44 updateMany is atomic CAS at
+    // the backend): atomically transition sync_status to 'pending' ONLY if
+    // the row is NOT currently pending OR the pending state is stale
+    // (5-min recovery window for crashed prior runs).
+    //
+    // If updated !== 1, the lock is held — re-read the row to distinguish
+    // "race winner already finished" (sos_id now set → return cached) from
+    // "another call still in flight" (return 409, caller can retry).
+    const staleCutoff = new Date(Date.now() - STALE_LOCK_THRESHOLD_MS).toISOString();
+    const acquired = await base44.asServiceRole.entities.Customer.updateMany(
+      {
+        id: opusCustomerId,
+        $or: [
+          { sync_status: { $ne: 'pending' } },
+          { updated_date: { $lt: staleCutoff } },
+        ],
+      },
+      { $set: { sync_status: 'pending' } },
+    );
+    if (acquired?.updated !== 1) {
+      // Lock contention. Re-read to determine fate.
+      const fresh = await base44.asServiceRole.entities.Customer.get(opusCustomerId).catch(() => null);
+      if (!fresh) {
+        return err(404, 'not_found', `Opus Customer ${opusCustomerId} not found`);
+      }
+      if (isNonEmptyString(fresh.sos_id)) {
+        // Race winner already persisted sos_id — return cached. The
+        // idempotency contract holds across concurrent calls.
+        return Response.json({
+          ok: true,
+          customer_sos_id: fresh.sos_id,
+          customer_sos_number: fresh.sos_number || null,
+          action: 'cached',
+        });
+      }
+      // Still mid-flight by another call. Caller should retry shortly.
+      return err(409, 'in_progress', 'Customer upsert already in progress; retry shortly');
+    }
 
     // 8. Try to find an existing SOS customer (deterministic search) BEFORE
     // creating one. Spike D: explicit lookup-then-create is canonical;
