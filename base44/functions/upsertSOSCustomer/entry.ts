@@ -28,7 +28,18 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 //
 // FIELD-OWNERSHIP ALLOWLIST (mirrors the Customer ownership table; ANY
 // change here requires updating memory:alkimi-sos-sync-design AND the
-// Customer.jsonc field annotations + RLS):
+// Customer.jsonc field annotations + RLS).
+//
+// Outbound Opus → SOS key mapping (verified empirically during #40 live
+// exercise on sandbox SOS customer 3):
+//   Opus.name             → SOS.name
+//   Opus.email            → SOS.email
+//   Opus.phone            → SOS.phone
+//   Opus.billing_address  → SOS.billing       (note: 'billing', no '_address')
+//   Opus.shipping_address → SOS.shipping
+// Inner address shape (both sides): line1..line5, city, stateProvince,
+// postalCode, country. SOS UI exposes 5 line slots; Opus entity schema
+// currently only stores line1/line2 — extra lines are tolerated as empty.
 const SOS_OWNED_OUTBOUND_FIELDS = [
   'name',
   'email',
@@ -36,6 +47,13 @@ const SOS_OWNED_OUTBOUND_FIELDS = [
   'billing_address',
   'shipping_address',
 ];
+
+// Opus → SOS top-level key rename for address fields. Non-address fields
+// pass through with the same name.
+const OPUS_TO_SOS_KEY = {
+  billing_address: 'billing',
+  shipping_address: 'shipping',
+};
 
 // SOS API + idempotency strategy per Spike A + Spike D findings.
 const SOS_API_BASE = 'https://api.sosinventory.com/api/v2';
@@ -96,6 +114,11 @@ async function refreshAccessToken(base44, config) {
 }
 
 function sanitizeToken(raw) {
+  // NOTE: Builder normalizes `new RegExp('[\\s\\x00-\\x1F\\x7F]', 'g')` back
+  // to this literal on redeploy. Keep the literal form so we don't fight
+  // Builder on every push. The literal works at Deno runtime. (Lesson: the
+  // local Write tool may corrupt \x7F if we edit this line later — read-only
+  // safest, or use String.fromCharCode(0x7F) if a manual edit is needed.)
   return String(raw || '').replace(/[\s\x00-\x1F\x7F]/g, '');
 }
 
@@ -123,11 +146,15 @@ function clampString(s, max) {
   return t.length > max ? t.slice(0, max) : t;
 }
 
+// SOS customer address shape (verified during #40 live exercise): five line
+// slots (line1..line5) plus city, stateProvince, postalCode, country.
+const ADDR_FIELDS = ['line1', 'line2', 'line3', 'line4', 'line5', 'city', 'stateProvince', 'postalCode', 'country'];
+
 function sanitizeAddress(addr) {
   if (!addr || typeof addr !== 'object') return null;
   const out = {};
-  for (const k of ['line1', 'line2', 'city', 'stateProvince', 'postalCode', 'country']) {
-    const max = k === 'line1' || k === 'line2' ? ADDR_LINE_MAX_LENGTH : ADDR_FIELD_MAX_LENGTH;
+  for (const k of ADDR_FIELDS) {
+    const max = k.startsWith('line') ? ADDR_LINE_MAX_LENGTH : ADDR_FIELD_MAX_LENGTH;
     const v = clampString(addr[k], max);
     if (v) out[k] = v;
   }
@@ -137,19 +164,23 @@ function sanitizeAddress(addr) {
 // Build the outbound payload from an Opus Customer row, using only SOS-owned
 // fields per the ownership table. Defense-in-depth against accidental leakage
 // of Opus-owned operational/CRM fields to SOS.
+//
+// Maps Opus field names to SOS field names per OPUS_TO_SOS_KEY (currently
+// just the address field renames). Non-address fields pass through unchanged.
 function buildSOSPayload(opusCustomer) {
   const payload = {};
   for (const field of SOS_OWNED_OUTBOUND_FIELDS) {
     const raw = opusCustomer[field];
+    const outKey = OPUS_TO_SOS_KEY[field] || field;
     if (field === 'billing_address' || field === 'shipping_address') {
       const addr = sanitizeAddress(raw);
-      if (addr) payload[field] = addr;
+      if (addr) payload[outKey] = addr;
     } else {
       const max = field === 'email' ? EMAIL_MAX_LENGTH
                 : field === 'phone' ? PHONE_MAX_LENGTH
                 : NAME_MAX_LENGTH;
       const v = clampString(raw, max);
-      if (v) payload[field] = v;
+      if (v) payload[outKey] = v;
     }
   }
   return payload;
