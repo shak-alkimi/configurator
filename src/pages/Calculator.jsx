@@ -124,12 +124,27 @@ export default function Calculator() {
   // 400 with disallowed_key. Mirrors the server allowlist in writeProjectAsOwner.
   const saveProjectMutation = useMutation({
     mutationFn: async (data) => {
+      // Opus-owned fields that can flow through writeProjectAsOwner.
+      // NB: status is conditionally included below — see #96.
       const PATCH_KEYS = ['project_name','customer_name','customer_email','customer_phone',
-        'street','city','state','sector','notes','status','drivers'];
+        'street','city','state','sector','notes','drivers'];
       const patch = Object.fromEntries(
         PATCH_KEYS.filter(k => data?.[k] !== undefined).map(k => [k, data[k]])
       );
+      // Status is gated separately (#96): only include if it's a value the
+      // server accepts. SOS-driven values (in_fulfillment, shipped) are set
+      // by reconcileSOSOrders and writeProjectAsOwner rejects them — so if
+      // the rep is editing a project that's already in those states, we
+      // must NOT round-trip the current status back as if the rep were
+      // setting it. Stripping makes the patch a no-op for the status field
+      // and the server keeps the existing SOS-driven value untouched.
+      // The Submit action (performSubmit) explicitly passes status='submitted'
+      // and that flows through cleanly because 'submitted' is rep-settable.
+      const REP_SETTABLE_STATUSES = ['draft','submitted','approved'];
       const op = isNewProject ? 'create' : 'update';
+      if (data?.status && REP_SETTABLE_STATUSES.includes(data.status)) {
+        patch.status = data.status;
+      }
       // quote_number is writable only on create per server policy
       if (op === 'create' && data?.quote_number !== undefined) patch.quote_number = data.quote_number;
       const body = op === 'create'

@@ -76,7 +76,7 @@ export default function Reps() {
       const e = stats.get(email) || {
         count: 0,
         lastActivity: 0,
-        statuses: { draft: 0, submitted: 0, approved: 0, shipped: 0 },
+        statuses: { draft: 0, submitted: 0, approved: 0, in_fulfillment: 0, shipped: 0 },
       };
       e.count++;
       if (e.statuses[p.status] != null) e.statuses[p.status]++;
@@ -90,7 +90,7 @@ export default function Reps() {
         const s = stats.get(u.email) || {
           count: 0,
           lastActivity: 0,
-          statuses: { draft: 0, submitted: 0, approved: 0, shipped: 0 },
+          statuses: { draft: 0, submitted: 0, approved: 0, in_fulfillment: 0, shipped: 0 },
         };
         const override = profileByEmail.get(u.email)?.display_name;
         return {
@@ -188,6 +188,7 @@ export default function Reps() {
                 <th className="text-right font-medium px-4 py-3">Draft</th>
                 <th className="text-right font-medium px-4 py-3">Submitted</th>
                 <th className="text-right font-medium px-4 py-3">Approved</th>
+                <th className="text-right font-medium px-4 py-3">In Fulfillment</th>
                 <th className="text-right font-medium px-4 py-3">Shipped</th>
                 <th className="text-right font-medium px-4 py-3">Last activity</th>
                 <th className="w-20 px-4 py-3"></th>
@@ -196,13 +197,13 @@ export default function Reps() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-foreground/40">
+                  <td colSpan={9} className="px-4 py-12 text-center text-foreground/40">
                     Loading…
                   </td>
                 </tr>
               ) : reps.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-foreground/40">
+                  <td colSpan={9} className="px-4 py-12 text-center text-foreground/40">
                     No reps yet. Invite your first rep using the button above.
                   </td>
                 </tr>
@@ -271,6 +272,9 @@ export default function Reps() {
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums text-foreground/60">
                       {r.statuses.approved}
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums text-foreground/60">
+                      {r.statuses.in_fulfillment}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums text-foreground/60">
                       {r.statuses.shipped}

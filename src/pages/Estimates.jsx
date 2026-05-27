@@ -13,18 +13,19 @@ import {
   statusLabel,
 } from "@/components/projectsTable";
 
-// Page-wide status set drives filter pill counts in useProjectsTable. Keep
-// "shipped" here so shipped projects still appear and their count is computed.
-// The narrower BULK_ACTION_STATUSES below feeds the BulkActionBar — shipped
-// is SOS-driven (set by reconcileSOSOrders), not a manual rep/admin action,
-// and writeProjectAsOwner would 400 on it anyway (task #91 + #92 follow-up).
-const STATUSES = ["draft", "submitted", "approved", "shipped"];
+// Page-wide status set drives filter pill counts in useProjectsTable. Includes
+// all lifecycle states so every project appears somewhere and its count is
+// computed. The narrower BULK_ACTION_STATUSES below feeds the BulkActionBar —
+// in_fulfillment + shipped are SOS-driven via reconcileSOSOrders, not manual
+// actions, and writeProjectAsOwner would 400 on them anyway (#91 + #92 + #95).
+const STATUSES = ["draft", "submitted", "approved", "in_fulfillment", "shipped"];
 const BULK_ACTION_STATUSES = ["draft", "submitted", "approved"];
 const PILL_ITEMS = [
   { key: "all", label: "All" },
   { key: "draft", label: "Draft" },
   { key: "submitted", label: "Submitted" },
   { key: "approved", label: "Approved" },
+  { key: "in_fulfillment", label: "In Fulfillment" },
   { key: "shipped", label: "Shipped" },
 ];
 

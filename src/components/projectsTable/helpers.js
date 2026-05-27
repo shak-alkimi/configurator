@@ -4,13 +4,28 @@ export const STATUS_STYLE = {
   draft: "bg-foreground/10 text-foreground/70",
   submitted: "bg-foreground/15 text-foreground",
   approved: "bg-primary/15 text-primary",
+  // in_fulfillment sits between approved and shipped — SOS-driven, project
+  // is committed but stock is still being assembled / packed.
+  in_fulfillment: "bg-primary/25 text-primary",
   shipped: "bg-foreground text-background",
 };
 
-export const STATUS_ORDER = { draft: 0, submitted: 1, approved: 2, shipped: 3 };
+export const STATUS_ORDER = {
+  draft: 0,
+  submitted: 1,
+  approved: 2,
+  in_fulfillment: 3,
+  shipped: 4,
+};
 
+// Capitalize first letter; turn snake_case into Title Case so "in_fulfillment"
+// renders as "In Fulfillment" rather than "In_fulfillment".
 export function statusLabel(s) {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+  if (!s) return "";
+  return s
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 export function sortRows(rows, key, dir) {

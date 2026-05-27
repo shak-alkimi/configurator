@@ -13,15 +13,19 @@ import {
   statusLabel,
 } from "@/components/projectsTable";
 
-// Page filter set — "shipped" is included here so shipped orders show up in the
-// Orders view. The BulkActionBar gets a narrower list below (no "shipped"),
-// because "shipped" is SOS-driven via reconcileSOSOrders, not a manual action.
-const STATUSES = ["submitted", "approved", "shipped"];
+// Page filter set — includes all post-draft lifecycle states.
+// "in_fulfillment" + "shipped" are SOS-driven via reconcileSOSOrders; the
+// BulkActionBar gets a narrower list below (only the manually-settable
+// states) because writeProjectAsOwner rejects setting SOS-driven statuses.
+// Task #95: added "in_fulfillment" — otherwise open SOS orders that haven't
+// shipped yet vanish from the Orders view between approval and shipment.
+const STATUSES = ["submitted", "approved", "in_fulfillment", "shipped"];
 const BULK_ACTION_STATUSES = ["submitted", "approved"];
 const PILL_ITEMS = [
   { key: "all", label: "All" },
   { key: "submitted", label: "Submitted" },
   { key: "approved", label: "Approved" },
+  { key: "in_fulfillment", label: "In Fulfillment" },
   { key: "shipped", label: "Shipped" },
 ];
 
