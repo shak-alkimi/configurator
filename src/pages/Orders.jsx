@@ -12,14 +12,14 @@ import {
   exportProjectsCsv,
   statusLabel,
 } from "@/components/projectsTable";
+import { ORDER_STATUSES } from "@/components/projectsTable/helpers";
 
-// Page filter set — includes all post-draft lifecycle states.
-// "in_fulfillment" + "shipped" are SOS-driven via reconcileSOSOrders; the
-// BulkActionBar gets a narrower list below (only the manually-settable
-// states) because writeProjectAsOwner rejects setting SOS-driven statuses.
-// Task #95: added "in_fulfillment" — otherwise open SOS orders that haven't
-// shipped yet vanish from the Orders view between approval and shipment.
-const STATUSES = ["submitted", "approved", "in_fulfillment", "shipped"];
+// Page filter alias — imports the canonical lifecycle set from helpers.js so
+// the Orders page and the Dashboard Orders count never drift again (#106
+// follow-up to #95). BulkActionBar uses a narrower set below because
+// in_fulfillment + shipped are SOS-driven via reconcileSOSOrders and would be
+// rejected by writeProjectAsOwner.
+const STATUSES = ORDER_STATUSES;
 const BULK_ACTION_STATUSES = ["submitted", "approved"];
 const PILL_ITEMS = [
   { key: "all", label: "All" },

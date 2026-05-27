@@ -18,6 +18,20 @@ export const STATUS_ORDER = {
   shipped: 4,
 };
 
+// Canonical "what counts as an order" status set. A project is in the order
+// lifecycle once it's left draft and not yet been deleted. Used by:
+//   - src/pages/Orders.jsx page-filter (STATUSES alias)
+//   - src/pages/Dashboard.jsx Orders count
+// Keep these consumers in sync by importing from here instead of redefining.
+// Anything moved to a new lifecycle state must be added here or it will
+// vanish from both the Orders page and the dashboard total.
+export const ORDER_STATUSES = ["submitted", "approved", "in_fulfillment", "shipped"];
+
+// Statuses a rep or admin can MANUALLY set via writeProjectAsOwner.
+// in_fulfillment + shipped are SOS-driven (reconcileSOSOrders) and would be
+// rejected by writeProjectAsOwner allowlist — never include here.
+export const REP_SETTABLE_STATUSES = ["draft", "submitted", "approved"];
+
 // Capitalize first letter; turn snake_case into Title Case so "in_fulfillment"
 // renders as "In Fulfillment" rather than "In_fulfillment".
 export function statusLabel(s) {

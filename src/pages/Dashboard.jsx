@@ -6,6 +6,7 @@ import { base44 } from "@/api/base44Client";
 import { Package, FileText, TrendingUp, Sliders, BookOpen, Boxes, Users } from "lucide-react";
 import PortalShell from "@/components/PortalShell";
 import { useAuth } from "@/lib/AuthContext";
+import { ORDER_STATUSES } from "@/components/projectsTable/helpers";
 
 function useCountUp(target, duration = 1200) {
   const [value, setValue] = useState(0);
@@ -62,7 +63,12 @@ export default function Dashboard() {
 
   const counts = {
     estimates: projects.length,
-    orders: projects.filter(p => p.status === 'submitted' || p.status === 'approved').length,
+    // Orders count uses the same status set as the Orders page (#106 fix —
+    // previously this filter was 'submitted' || 'approved' only, which
+    // undercounted after #95 added 'in_fulfillment' to the lifecycle).
+    // ORDER_STATUSES is the single source of truth — keep both consumers
+    // (this file and src/pages/Orders.jsx) importing from helpers.js.
+    orders: projects.filter(p => ORDER_STATUSES.includes(p.status)).length,
     // Reps card: count non-admin users (the Reps page itself reads from the
     // same source). Project-derived counting hid invited-but-inactive reps.
     reps: isAdmin ? users.filter((u) => u.role !== 'admin').length : 0,
