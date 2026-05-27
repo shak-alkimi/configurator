@@ -140,6 +140,14 @@ Deno.serve(async (req) => {
 
     return Response.json({ ok: true, config: redactedShape('SOS', updated) });
   } catch (error: any) {
-    return err(500, 'internal', error?.message || 'Internal error');
+    // Never echo error.message — after the SOS OAuth refresh succeeds, the
+    // freshly-minted access_token + (optionally rotated) refresh_token live
+    // in the patch object passed to IntegrationConfig.update. A persistence
+    // exception could surface the patch in error.message. Always generic.
+    // (Codex P1 finding 2026-05-27 from #30 audit.)
+    // The explicit sanitized upstream SOS error returns above (502
+    // refresh_failed, 400 missing_field, etc.) remain intact — those don't
+    // touch the new token values.
+    return err(500, 'internal', 'Internal error during token refresh');
   }
 });

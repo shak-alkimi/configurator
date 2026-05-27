@@ -39,7 +39,7 @@
     },
     "client_id": {
       "type": "string",
-      "description": "SECRET (treat as sensitive). OAuth client identifier registered with the external service."
+      "description": "NOT a secret per OAuth 2.0 (RFC 6749 §2.3.1) — the client_id is a public identifier for the OAuth app, paired with the confidential client_secret. Safe to return in admin-side responses via getIntegrationConfigRedacted; rendered in full in the Settings UI so admins can verify which OAuth app is connected. Classification reconciled with AGENTS.md 2026-05-27 (Codex P2 finding from #30 audit). Still admin-only at the entity RLS layer — reps have no read access regardless."
     },
     "client_secret": {
       "type": "string",

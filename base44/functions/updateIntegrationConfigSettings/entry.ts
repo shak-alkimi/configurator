@@ -164,7 +164,11 @@ Deno.serve(async (req) => {
 
     return Response.json({ ok: true, config: redactedShape(service, result) });
   } catch (error: any) {
-    // Generic error — never leak token-shaped data even in the error path.
-    return err(500, 'internal', error?.message || 'Internal error');
+    // Never echo error.message — the patch carried token-bearing values, and
+    // an SDK exception could include the request payload or field excerpts.
+    // Even a "sanitized" error message is one regression away from being a
+    // leak surface. Always generic for this function's outer catch.
+    // (Codex P1 finding 2026-05-27 from #30 audit.)
+    return err(500, 'internal', 'Internal error while saving settings');
   }
 });
