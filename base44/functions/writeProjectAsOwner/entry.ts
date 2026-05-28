@@ -197,6 +197,34 @@ Deno.serve(async (req) => {
         `status '${patch.status}' is not settable here. in_fulfillment and shipped are SOS-driven via reconcileSOSOrders.`);
     }
 
+    // --- #116 linkage gate ---
+    // Reject status transitions to 'submitted' or 'approved' when the
+    // resulting project would have an empty opus_customer_id. Applies to
+    // BOTH rep and admin paths (defense in depth — pre-blocks #43 push
+    // from inheriting unlinked state). For 'update' op, we must read the
+    // existing row to know the linkage if the patch doesn't carry it.
+    // For 'create' op, we only check the patch (no existing row).
+    // Note: 'draft' is the unguarded state; admin can unlink at any time
+    // — the gate fires the next time they try to move past draft.
+    if (patch.status === 'submitted' || patch.status === 'approved') {
+      let effectiveOpusCustomerId = null;
+      if ('opus_customer_id' in patch) {
+        effectiveOpusCustomerId = patch.opus_customer_id;
+      } else if (op === 'update') {
+        // Read existing — we need to know if the row is already linked.
+        // Project.get throws on missing; treat that as no-link to surface
+        // a clean 400 rather than crashing.
+        const existing = await base44.asServiceRole.entities.Project.get(projectId).catch(() => null);
+        effectiveOpusCustomerId = existing?.opus_customer_id || null;
+      }
+      const linked = typeof effectiveOpusCustomerId === 'string' && effectiveOpusCustomerId.trim() !== '';
+      if (!linked) {
+        return err(400, 'requires_customer_linkage',
+          `Cannot set status='${patch.status}' on a Project without opus_customer_id. ` +
+          `An admin must link a Customer record first.`);
+      }
+    }
+
     // drivers structure validation
     const dv = validateDrivers(patch.drivers);
     if (!dv.ok) {

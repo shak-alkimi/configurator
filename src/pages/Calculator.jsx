@@ -29,6 +29,7 @@ import {
 
 
 import ProjectForm, { isValidCity } from "../components/calculator/ProjectForm";
+import { useAuth } from "@/lib/AuthContext";
 import TapeRunList from "../components/calculator/TapeRunList";
 import MaterialsCalculator from "../components/calculator/MaterialsCalculator";
 import { calculateTotalPrice } from "../components/calculator/calculations";
@@ -40,6 +41,7 @@ const EMPTY_PROJECT_DATA = Object.freeze({
   customer_name: '',
   customer_email: '',
   customer_phone: '',
+  opus_customer_id: '',
   street: '',
   city: '',
   state: '',
@@ -50,6 +52,7 @@ const EMPTY_PROJECT_DATA = Object.freeze({
 });
 
 export default function Calculator() {
+  const { isAdmin } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedProjectId = searchParams.get('project') || null;
   const setSelectedProjectId = (id) => {
@@ -112,6 +115,21 @@ export default function Calculator() {
     enabled: !!selectedProjectId,
   });
 
+  // Fetch the linked Customer entity when opus_customer_id is set (#116).
+  // Used by ProjectForm to render read-only cache values for the linked
+  // Customer (canonical source of truth). Customer RLS is admin-only so
+  // this query will return null for non-admin users — that's fine; reps
+  // still see the rep cache fields they wrote to projectData.
+  const linkedCustomerId = projectData.opus_customer_id || null;
+  const { data: linkedCustomer = null } = useQuery({
+    queryKey: ['customer', linkedCustomerId],
+    queryFn: async () => {
+      if (!linkedCustomerId) return null;
+      return await base44.entities.Customer.get(linkedCustomerId).catch(() => null);
+    },
+    enabled: !!linkedCustomerId && isAdmin,
+  });
+
   // Create/Update project mutation.
   // Routes through writeProjectAsOwner (task #91) because Project.create/update
   // RLS is admin-only at the entity level — reps can't call the SDK directly
@@ -126,8 +144,11 @@ export default function Calculator() {
     mutationFn: async (data) => {
       // Opus-owned fields that can flow through writeProjectAsOwner.
       // NB: status is conditionally included below — see #96.
+      // opus_customer_id (#115/#116) is admin-only on the server; the picker
+      // writes it into projectData only for admin users, so including it in
+      // this allowlist is safe — rep submissions never have it set.
       const PATCH_KEYS = ['project_name','customer_name','customer_email','customer_phone',
-        'street','city','state','sector','notes','drivers'];
+        'street','city','state','sector','notes','drivers','opus_customer_id'];
       const patch = Object.fromEntries(
         PATCH_KEYS.filter(k => data?.[k] !== undefined).map(k => [k, data[k]])
       );
@@ -490,6 +511,14 @@ export default function Calculator() {
       toast.error('City must start with a letter (letters, spaces, hyphens, apostrophes, periods only)');
       return;
     }
+    // #116 client-side linkage gate. Server-side gate in writeProjectAsOwner
+    // is the durable boundary; this is the friendly UX message.
+    if (!projectData.opus_customer_id) {
+      toast.error(isAdmin
+        ? 'Link a Customer before submitting (use the picker in the form).'
+        : 'This project must be linked to a Customer by an admin before it can be submitted.');
+      return;
+    }
     const emptyDrivers = (projectData.drivers || []).filter(d => !tapeRuns.some(r => r.driver_group === d.name));
     if (emptyDrivers.length > 0) {
       setEmptyDriversPrompt(emptyDrivers);
@@ -617,6 +646,17 @@ export default function Calculator() {
               onDelete={handleDeleteProject}
               onExportPDF={handleExportPDF}
               onExportCSV={handleExportCSV}
+              // #116: role + linked-customer + submit gate.
+              isAdmin={isAdmin}
+              linkedCustomer={linkedCustomer}
+              canSubmit={!!projectData.opus_customer_id}
+              submitDisabledReason={
+                projectData.opus_customer_id
+                  ? null
+                  : (isAdmin
+                      ? 'Link a Customer before submitting.'
+                      : 'Admin must link a Customer before this project can be submitted.')
+              }
             />
 
             <Card
@@ -728,6 +768,11 @@ function DetailsHeader({
   onDelete,
   onExportPDF,
   onExportCSV,
+  // #116 additions: role + linked-customer + submit gate.
+  isAdmin = false,
+  linkedCustomer = null,
+  canSubmit = true,
+  submitDisabledReason = null,
 }) {
   const customerLine =
     project.customer_name && project.customer_name !== '—' ? project.customer_name : null;
@@ -845,6 +890,8 @@ function DetailsHeader({
               onClick={onSubmit}
               data-testid="project-submit"
               className="h-9 gap-1.5"
+              disabled={!canSubmit}
+              title={!canSubmit ? (submitDisabledReason || 'Submit unavailable') : undefined}
             >
               <Send className="h-3.5 w-3.5" aria-hidden="true" />
               Submit
@@ -877,7 +924,12 @@ function DetailsHeader({
 
       {expanded && (
         <div ref={detailsFormRef} className="border-t border-border px-6 py-6">
-          <ProjectForm project={project} onChange={onChange} />
+          <ProjectForm
+            project={project}
+            onChange={onChange}
+            isAdmin={isAdmin}
+            linkedCustomer={linkedCustomer}
+          />
         </div>
       )}
     </Card>

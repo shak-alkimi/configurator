@@ -2,6 +2,9 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, Link2 } from "lucide-react";
+import CustomerPicker from "./CustomerPicker";
 
 // City must start with a letter; thereafter allow letters, spaces, hyphens, apostrophes, periods.
 // Handles real names like Winston-Salem, Coeur d'Alene, St. Louis.
@@ -12,7 +15,14 @@ export function isValidCity(value) {
   return CITY_PATTERN.test(value.trim());
 }
 
-export default function ProjectForm({ project, onChange }) {
+// ProjectForm props (per #116):
+//   - project: current project state (includes opus_customer_id and cache fields)
+//   - onChange: setter for project state
+//   - isAdmin: boolean — admin sees the CustomerPicker; reps don't
+//   - linkedCustomer: resolved Customer entity (or null) — caller (Calculator)
+//     fetches this when project.opus_customer_id is set, so the form can render
+//     read-only cache values from the canonical Customer record.
+export default function ProjectForm({ project, onChange, isAdmin = false, linkedCustomer = null }) {
   const cityError = project.city && !isValidCity(project.city);
   return (
     <div className="space-y-4">
@@ -144,34 +154,111 @@ export default function ProjectForm({ project, onChange }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-4 space-y-2">
-          <Label htmlFor="customer_name">Customer</Label>
-          <Input
-            id="customer_name"
-            value={project.customer_name || ''}
-            onChange={(e) => onChange({ ...project, customer_name: e.target.value })}
-          />
+      {/* Customer region — #116. Three states:
+            (a) admin: CustomerPicker visible. Picking writes opus_customer_id +
+                populates cache fields. Once linked, cache fields are read-only.
+            (b) rep + linked: read-only cache display (canonical Customer is
+                source of truth).
+            (c) rep + unlinked: legacy free-text inputs preserved (rep can
+                still capture lead info on a draft) + amber notice that an
+                admin must link before submit. */}
+      {isAdmin ? (
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <Label>Customer (linked)</Label>
+            <CustomerPicker
+              value={project.opus_customer_id || ''}
+              linkedCustomer={linkedCustomer}
+              onPick={(customer) => onChange({
+                ...project,
+                opus_customer_id: customer.id,
+                // Populate cache fields from the canonical Customer entity.
+                // Project addresses (street/city/state) intentionally NOT
+                // touched — those are install-site, distinct from Customer
+                // billing/shipping address. Address sync is out of scope for #116.
+                customer_name: customer.name || '',
+                customer_email: customer.email || '',
+                customer_phone: customer.phone || '',
+              })}
+              onClear={() => onChange({
+                ...project,
+                opus_customer_id: '',
+                // Leave cache fields alone on clear — admin may want to keep
+                // captured info while re-linking to a different Customer.
+              })}
+            />
+          </div>
+          {linkedCustomer ? (
+            <div className="grid grid-cols-12 gap-4">
+              <div className="col-span-4 space-y-2">
+                <Label className="text-muted-foreground">Email (from Customer)</Label>
+                <Input value={project.customer_email || ''} readOnly disabled />
+              </div>
+              <div className="col-span-4 space-y-2">
+                <Label className="text-muted-foreground">Phone (from Customer)</Label>
+                <Input value={project.customer_phone || ''} readOnly disabled />
+              </div>
+            </div>
+          ) : null}
         </div>
-        <div className="col-span-4 space-y-2">
-          <Label htmlFor="customer_email">Email</Label>
-          <Input
-            id="customer_email"
-            type="email"
-            value={project.customer_email || ''}
-            onChange={(e) => onChange({ ...project, customer_email: e.target.value })}
-          />
+      ) : linkedCustomer ? (
+        /* Rep view, linked: read-only cache display. */
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-4 space-y-2">
+            <Label className="text-muted-foreground flex items-center gap-1">
+              <Link2 className="h-3 w-3" /> Customer (linked)
+            </Label>
+            <Input value={project.customer_name || ''} readOnly disabled />
+          </div>
+          <div className="col-span-4 space-y-2">
+            <Label className="text-muted-foreground">Email</Label>
+            <Input value={project.customer_email || ''} readOnly disabled />
+          </div>
+          <div className="col-span-4 space-y-2">
+            <Label className="text-muted-foreground">Phone</Label>
+            <Input value={project.customer_phone || ''} readOnly disabled />
+          </div>
         </div>
-        <div className="col-span-4 space-y-2">
-          <Label htmlFor="customer_phone">Phone</Label>
-          <Input
-            id="customer_phone"
-            type="tel"
-            value={project.customer_phone || ''}
-            onChange={(e) => onChange({ ...project, customer_phone: e.target.value })}
-          />
+      ) : (
+        /* Rep view, unlinked: legacy free-text inputs + linkage notice. */
+        <div className="space-y-3">
+          <Alert variant="default" className="border-amber-500/40 bg-amber-50/30">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-sm">
+              This project isn't linked to a customer record yet. You can capture lead info below,
+              but an admin must link a Customer before this project can be submitted.
+            </AlertDescription>
+          </Alert>
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-4 space-y-2">
+              <Label htmlFor="customer_name">Customer</Label>
+              <Input
+                id="customer_name"
+                value={project.customer_name || ''}
+                onChange={(e) => onChange({ ...project, customer_name: e.target.value })}
+              />
+            </div>
+            <div className="col-span-4 space-y-2">
+              <Label htmlFor="customer_email">Email</Label>
+              <Input
+                id="customer_email"
+                type="email"
+                value={project.customer_email || ''}
+                onChange={(e) => onChange({ ...project, customer_email: e.target.value })}
+              />
+            </div>
+            <div className="col-span-4 space-y-2">
+              <Label htmlFor="customer_phone">Phone</Label>
+              <Input
+                id="customer_phone"
+                type="tel"
+                value={project.customer_phone || ''}
+                onChange={(e) => onChange({ ...project, customer_phone: e.target.value })}
+              />
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
     </div>
   );
