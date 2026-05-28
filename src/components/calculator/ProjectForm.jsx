@@ -15,14 +15,22 @@ export function isValidCity(value) {
   return CITY_PATTERN.test(value.trim());
 }
 
-// ProjectForm props (per #116):
+// ProjectForm props (per #116, P1 fix from Codex audit applied):
 //   - project: current project state (includes opus_customer_id and cache fields)
 //   - onChange: setter for project state
 //   - isAdmin: boolean — admin sees the CustomerPicker; reps don't
-//   - linkedCustomer: resolved Customer entity (or null) — caller (Calculator)
-//     fetches this when project.opus_customer_id is set, so the form can render
-//     read-only cache values from the canonical Customer record.
+//   - linkedCustomer: optional resolved Customer entity (or null). Caller fetches
+//     this only when role permits (Customer RLS is admin-only). For reps the
+//     value is always null even on linked projects — that's intentional, and
+//     the linked/unlinked branch below MUST NOT depend on this prop. Instead,
+//     branch on project.opus_customer_id which is always present on the row.
+//     linkedCustomer is used only as admin-side enrichment (rich picker label).
 export default function ProjectForm({ project, onChange, isAdmin = false, linkedCustomer = null }) {
+  // P1 fix from #116 Codex audit: linkage detection must NOT depend on
+  // linkedCustomer (admin-only). Use the persisted FK directly so reps on
+  // a linked project see the read-only branch, not the unlinked legacy form.
+  const isLinked = typeof project.opus_customer_id === 'string'
+    && project.opus_customer_id.trim() !== '';
   const cityError = project.city && !isValidCity(project.city);
   return (
     <div className="space-y-4">
@@ -188,7 +196,7 @@ export default function ProjectForm({ project, onChange, isAdmin = false, linked
               })}
             />
           </div>
-          {linkedCustomer ? (
+          {isLinked ? (
             <div className="grid grid-cols-12 gap-4">
               <div className="col-span-4 space-y-2">
                 <Label className="text-muted-foreground">Email (from Customer)</Label>
@@ -201,8 +209,11 @@ export default function ProjectForm({ project, onChange, isAdmin = false, linked
             </div>
           ) : null}
         </div>
-      ) : linkedCustomer ? (
-        /* Rep view, linked: read-only cache display. */
+      ) : isLinked ? (
+        /* Rep view, linked: read-only cache display. Uses project's own
+           cached customer fields — reps don't read the Customer entity
+           directly (RLS), but the linkage and cached identity still flow
+           through Project. */
         <div className="grid grid-cols-12 gap-4">
           <div className="col-span-4 space-y-2">
             <Label className="text-muted-foreground flex items-center gap-1">

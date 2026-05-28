@@ -144,11 +144,18 @@ export default function Calculator() {
     mutationFn: async (data) => {
       // Opus-owned fields that can flow through writeProjectAsOwner.
       // NB: status is conditionally included below — see #96.
-      // opus_customer_id (#115/#116) is admin-only on the server; the picker
-      // writes it into projectData only for admin users, so including it in
-      // this allowlist is safe — rep submissions never have it set.
-      const PATCH_KEYS = ['project_name','customer_name','customer_email','customer_phone',
-        'street','city','state','sector','notes','drivers','opus_customer_id'];
+      // opus_customer_id (#115/#116) is admin-only on the server. P1 fix from
+      // Codex audit of #116: previously this allowlist unconditionally
+      // included opus_customer_id, so any rep save on an already-linked
+      // project would round-trip the field and hit the admin-only 403 gate
+      // in writeProjectAsOwner — making linked projects unsaveable/
+      // unsubmittable for reps. Fix: only admins include the field in the
+      // outbound patch. Server gate remains as the durable boundary.
+      const BASE_PATCH_KEYS = ['project_name','customer_name','customer_email','customer_phone',
+        'street','city','state','sector','notes','drivers'];
+      const PATCH_KEYS = isAdmin
+        ? [...BASE_PATCH_KEYS, 'opus_customer_id']
+        : BASE_PATCH_KEYS;
       const patch = Object.fromEntries(
         PATCH_KEYS.filter(k => data?.[k] !== undefined).map(k => [k, data[k]])
       );
