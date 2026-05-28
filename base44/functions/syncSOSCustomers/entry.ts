@@ -435,6 +435,14 @@ Deno.serve(async (req) => {
       if (res.status !== 200) {
         throw new Error(sanitizeSOSError('SOS customer sweep failed', res.status));
       }
+      // #114: also reject envelope-level errors even on HTTP 200 — without
+      // this a 200-with-error response would produce an empty `data` array
+      // and silently advance the cursor past a window we never actually
+      // synced. Spike-validated set: 'error' | 'invalid' | 'failed'.
+      const envelopeStatus = res.bodyJson?.status;
+      if (envelopeStatus === 'error' || envelopeStatus === 'invalid' || envelopeStatus === 'failed') {
+        throw new Error(sanitizeSOSError('SOS customer sweep rejected', res.status));
+      }
       const data = Array.isArray(res.bodyJson?.data) ? res.bodyJson.data : [];
       const count = typeof res.bodyJson?.count === 'number' ? res.bodyJson.count : data.length;
       const totalCount = typeof res.bodyJson?.totalCount === 'number' ? res.bodyJson.totalCount : null;

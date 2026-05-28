@@ -131,6 +131,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'SOS API error', details: data }, { status: response.status });
     }
 
+    // #114: also reject envelope-level errors even on HTTP 200 — SOS can
+    // return 200 with { status: 'error' | 'invalid' | 'failed', data: null,
+    // message: '...' }. Without this check the function previously returned
+    // { success: true, salesOrder: <error envelope> }, masking a real
+    // upstream rejection. Spike-validated set from #42.
+    const envelopeStatus = data?.status;
+    if (envelopeStatus === 'error' || envelopeStatus === 'invalid' || envelopeStatus === 'failed') {
+      return Response.json({ error: 'SOS API rejected the request', details: data }, { status: 502 });
+    }
+
     return Response.json({ success: true, salesOrder: data });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

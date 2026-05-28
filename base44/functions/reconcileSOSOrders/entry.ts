@@ -75,6 +75,15 @@ async function syncProjectFromSOS(base44, project, getToken, onUnauthorized) {
   }
 
   const json = await res.json();
+  // #114: also reject envelope-level errors even on HTTP 200 — SOS can
+  // return 200 with { status: 'error' | 'invalid' | 'failed' } and a null
+  // data payload. Without this check we'd treat the missing data as "no
+  // deltas to apply" and silently no-op the reconcile. Spike-validated
+  // set from #42.
+  const envelopeStatus = json?.status;
+  if (envelopeStatus === 'error' || envelopeStatus === 'invalid' || envelopeStatus === 'failed') {
+    throw new Error(`SOS GET salesorder ${project.sos_order_id} rejected (status=${envelopeStatus})`);
+  }
   const order = json?.data ?? json;
 
   // Map SOS order status to Base44 project status using fuzzy substring match

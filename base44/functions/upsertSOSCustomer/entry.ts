@@ -257,6 +257,13 @@ async function findExistingSOSCustomer(base44, config, opusCustomer) {
   if (email) {
     const path = `/customer?email=${encodeURIComponent(email)}&maxresults=${SEARCH_PAGE_SIZE}`;
     const res = await callSOS(base44, config, 'GET', path);
+    // #114: reject envelope-level errors even on HTTP 200 (per #42 spike —
+    // SOS returns status: 'error' | 'invalid' | 'failed' for validation
+    // and concurrency failures, sometimes with HTTP 200).
+    const envelopeStatus = res.bodyJson?.status;
+    if (envelopeStatus === 'error' || envelopeStatus === 'invalid' || envelopeStatus === 'failed') {
+      throw new Error(sanitizeSOSError('SOS search by email rejected', res.status));
+    }
     if (res.status === 200 && Array.isArray(res.bodyJson?.data)) {
       // Defensive: filter client-side in case SOS silently ignored the email param.
       const matches = res.bodyJson.data.filter((c) =>
@@ -301,6 +308,14 @@ async function findExistingSOSCustomer(base44, config, opusCustomer) {
       const res = await callSOS(base44, config, 'GET', path);
       if (res.status !== 200) {
         throw new Error(sanitizeSOSError('SOS search by name failed', res.status));
+      }
+      // #114: also reject envelope-level errors even on HTTP 200 — without
+      // this a 200-with-error response would produce an empty `data` array,
+      // be treated as "no match", and the caller would create a DUPLICATE
+      // SOS customer. Same shape check as #42's spike-validated set.
+      const envelopeStatus = res.bodyJson?.status;
+      if (envelopeStatus === 'error' || envelopeStatus === 'invalid' || envelopeStatus === 'failed') {
+        throw new Error(sanitizeSOSError('SOS search by name rejected', res.status));
       }
       const data = Array.isArray(res.bodyJson?.data) ? res.bodyJson.data : [];
       const count = typeof res.bodyJson?.count === 'number' ? res.bodyJson.count : data.length;
@@ -353,7 +368,17 @@ async function findExistingSOSCustomer(base44, config, opusCustomer) {
 
 async function createSOSCustomer(base44, config, payload) {
   const res = await callSOS(base44, config, 'POST', '/customer', payload);
-  if (res.status !== 200 || !res.bodyJson || res.bodyJson.status === 'error') {
+  // #114: extend envelope-level error detection from 'error' only to also
+  // cover 'invalid' and 'failed' (per #42 spike — SOS returns these for
+  // name-uniqueness and id-mismatch failures, sometimes with HTTP 200).
+  const envelopeStatus = res.bodyJson?.status;
+  if (
+    res.status !== 200 ||
+    !res.bodyJson ||
+    envelopeStatus === 'error' ||
+    envelopeStatus === 'invalid' ||
+    envelopeStatus === 'failed'
+  ) {
     throw new Error(sanitizeSOSError('SOS customer create failed', res.status));
   }
   // SOS response envelope varies between list and single — for POST the
