@@ -57,6 +57,7 @@ const OPUS_OWNED_UPDATE_KEYS = new Set([
   'notes',
   'status',
   'drivers',
+  'opus_customer_id',
 ]);
 
 // Create accepts everything update accepts PLUS quote_number (one-time set on
@@ -64,6 +65,15 @@ const OPUS_OWNED_UPDATE_KEYS = new Set([
 const OPUS_OWNED_CREATE_KEYS = new Set([
   ...OPUS_OWNED_UPDATE_KEYS,
   'quote_number',
+]);
+
+// Admin-only subset of OPUS_OWNED_*_KEYS (per #115). These keys appear in the
+// allowlist (so 'disallowed_key' doesn't fire), but a separate per-key gate
+// rejects rep writes with 403. Rationale: deterministic Project↔Customer
+// linkage must not be set by reps before the rep-picker policy lands in #116.
+// Pattern is extensible — future admin-only Opus-owned fields just go here.
+const ADMIN_ONLY_OPUS_OWNED_KEYS = new Set([
+  'opus_customer_id',
 ]);
 
 const ALLOWED_STATUS_VALUES = new Set(['draft', 'submitted', 'approved']);
@@ -152,6 +162,35 @@ Deno.serve(async (req) => {
       }
     }
 
+    // --- Admin-only key gate (#115) ---
+    // Computed once and reused below for the update-path ownership check.
+    const isAdmin = user.role === 'admin';
+    for (const key of Object.keys(patch)) {
+      if (ADMIN_ONLY_OPUS_OWNED_KEYS.has(key) && !isAdmin) {
+        return err(403, 'forbidden',
+          `Field '${key}' is admin-only. Rep picker policy is deferred to #116.`);
+      }
+    }
+
+    // --- opus_customer_id existence validation (#115) ---
+    // If admin sets opus_customer_id to a non-empty value, the referenced
+    // Customer must exist. Empty/null clears the linkage (admin can un-link).
+    // Customer.get() works under asServiceRole regardless of RLS — no Customer
+    // RLS expansion required for this validation.
+    if ('opus_customer_id' in patch) {
+      const v = patch.opus_customer_id;
+      if (v !== null && v !== undefined && v !== '') {
+        if (typeof v !== 'string') {
+          return err(400, 'invalid_field', 'opus_customer_id must be a string');
+        }
+        const customer = await base44.asServiceRole.entities.Customer.get(v).catch(() => null);
+        if (!customer) {
+          return err(400, 'invalid_field',
+            `opus_customer_id references unknown Customer '${v}'`);
+        }
+      }
+    }
+
     // status value restriction (only Opus-driven statuses)
     if (patch.status !== undefined && !ALLOWED_STATUS_VALUES.has(patch.status)) {
       return err(400, 'disallowed_status',
@@ -177,7 +216,7 @@ Deno.serve(async (req) => {
       if (!existing) {
         return err(404, 'not_found', 'Project not found');
       }
-      const isAdmin = user.role === 'admin';
+      // isAdmin already computed above for the admin-only key gate (#115).
       const isOwner = existing.created_by && existing.created_by === user.email;
       if (!isAdmin && !isOwner) {
         return err(403, 'forbidden', 'Not authorized to modify this project');

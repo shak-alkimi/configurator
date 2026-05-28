@@ -26,8 +26,9 @@
 //   - fetches the project via service-role and enforces created_by===user.email
 //     OR user.role==='admin' for updates,
 //   - applies a STRICT allowlist of Opus-owned keys (project_name, customer_*,
-//     street/city/state, sector, notes, status, drivers, and quote_number on
-//     create only),
+//     street/city/state, sector, notes, status, drivers, opus_customer_id, and
+//     quote_number on create only); opus_customer_id is admin-only within that
+//     allowlist (per #115),
 //   - restricts status writes to {draft, submitted, approved} — in_fulfillment
 //     and shipped are SOS-driven via reconcileSOSOrders/fetchSOSOrderStatus,
 //   - hard-rejects unknown keys with 400 (no silent drop — hides bugs and
@@ -54,16 +55,29 @@
     },
     "customer_name": {
       "type": "string",
-      "description": "Name of the customer"
+      "description": "Name of the customer. Free-text mirror today; in #116 will become a denormalized cache populated from the linked Customer entity via opus_customer_id."
     },
     "customer_email": {
       "type": "string",
       "format": "email",
-      "description": "Customer email address"
+      "description": "Customer email address. Free-text mirror today; #116 cache from linked Customer."
     },
     "customer_phone": {
       "type": "string",
-      "description": "Customer phone number"
+      "description": "Customer phone number. Free-text mirror today; #116 cache from linked Customer."
+    },
+
+    // --- Customer linkage (added 2026-05-27 by #115; precursor to #43) ---
+    // Deterministic foreign-key reference to the Customer entity. Admin-only
+    // write via writeProjectAsOwner — reps cannot set this field in #115.
+    // (Rep picker policy will be decided in #116.) Server-side validation:
+    // any non-empty value must resolve to an existing Customer via
+    // Customer.get(value). No fuzzy matching, no auto-linking of legacy
+    // rows. Required-non-empty before pushProjectToSOS (#43) will accept
+    // a submit/approve push.
+    "opus_customer_id": {
+      "type": "string",
+      "description": "Linkage (Opus-owned, admin-write). FK to Customer.id. Empty/null on legacy rows; admin must consciously link via writeProjectAsOwner before #43 push. NEVER auto-set by sync code."
     },
     "street": {
       "type": "string",
