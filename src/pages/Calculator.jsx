@@ -144,18 +144,33 @@ export default function Calculator() {
     mutationFn: async (data) => {
       // Opus-owned fields that can flow through writeProjectAsOwner.
       // NB: status is conditionally included below — see #96.
-      // opus_customer_id (#115/#116) is admin-only on the server. P1 fix from
-      // Codex audit of #116: previously this allowlist unconditionally
-      // included opus_customer_id, so any rep save on an already-linked
-      // project would round-trip the field and hit the admin-only 403 gate
-      // in writeProjectAsOwner — making linked projects unsaveable/
-      // unsubmittable for reps. Fix: only admins include the field in the
-      // outbound patch. Server gate remains as the durable boundary.
-      const BASE_PATCH_KEYS = ['project_name','customer_name','customer_email','customer_phone',
-        'street','city','state','sector','notes','drivers'];
-      const PATCH_KEYS = isAdmin
-        ? [...BASE_PATCH_KEYS, 'opus_customer_id']
-        : BASE_PATCH_KEYS;
+      //
+      // Allowlist composition per #115/#116/#117 (follow-on Codex P1):
+      //   - opus_customer_id is admin-only (server enforces; client only
+      //     sends it for admin to avoid 403 on linked-rep saves).
+      //   - customer_name/email/phone are read-only-cache when the project
+      //     is linked (canonical source is the Customer entity, populated
+      //     at admin pick-time). Including them in rep patches on linked
+      //     projects would let a rep's stale projectData silently overwrite
+      //     the cache — Codex flagged this as a divergence path.
+      //     Fix: exclude the cache fields from rep patches on linked
+      //     projects. Admin still includes them so the pick flow can
+      //     write all four (linkage + cache) in one save.
+      //   - For unlinked projects (any role) the cache fields are still
+      //     rep-editable lead-capture fields — included for both roles.
+      const BASE_PATCH_KEYS = ['project_name','street','city','state','sector','notes','drivers'];
+      const CACHE_KEYS = ['customer_name','customer_email','customer_phone'];
+      const isLinked = typeof data?.opus_customer_id === 'string'
+        && data.opus_customer_id.trim() !== '';
+      const PATCH_KEYS = [...BASE_PATCH_KEYS];
+      if (isAdmin || !isLinked) {
+        // Admin: always allowed to write cache (pick flow + cache management).
+        // Rep on unlinked: legacy free-text capture preserved.
+        PATCH_KEYS.push(...CACHE_KEYS);
+      }
+      if (isAdmin) {
+        PATCH_KEYS.push('opus_customer_id');
+      }
       const patch = Object.fromEntries(
         PATCH_KEYS.filter(k => data?.[k] !== undefined).map(k => [k, data[k]])
       );
