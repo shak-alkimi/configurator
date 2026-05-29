@@ -57,7 +57,16 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 const PUSH_ENABLED = true;  // Edit + republish to halt all pushes globally.
 
 const SOS_API_BASE = 'https://api.sosinventory.com/api/v2';
-const STALE_LOCK_THRESHOLD_MS = 5 * 60 * 1000;
+// P1 fix from Codex audit of #43 (commit bc59ec7): extended from 5min to 15min.
+// Reasoning: SOS POSTs typically resolve in seconds, but if a single POST does
+// run >5min (network hiccup, SOS overload), a retry would have treated the
+// still-running lock as stale and issued a second /estimate or /salesorder
+// create — duplicate external record. SOS provides no idempotency key per
+// Spike C, so the only mitigation is to make the stale window practically
+// larger than any plausible POST duration. 15min is generous; combined with
+// the pre-POST race-winner recheck below, the duplicate-create surface is
+// minimized. The proper fix would require SOS-side idempotency support.
+const STALE_LOCK_THRESHOLD_MS = 15 * 60 * 1000;
 
 // Status branching rules.
 const PUSHABLE_STATUSES = new Set(['submitted', 'approved', 'in_fulfillment', 'shipped']);
@@ -208,6 +217,47 @@ async function releasePushLock(base44, projectId, extraPatch) {
   });
 }
 
+// P1 fix from Codex audit of #43: detect whether the cached SOS ID still
+// reflects the current Opus state. If Project.updated_date OR any TapeRun's
+// updated_date is newer than last_sos_sync_at, the cached SOS record is
+// stale — returning *_cached would silently report success while leaving
+// SOS with v1 data.
+//
+// Updating the existing SOS record (PUT /estimate/<id> or PUT /salesorder/<id>)
+// is a meaningful feature add and out of scope for this pass. Until that
+// lands, fail loud: return 409 opus_state_changed_since_push so callers
+// can surface the divergence to admin.
+async function isCachedStateStale(base44, project, projectId) {
+  if (!isNonEmptyString(project.last_sos_sync_at)) {
+    // Never successfully synced; the cached id (if any) is from a state we
+    // can't trust. Treat as stale.
+    return true;
+  }
+  const lastSync = new Date(project.last_sos_sync_at).getTime();
+  if (!Number.isFinite(lastSync)) return true;
+
+  // Project-level edits bump Project.updated_date.
+  if (isNonEmptyString(project.updated_date)) {
+    const projectEdited = new Date(project.updated_date).getTime();
+    if (Number.isFinite(projectEdited) && projectEdited > lastSync) {
+      return true;
+    }
+  }
+
+  // TapeRun-level edits bump TapeRun.updated_date but NOT Project.updated_date,
+  // so we have to check them separately.
+  const runs = await base44.asServiceRole.entities.TapeRun.filter({ project_id: projectId });
+  for (const r of runs) {
+    if (isNonEmptyString(r.updated_date)) {
+      const runEdited = new Date(r.updated_date).getTime();
+      if (Number.isFinite(runEdited) && runEdited > lastSync) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 // ── Main handler ────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -267,7 +317,18 @@ Deno.serve(async (req) => {
     }
 
     // 5. Idempotency pre-check (fast path before lock acquisition).
+    // P1 fix from Codex #43 audit: before returning *_cached, verify the
+    // cached SOS record still reflects current Opus state. If Project or
+    // any TapeRun was edited after last_sos_sync_at, return 409 instead
+    // of silently lying that we're in sync.
     if (status === 'submitted' && isNonEmptyString(project.sos_estimate_id)) {
+      if (await isCachedStateStale(base44, project, projectId)) {
+        return err(409, 'opus_state_changed_since_push',
+          'Project or its TapeRuns have been edited since the last SOS push. ' +
+          'Updating an existing SOS Estimate to match new Opus state is not yet supported — ' +
+          'admin must manually reconcile (revert Opus edits, or update SOS Estimate by hand) ' +
+          'before re-pushing.');
+      }
       return Response.json({
         ok: true,
         action: 'estimate_cached',
@@ -276,6 +337,12 @@ Deno.serve(async (req) => {
       });
     }
     if (status === 'approved' && isNonEmptyString(project.sos_order_id)) {
+      if (await isCachedStateStale(base44, project, projectId)) {
+        return err(409, 'opus_state_changed_since_push',
+          'Project or its TapeRuns have been edited since the last SOS push. ' +
+          'Updating an existing SOS SalesOrder to match new Opus state is not yet supported — ' +
+          'admin must manually reconcile before re-pushing.');
+      }
       return Response.json({
         ok: true,
         action: 'salesorder_cached',
@@ -348,6 +415,31 @@ Deno.serve(async (req) => {
     // 11. Build SOS POST body using the canonical Customer entity (not the
     // project's potentially-stale cache fields).
     const sosBody = buildSOSBody(project, customer, lineItems);
+
+    // P1 fix from Codex audit of #43: pre-POST race-winner recheck. If
+    // another run finished + persisted its sos_id between our lock acquire
+    // and now (possible under the stale-lock recovery path), return cached
+    // instead of POSTing a duplicate. SOS provides no idempotency key per
+    // Spike C — this is the last defense against duplicate external creates.
+    const preFlightFresh = await base44.asServiceRole.entities.Project.get(projectId).catch(() => null);
+    if (status === 'submitted' && isNonEmptyString(preFlightFresh?.sos_estimate_id)) {
+      await releasePushLock(base44, projectId);
+      return Response.json({
+        ok: true,
+        action: 'estimate_cached',
+        sos_estimate_id: preFlightFresh.sos_estimate_id,
+        sos_estimate_number: preFlightFresh.sos_estimate_number || null,
+      });
+    }
+    if (status === 'approved' && isNonEmptyString(preFlightFresh?.sos_order_id)) {
+      await releasePushLock(base44, projectId);
+      return Response.json({
+        ok: true,
+        action: 'salesorder_cached',
+        sos_order_id: preFlightFresh.sos_order_id,
+        sos_order_number: preFlightFresh.sos_order_number || null,
+      });
+    }
 
     // 12. Branch: POST /estimate or POST /salesorder.
     const endpoint = status === 'submitted' ? '/estimate' : '/salesorder';

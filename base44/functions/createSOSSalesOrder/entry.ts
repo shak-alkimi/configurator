@@ -22,7 +22,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 const PUSH_ENABLED = true;  // Edit + republish to halt all pushes globally.
 
 const SOS_API_BASE = 'https://api.sosinventory.com/api/v2';
-const STALE_LOCK_THRESHOLD_MS = 5 * 60 * 1000;
+// P1 fix from Codex audit of #43 (commit bc59ec7): extended from 5min to 15min.
+// See pushProjectToSOS for the full rationale. Keep in lockstep with the
+// canonical handler.
+const STALE_LOCK_THRESHOLD_MS = 15 * 60 * 1000;
 
 const PUSHABLE_STATUSES = new Set(['submitted', 'approved', 'in_fulfillment', 'shipped']);
 const TERMINAL_STATUSES = new Set(['in_fulfillment', 'shipped']);
@@ -180,6 +183,34 @@ async function releasePushLock(base44, projectId, extraPatch) {
   });
 }
 
+// P1 fix from Codex audit of #43 — see pushProjectToSOS for full rationale.
+// Keep this implementation byte-identical to the canonical handler.
+async function isCachedStateStale(base44, project, projectId) {
+  if (!isNonEmptyString(project.last_sos_sync_at)) {
+    return true;
+  }
+  const lastSync = new Date(project.last_sos_sync_at).getTime();
+  if (!Number.isFinite(lastSync)) return true;
+
+  if (isNonEmptyString(project.updated_date)) {
+    const projectEdited = new Date(project.updated_date).getTime();
+    if (Number.isFinite(projectEdited) && projectEdited > lastSync) {
+      return true;
+    }
+  }
+
+  const runs = await base44.asServiceRole.entities.TapeRun.filter({ project_id: projectId });
+  for (const r of runs) {
+    if (isNonEmptyString(r.updated_date)) {
+      const runEdited = new Date(r.updated_date).getTime();
+      if (Number.isFinite(runEdited) && runEdited > lastSync) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 // ── Main handler (verbatim parity with pushProjectToSOS) ───────────────────
 
 Deno.serve(async (req) => {
@@ -232,7 +263,17 @@ Deno.serve(async (req) => {
       }));
     }
 
+    // P1 fix from Codex audit of #43 (mirrors pushProjectToSOS): staleness
+    // check before returning cached. Fails loud rather than silently lying
+    // when Project or TapeRuns were edited after last_sos_sync_at.
     if (status === 'submitted' && isNonEmptyString(project.sos_estimate_id)) {
+      if (await isCachedStateStale(base44, project, projectId)) {
+        return err(409, 'opus_state_changed_since_push',
+          'Project or its TapeRuns have been edited since the last SOS push. ' +
+          'Updating an existing SOS Estimate to match new Opus state is not yet supported — ' +
+          'admin must manually reconcile (revert Opus edits, or update SOS Estimate by hand) ' +
+          'before re-pushing.');
+      }
       return addDeprecationHeader(Response.json({
         ok: true,
         action: 'estimate_cached',
@@ -241,6 +282,12 @@ Deno.serve(async (req) => {
       }));
     }
     if (status === 'approved' && isNonEmptyString(project.sos_order_id)) {
+      if (await isCachedStateStale(base44, project, projectId)) {
+        return err(409, 'opus_state_changed_since_push',
+          'Project or its TapeRuns have been edited since the last SOS push. ' +
+          'Updating an existing SOS SalesOrder to match new Opus state is not yet supported — ' +
+          'admin must manually reconcile before re-pushing.');
+      }
       return addDeprecationHeader(Response.json({
         ok: true,
         action: 'salesorder_cached',
@@ -300,6 +347,29 @@ Deno.serve(async (req) => {
     const runs = await base44.asServiceRole.entities.TapeRun.filter({ project_id: projectId });
     const lineItems = buildLineItems(runs);
     const sosBody = buildSOSBody(project, customer, lineItems);
+
+    // P1 fix from Codex audit of #43 (mirrors pushProjectToSOS): pre-POST
+    // race-winner recheck to prevent duplicate external creates under
+    // stale-lock recovery.
+    const preFlightFresh = await base44.asServiceRole.entities.Project.get(projectId).catch(() => null);
+    if (status === 'submitted' && isNonEmptyString(preFlightFresh?.sos_estimate_id)) {
+      await releasePushLock(base44, projectId);
+      return addDeprecationHeader(Response.json({
+        ok: true,
+        action: 'estimate_cached',
+        sos_estimate_id: preFlightFresh.sos_estimate_id,
+        sos_estimate_number: preFlightFresh.sos_estimate_number || null,
+      }));
+    }
+    if (status === 'approved' && isNonEmptyString(preFlightFresh?.sos_order_id)) {
+      await releasePushLock(base44, projectId);
+      return addDeprecationHeader(Response.json({
+        ok: true,
+        action: 'salesorder_cached',
+        sos_order_id: preFlightFresh.sos_order_id,
+        sos_order_number: preFlightFresh.sos_order_number || null,
+      }));
+    }
 
     const endpoint = status === 'submitted' ? '/estimate' : '/salesorder';
     const res = await callSOS(base44, config, 'POST', endpoint, sosBody);
