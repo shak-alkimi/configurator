@@ -1,16 +1,25 @@
-// Item entity — Read-only SOS Inventory mirror. Phase 4.6 (post-pushProjectToSOS).
+// Item entity — Read-only SOS Inventory mirror. Task #100 (kicked 2026-05-29).
 //
-// STATUS: DESIGN DRAFT (2026-05-25). NOT YET DEPLOYED.
-// Do not call create_entity_schema for this entity until task #100 is in_progress.
-// This .jsonc lands in the repo as the design source-of-truth so future implementers
-// can verify against it; the live schema deploy is gated on the Phase 4.6 kickoff.
+// STATUS: SCHEMA READY FOR DEPLOY (2026-05-29 via #100). Field set + RLS frozen by
+// user decision; deploy this schema to Base44 (Builder UI or schema MCP when
+// available). Sync function (#101) + rep-visible resolver (#102) land separately.
 //
-// SCOPE BOUNDARY (per Codex + user strategy 2026-05-25):
+// SCOPE BOUNDARY (per Codex + user strategy 2026-05-25, reaffirmed 2026-05-29):
 // SOS is the inventory system of record. Opus PULLS only — never edits quantities,
 // prices, or any inventory data. Corrections happen in SOS Inventory's admin UI.
 // This is a pure SOS-mirror entity — no "Opus-owned" or "hybrid" fields like
 // Customer has. Every field below is either SOS-owned (read-only mirror) or sync
 // metadata (set by Opus sync code only).
+//
+// PRICING GUARDRAIL (user decision 2026-05-29):
+//   unit_price / unit_cost are stored as SOS-owned mirror fields ONLY. They do NOT
+//   replace src/components/calculator/constants.jsx — those constants remain the
+//   authoritative source for configurator pricing until and unless an explicit
+//   pricing-migration task lands. #100 ships NO consumer for these fields. No
+//   margin dashboard, no Calculator override, no pricing-conflict surface area
+//   today. unit_cost is admin-only at the function layer (#102 must filter it
+//   out before returning Item rows to reps); leaking unit_cost into any
+//   rep-context response is a P0 audit finding.
 //
 // WHY THIS EXISTS:
 //   - Reps need availability data while quoting in the Configurator ("is this in
@@ -86,11 +95,11 @@
     },
     "description": {
       "type": "string",
-      "description": "SOS-owned. Long-form description. Rep-visible."
+      "description": "SOS-owned. Long-form description. Read-only mirror — never edited from Opus. Rep-visible via getItemForConfigurator (#102). Useful for configurator item-display and dashboard surfaces; safe to ignore if no consumer materializes."
     },
     "category": {
       "type": "string",
-      "description": "SOS-owned. Item category/family. Rep-visible."
+      "description": "SOS-owned. Item category/family. Read-only mirror — never edited from Opus. Rep-visible via getItemForConfigurator (#102). Useful for configurator grouping/filtering and Inventory dashboard card (#105)."
     },
     "quantity_available": {
       "type": "number",
@@ -110,11 +119,11 @@
     },
     "unit_price": {
       "type": "number",
-      "description": "SOS-owned. Default sell price. Rep-visible (reps already see pricing in configurator constants)."
+      "description": "SOS-owned. Default sell price as recorded in SOS. READ-ONLY MIRROR. Does NOT replace src/components/calculator/constants.jsx — configurator pricing remains constants-driven until an explicit pricing-migration task lands. Rep-visible later via getItemForConfigurator (#102) once a display consumer materializes; #100 ships no consumer."
     },
     "unit_cost": {
       "type": "number",
-      "description": "SOS-owned. ADMIN-ONLY. Cost basis for margin calculations. NEVER exposed via getItemForConfigurator. Audit trigger: any code path returning Item to a rep context that includes this field is a P0 finding."
+      "description": "SOS-owned. READ-ONLY MIRROR. ADMIN-ONLY at the function layer: getItemForConfigurator (#102) and any future rep-context endpoint MUST filter this field out before returning Item rows to reps. Cost basis is sensitive — leaking unit_cost into any rep-context response is a P0 audit finding. Does NOT drive any current pricing/margin code; reserved for future admin-only margin dashboard (no consumer today)."
     },
     "active": {
       "type": "boolean",
