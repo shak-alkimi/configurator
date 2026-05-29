@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 // SHA and timestamp are stamped here at deploy time.
 // Update these values whenever a new version is deployed.
-const VERSION_SHA = '4659bd2';
+const VERSION_SHA = 'd394005';
 const VERSION_TS = new Date().toISOString();
 
 Deno.serve(async (req) => {
