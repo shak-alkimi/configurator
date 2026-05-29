@@ -217,59 +217,33 @@ async function releasePushLock(base44, projectId, extraPatch) {
   });
 }
 
-// P1 fix from Codex audit of #43: detect whether the cached SOS ID still
-// reflects the current Opus state. If Project.updated_date OR any TapeRun's
-// updated_date is newer than last_sos_sync_at (beyond tolerance), the
-// cached SOS record is stale — returning *_cached would silently report
-// success while leaving SOS with v1 data.
+// DATA PARITY NOTE (Codex audit of #43, passes 1–3):
 //
-// Updating the existing SOS record (PUT /estimate/<id> or PUT /salesorder/<id>)
-// is a meaningful feature add and out of scope for this pass. Until that
-// lands, fail loud: return 409 opus_state_changed_since_push so callers
-// can surface the divergence to admin.
+// Cached responses below return the previously-persisted SOS id WITHOUT
+// re-verifying that current Opus state matches what SOS holds. A timestamp-
+// based staleness check was attempted across two follow-up fixes (#119)
+// and produced new bugs each iteration — fundamentally because Base44's
+// updated_date bumps on every Project.update including this function's
+// own sync-metadata writes, so timestamp comparison alone cannot reliably
+// distinguish a user edit from the function's own release write or from an
+// edit that lands inside any tolerance window.
 //
-// TOLERANCE rationale (P1 fix from Codex pass 2 on #43): releasePushLock's
-// own Project.update bumps Base44's auto-set updated_date a few ms after
-// the last_sos_sync_at value we recorded. Even with last_sos_sync_at now
-// captured at release time (not lock-acquire time), the two timestamps
-// will differ by a few hundred ms due to client→server latency. Without
-// tolerance the staleness check would fire on the function's OWN sync
-// write, breaking idempotent reuse. 2 seconds is wide enough to absorb
-// realistic clock skew + Base44 internal latency, narrow enough that a
-// genuine user edit (always seconds-to-days after the sync) still trips
-// the check.
-const STALE_TOLERANCE_MS = 2000;
-
-async function isCachedStateStale(base44, project, projectId) {
-  if (!isNonEmptyString(project.last_sos_sync_at)) {
-    // Never successfully synced; the cached id (if any) is from a state we
-    // can't trust. Treat as stale.
-    return true;
-  }
-  const lastSync = new Date(project.last_sos_sync_at).getTime();
-  if (!Number.isFinite(lastSync)) return true;
-
-  // Project-level edits bump Project.updated_date.
-  if (isNonEmptyString(project.updated_date)) {
-    const projectEdited = new Date(project.updated_date).getTime();
-    if (Number.isFinite(projectEdited) && projectEdited - lastSync > STALE_TOLERANCE_MS) {
-      return true;
-    }
-  }
-
-  // TapeRun-level edits bump TapeRun.updated_date but NOT Project.updated_date,
-  // so we have to check them separately.
-  const runs = await base44.asServiceRole.entities.TapeRun.filter({ project_id: projectId });
-  for (const r of runs) {
-    if (isNonEmptyString(r.updated_date)) {
-      const runEdited = new Date(r.updated_date).getTime();
-      if (Number.isFinite(runEdited) && runEdited - lastSync > STALE_TOLERANCE_MS) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
+// The correct fix is content-hash drift detection: SHA-256 the SOS body
+// before POST, persist the hash in two new Project fields
+// (sos_estimate_payload_hash, sos_order_payload_hash), and on cached
+// returns recompute the hash and compare. That requires schema additions
+// via update_entity_schema MCP, which is currently unavailable. Filed as
+// a follow-up — see task list.
+//
+// Until that lands, cached responses surface DATA_PARITY_NOTE explicitly
+// so callers + admins know the response does not assert content parity
+// between Opus and SOS. Idempotency (no duplicate POST) is still
+// guaranteed via the sos_*_id pre-check.
+const DATA_PARITY_NOTE =
+  'Opus state may have diverged from SOS since the original push. This call ' +
+  'did not verify content parity (no PUT/refresh against the SOS record). ' +
+  'Content-hash drift detection is a deferred follow-up; in the meantime, ' +
+  'use SOS UI / reconcile flow to confirm parity before relying on cached state.';
 
 // ── Main handler ────────────────────────────────────────────────────────────
 
@@ -330,37 +304,27 @@ Deno.serve(async (req) => {
     }
 
     // 5. Idempotency pre-check (fast path before lock acquisition).
-    // P1 fix from Codex #43 audit: before returning *_cached, verify the
-    // cached SOS record still reflects current Opus state. If Project or
-    // any TapeRun was edited after last_sos_sync_at, return 409 instead
-    // of silently lying that we're in sync.
+    // Cached returns are honest about NOT verifying content parity — see
+    // DATA_PARITY_NOTE above for why staleness detection via timestamps
+    // was reverted in favor of the deferred content-hash approach.
     if (status === 'submitted' && isNonEmptyString(project.sos_estimate_id)) {
-      if (await isCachedStateStale(base44, project, projectId)) {
-        return err(409, 'opus_state_changed_since_push',
-          'Project or its TapeRuns have been edited since the last SOS push. ' +
-          'Updating an existing SOS Estimate to match new Opus state is not yet supported — ' +
-          'admin must manually reconcile (revert Opus edits, or update SOS Estimate by hand) ' +
-          'before re-pushing.');
-      }
       return Response.json({
         ok: true,
         action: 'estimate_cached',
         sos_estimate_id: project.sos_estimate_id,
         sos_estimate_number: project.sos_estimate_number || null,
+        data_parity_verified: false,
+        data_parity_note: DATA_PARITY_NOTE,
       });
     }
     if (status === 'approved' && isNonEmptyString(project.sos_order_id)) {
-      if (await isCachedStateStale(base44, project, projectId)) {
-        return err(409, 'opus_state_changed_since_push',
-          'Project or its TapeRuns have been edited since the last SOS push. ' +
-          'Updating an existing SOS SalesOrder to match new Opus state is not yet supported — ' +
-          'admin must manually reconcile before re-pushing.');
-      }
       return Response.json({
         ok: true,
         action: 'salesorder_cached',
         sos_order_id: project.sos_order_id,
         sos_order_number: project.sos_order_number || null,
+        data_parity_verified: false,
+        data_parity_note: DATA_PARITY_NOTE,
       });
     }
 
@@ -407,6 +371,8 @@ Deno.serve(async (req) => {
           action: 'estimate_cached',
           sos_estimate_id: fresh.sos_estimate_id,
           sos_estimate_number: fresh.sos_estimate_number || null,
+          data_parity_verified: false,
+          data_parity_note: DATA_PARITY_NOTE,
         });
       }
       if (status === 'approved' && isNonEmptyString(fresh?.sos_order_id)) {
@@ -415,6 +381,8 @@ Deno.serve(async (req) => {
           action: 'salesorder_cached',
           sos_order_id: fresh.sos_order_id,
           sos_order_number: fresh.sos_order_number || null,
+          data_parity_verified: false,
+          data_parity_note: DATA_PARITY_NOTE,
         });
       }
       return err(409, 'in_progress',
@@ -442,6 +410,8 @@ Deno.serve(async (req) => {
         action: 'estimate_cached',
         sos_estimate_id: preFlightFresh.sos_estimate_id,
         sos_estimate_number: preFlightFresh.sos_estimate_number || null,
+        data_parity_verified: false,
+        data_parity_note: DATA_PARITY_NOTE,
       });
     }
     if (status === 'approved' && isNonEmptyString(preFlightFresh?.sos_order_id)) {
@@ -451,6 +421,8 @@ Deno.serve(async (req) => {
         action: 'salesorder_cached',
         sos_order_id: preFlightFresh.sos_order_id,
         sos_order_number: preFlightFresh.sos_order_number || null,
+        data_parity_verified: false,
+        data_parity_note: DATA_PARITY_NOTE,
       });
     }
 
@@ -483,18 +455,14 @@ Deno.serve(async (req) => {
     }
     const sosNumber = obj?.number ? String(obj.number) : null;
 
-    // P1 fix from Codex pass 2 on #43: capture last_sos_sync_at at RELEASE
-    // time (not lock-acquire time). The Base44 write below also bumps
-    // updated_date — these two timestamps need to be ~simultaneous so the
-    // staleness check doesn't trip on its own sync write. Together with
-    // STALE_TOLERANCE_MS, this closes the false-positive gap.
-    const syncedAtIso = new Date().toISOString();
-
+    // last_sos_sync_at uses nowIso (captured at lock acquire). Its semantic
+    // is "time of last successful push" for admin visibility. It is NOT
+    // used for content-parity comparisons here (see DATA_PARITY_NOTE).
     if (status === 'submitted') {
       const patch = {
         sos_estimate_id: sosId,
         sos_estimate_status_at_push: String(obj?.status || obj?.statusDescription || ''),
-        last_sos_sync_at: syncedAtIso,
+        last_sos_sync_at: nowIso,
         last_sos_sync_error: '',
       };
       if (sosNumber) patch.sos_estimate_number = sosNumber;
@@ -510,7 +478,7 @@ Deno.serve(async (req) => {
     // status === 'approved'
     const patch = {
       sos_order_id: sosId,
-      last_sos_sync_at: syncedAtIso,
+      last_sos_sync_at: nowIso,
       last_sos_sync_error: '',
     };
     if (sosNumber) patch.sos_order_number = sosNumber;

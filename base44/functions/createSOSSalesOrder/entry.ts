@@ -183,39 +183,14 @@ async function releasePushLock(base44, projectId, extraPatch) {
   });
 }
 
-// P1 fix from Codex audit of #43 (pass 1 + 2) — see pushProjectToSOS for
-// full rationale. Keep this implementation byte-identical to the canonical
-// handler. STALE_TOLERANCE_MS absorbs the ms-level drift between
-// last_sos_sync_at (captured at release time) and Base44's auto-set
-// updated_date on the same write, preventing false-stale on the function's
-// own sync write.
-const STALE_TOLERANCE_MS = 2000;
-
-async function isCachedStateStale(base44, project, projectId) {
-  if (!isNonEmptyString(project.last_sos_sync_at)) {
-    return true;
-  }
-  const lastSync = new Date(project.last_sos_sync_at).getTime();
-  if (!Number.isFinite(lastSync)) return true;
-
-  if (isNonEmptyString(project.updated_date)) {
-    const projectEdited = new Date(project.updated_date).getTime();
-    if (Number.isFinite(projectEdited) && projectEdited - lastSync > STALE_TOLERANCE_MS) {
-      return true;
-    }
-  }
-
-  const runs = await base44.asServiceRole.entities.TapeRun.filter({ project_id: projectId });
-  for (const r of runs) {
-    if (isNonEmptyString(r.updated_date)) {
-      const runEdited = new Date(r.updated_date).getTime();
-      if (Number.isFinite(runEdited) && runEdited - lastSync > STALE_TOLERANCE_MS) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
+// DATA PARITY NOTE — see pushProjectToSOS for full rationale. Cached returns
+// surface this note so callers know they aren't asserting content parity.
+// Keep byte-identical with the canonical handler.
+const DATA_PARITY_NOTE =
+  'Opus state may have diverged from SOS since the original push. This call ' +
+  'did not verify content parity (no PUT/refresh against the SOS record). ' +
+  'Content-hash drift detection is a deferred follow-up; in the meantime, ' +
+  'use SOS UI / reconcile flow to confirm parity before relying on cached state.';
 
 // ── Main handler (verbatim parity with pushProjectToSOS) ───────────────────
 
@@ -269,36 +244,26 @@ Deno.serve(async (req) => {
       }));
     }
 
-    // P1 fix from Codex audit of #43 (mirrors pushProjectToSOS): staleness
-    // check before returning cached. Fails loud rather than silently lying
-    // when Project or TapeRuns were edited after last_sos_sync_at.
+    // Cached returns honest about NOT verifying content parity — see
+    // DATA_PARITY_NOTE above. Mirrors pushProjectToSOS.
     if (status === 'submitted' && isNonEmptyString(project.sos_estimate_id)) {
-      if (await isCachedStateStale(base44, project, projectId)) {
-        return err(409, 'opus_state_changed_since_push',
-          'Project or its TapeRuns have been edited since the last SOS push. ' +
-          'Updating an existing SOS Estimate to match new Opus state is not yet supported — ' +
-          'admin must manually reconcile (revert Opus edits, or update SOS Estimate by hand) ' +
-          'before re-pushing.');
-      }
       return addDeprecationHeader(Response.json({
         ok: true,
         action: 'estimate_cached',
         sos_estimate_id: project.sos_estimate_id,
         sos_estimate_number: project.sos_estimate_number || null,
+        data_parity_verified: false,
+        data_parity_note: DATA_PARITY_NOTE,
       }));
     }
     if (status === 'approved' && isNonEmptyString(project.sos_order_id)) {
-      if (await isCachedStateStale(base44, project, projectId)) {
-        return err(409, 'opus_state_changed_since_push',
-          'Project or its TapeRuns have been edited since the last SOS push. ' +
-          'Updating an existing SOS SalesOrder to match new Opus state is not yet supported — ' +
-          'admin must manually reconcile before re-pushing.');
-      }
       return addDeprecationHeader(Response.json({
         ok: true,
         action: 'salesorder_cached',
         sos_order_id: project.sos_order_id,
         sos_order_number: project.sos_order_number || null,
+        data_parity_verified: false,
+        data_parity_note: DATA_PARITY_NOTE,
       }));
     }
 
@@ -336,6 +301,8 @@ Deno.serve(async (req) => {
           action: 'estimate_cached',
           sos_estimate_id: fresh.sos_estimate_id,
           sos_estimate_number: fresh.sos_estimate_number || null,
+          data_parity_verified: false,
+          data_parity_note: DATA_PARITY_NOTE,
         }));
       }
       if (status === 'approved' && isNonEmptyString(fresh?.sos_order_id)) {
@@ -344,6 +311,8 @@ Deno.serve(async (req) => {
           action: 'salesorder_cached',
           sos_order_id: fresh.sos_order_id,
           sos_order_number: fresh.sos_order_number || null,
+          data_parity_verified: false,
+          data_parity_note: DATA_PARITY_NOTE,
         }));
       }
       return err(409, 'in_progress',
@@ -365,6 +334,8 @@ Deno.serve(async (req) => {
         action: 'estimate_cached',
         sos_estimate_id: preFlightFresh.sos_estimate_id,
         sos_estimate_number: preFlightFresh.sos_estimate_number || null,
+        data_parity_verified: false,
+        data_parity_note: DATA_PARITY_NOTE,
       }));
     }
     if (status === 'approved' && isNonEmptyString(preFlightFresh?.sos_order_id)) {
@@ -374,6 +345,8 @@ Deno.serve(async (req) => {
         action: 'salesorder_cached',
         sos_order_id: preFlightFresh.sos_order_id,
         sos_order_number: preFlightFresh.sos_order_number || null,
+        data_parity_verified: false,
+        data_parity_note: DATA_PARITY_NOTE,
       }));
     }
 
@@ -401,17 +374,13 @@ Deno.serve(async (req) => {
     }
     const sosNumber = obj?.number ? String(obj.number) : null;
 
-    // P1 fix from Codex pass 2 on #43 (mirrors pushProjectToSOS): capture
-    // last_sos_sync_at at RELEASE time to keep it ~simultaneous with
-    // Base44's auto-set updated_date, preventing the staleness check from
-    // tripping on the function's own sync write.
-    const syncedAtIso = new Date().toISOString();
-
+    // last_sos_sync_at uses nowIso (admin-visibility only; not used for
+    // content-parity comparison — see DATA_PARITY_NOTE).
     if (status === 'submitted') {
       const patch = {
         sos_estimate_id: sosId,
         sos_estimate_status_at_push: String(obj?.status || obj?.statusDescription || ''),
-        last_sos_sync_at: syncedAtIso,
+        last_sos_sync_at: nowIso,
         last_sos_sync_error: '',
       };
       if (sosNumber) patch.sos_estimate_number = sosNumber;
@@ -426,7 +395,7 @@ Deno.serve(async (req) => {
 
     const patch = {
       sos_order_id: sosId,
-      last_sos_sync_at: syncedAtIso,
+      last_sos_sync_at: nowIso,
       last_sos_sync_error: '',
     };
     if (sosNumber) patch.sos_order_number = sosNumber;
