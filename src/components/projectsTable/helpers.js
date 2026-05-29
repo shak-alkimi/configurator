@@ -32,6 +32,16 @@ export const ORDER_STATUSES = ["submitted", "approved", "in_fulfillment", "shipp
 // rejected by writeProjectAsOwner allowlist — never include here.
 export const REP_SETTABLE_STATUSES = ["draft", "submitted", "approved"];
 
+// Project has a deterministic Customer linkage when opus_customer_id is a
+// non-empty string. Pure data check — does NOT require the Customer entity
+// to be readable (which is admin-only RLS). Reps can call this to know
+// whether a project is in the linked state. (#118)
+export function isProjectLinked(project) {
+  return !!project
+    && typeof project.opus_customer_id === 'string'
+    && project.opus_customer_id.trim() !== '';
+}
+
 // Capitalize first letter; turn snake_case into Title Case so "in_fulfillment"
 // renders as "In Fulfillment" rather than "In_fulfillment".
 export function statusLabel(s) {

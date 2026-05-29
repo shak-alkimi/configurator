@@ -1,7 +1,7 @@
 import { format } from "date-fns";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Link2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { STATUS_STYLE, statusLabel } from "./helpers";
+import { STATUS_STYLE, statusLabel, isProjectLinked } from "./helpers";
 
 export function ProjectsTable({
   rows,
@@ -121,7 +121,7 @@ function ProjectRow({ project: p, selected, onToggle, onOpen, rowTestId, showOwn
         </div>
       </td>
       <td className="px-4 py-3 cursor-pointer text-foreground/70" onClick={onOpen}>
-        {p.customer_name || "—"}
+        <CustomerCell project={p} />
       </td>
       {showTotal && (
         <td className="px-4 py-3 cursor-pointer text-right tabular-nums font-medium" onClick={onOpen}>
@@ -154,5 +154,44 @@ function ProjectRow({ project: p, selected, onToggle, onOpen, rowTestId, showOwn
         {p.updated_date ? format(new Date(p.updated_date), "MMM d, yyyy") : "—"}
       </td>
     </tr>
+  );
+}
+
+// Customer cell with inline linkage indicator (#118). Linked rows show a
+// small chain-link icon with an aria-label; unlinked rows show an amber
+// "Not linked" pill. Indicator is accessible via title/aria, not color-only.
+// Same visual for admin + rep (visibility is operational info; admin gets
+// link actions in the detail drawer, not the table row).
+function CustomerCell({ project }) {
+  const linked = isProjectLinked(project);
+  const customerName = project.customer_name && project.customer_name.trim() ? project.customer_name : null;
+  if (linked) {
+    return (
+      <span className="inline-flex items-center gap-1.5 min-w-0">
+        <Link2
+          className="h-3 w-3 text-foreground/40 shrink-0"
+          aria-label="Linked to a customer record"
+        />
+        <span className="truncate">{customerName || "—"}</span>
+      </span>
+    );
+  }
+  // Unlinked: amber mini-pill next to the name (or in place of "—" if blank).
+  return (
+    <span className="inline-flex items-center gap-2 min-w-0">
+      {customerName ? (
+        <span className="truncate">{customerName}</span>
+      ) : (
+        <span className="text-foreground/40">—</span>
+      )}
+      <span
+        role="status"
+        aria-label="Customer not linked to a Customer record"
+        title="Customer not linked. An admin must link a Customer record before this project can be submitted."
+        className="inline-flex items-center h-5 px-1.5 rounded-[3px] text-[10px] font-medium uppercase tracking-wider border border-amber-500/40 bg-amber-50/40 text-amber-700"
+      >
+        Not linked
+      </span>
+    </span>
   );
 }

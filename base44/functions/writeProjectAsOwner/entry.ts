@@ -204,8 +204,6 @@ Deno.serve(async (req) => {
     // from inheriting unlinked state). For 'update' op, we must read the
     // existing row to know the linkage if the patch doesn't carry it.
     // For 'create' op, we only check the patch (no existing row).
-    // Note: 'draft' is the unguarded state; admin can unlink at any time
-    // — the gate fires the next time they try to move past draft.
     if (patch.status === 'submitted' || patch.status === 'approved') {
       let effectiveOpusCustomerId = null;
       if ('opus_customer_id' in patch) {
@@ -222,6 +220,26 @@ Deno.serve(async (req) => {
         return err(400, 'requires_customer_linkage',
           `Cannot set status='${patch.status}' on a Project without opus_customer_id. ` +
           `An admin must link a Customer record first.`);
+      }
+    }
+
+    // --- #118 unlink-only-on-draft gate ---
+    // Block clearing opus_customer_id on a Project that's past draft.
+    // Once submitted/approved/in_fulfillment/shipped, deterministic Customer
+    // linkage is part of the operational record. To replace a wrong linkage
+    // on a non-draft project, admin must use a Change-customer flow (new
+    // non-empty value) rather than unlink.
+    if (op === 'update'
+        && 'opus_customer_id' in patch
+        && (patch.opus_customer_id === '' || patch.opus_customer_id === null)) {
+      // Read existing to inspect current status. Reuse fetch from above
+      // if it ran, otherwise fetch now.
+      const existing = await base44.asServiceRole.entities.Project.get(projectId).catch(() => null);
+      const currentStatus = existing?.status || 'draft';
+      if (currentStatus !== 'draft') {
+        return err(400, 'cannot_unlink_non_draft',
+          `Cannot unlink Customer on a Project with status='${currentStatus}'. ` +
+          `Use Change customer instead, or revert to draft first.`);
       }
     }
 
