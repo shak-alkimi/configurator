@@ -183,14 +183,17 @@ async function releasePushLock(base44, projectId, extraPatch) {
   });
 }
 
-// DATA PARITY NOTE — see pushProjectToSOS for full rationale. Cached returns
-// surface this note so callers know they aren't asserting content parity.
-// Keep byte-identical with the canonical handler.
-const DATA_PARITY_NOTE =
-  'Opus state may have diverged from SOS since the original push. This call ' +
-  'did not verify content parity (no PUT/refresh against the SOS record). ' +
-  'Content-hash drift detection is a deferred follow-up; in the meantime, ' +
-  'use SOS UI / reconcile flow to confirm parity before relying on cached state.';
+// DATA PARITY POSTURE — FAIL CLOSED. See pushProjectToSOS for full
+// rationale. Cached returns are 409 parity_unverified to prevent callers
+// gating on ok:true from treating a previously-pushed state as a fresh
+// successful push. Keep byte-identical with the canonical handler.
+const PARITY_UNVERIFIED_NOTE =
+  'Project was previously pushed (cached SOS id present). This function ' +
+  'cannot verify current Opus state matches what SOS holds without ' +
+  'content-hash drift detection (deferred follow-up). No duplicate POST ' +
+  'was issued. To force a re-push of current Opus state to SOS, admin ' +
+  'must manually reconcile via the SOS UI or wait for the content-hash ' +
+  'check to ship.';
 
 // ── Main handler (verbatim parity with pushProjectToSOS) ───────────────────
 
@@ -244,27 +247,26 @@ Deno.serve(async (req) => {
       }));
     }
 
-    // Cached returns honest about NOT verifying content parity — see
-    // DATA_PARITY_NOTE above. Mirrors pushProjectToSOS.
+    // FAIL CLOSED on cached returns — mirrors pushProjectToSOS.
     if (status === 'submitted' && isNonEmptyString(project.sos_estimate_id)) {
       return addDeprecationHeader(Response.json({
-        ok: true,
+        ok: false,
+        code: 'parity_unverified',
+        error: PARITY_UNVERIFIED_NOTE,
         action: 'estimate_cached',
         sos_estimate_id: project.sos_estimate_id,
         sos_estimate_number: project.sos_estimate_number || null,
-        data_parity_verified: false,
-        data_parity_note: DATA_PARITY_NOTE,
-      }));
+      }, { status: 409 }));
     }
     if (status === 'approved' && isNonEmptyString(project.sos_order_id)) {
       return addDeprecationHeader(Response.json({
-        ok: true,
+        ok: false,
+        code: 'parity_unverified',
+        error: PARITY_UNVERIFIED_NOTE,
         action: 'salesorder_cached',
         sos_order_id: project.sos_order_id,
         sos_order_number: project.sos_order_number || null,
-        data_parity_verified: false,
-        data_parity_note: DATA_PARITY_NOTE,
-      }));
+      }, { status: 409 }));
     }
 
     if (!isNonEmptyString(project.opus_customer_id)) {
@@ -297,23 +299,23 @@ Deno.serve(async (req) => {
       const fresh = await base44.asServiceRole.entities.Project.get(projectId).catch(() => null);
       if (status === 'submitted' && isNonEmptyString(fresh?.sos_estimate_id)) {
         return addDeprecationHeader(Response.json({
-          ok: true,
+          ok: false,
+          code: 'parity_unverified',
+          error: PARITY_UNVERIFIED_NOTE,
           action: 'estimate_cached',
           sos_estimate_id: fresh.sos_estimate_id,
           sos_estimate_number: fresh.sos_estimate_number || null,
-          data_parity_verified: false,
-          data_parity_note: DATA_PARITY_NOTE,
-        }));
+        }, { status: 409 }));
       }
       if (status === 'approved' && isNonEmptyString(fresh?.sos_order_id)) {
         return addDeprecationHeader(Response.json({
-          ok: true,
+          ok: false,
+          code: 'parity_unverified',
+          error: PARITY_UNVERIFIED_NOTE,
           action: 'salesorder_cached',
           sos_order_id: fresh.sos_order_id,
           sos_order_number: fresh.sos_order_number || null,
-          data_parity_verified: false,
-          data_parity_note: DATA_PARITY_NOTE,
-        }));
+        }, { status: 409 }));
       }
       return err(409, 'in_progress',
         'Push already in progress for this Project; retry shortly');
@@ -330,24 +332,24 @@ Deno.serve(async (req) => {
     if (status === 'submitted' && isNonEmptyString(preFlightFresh?.sos_estimate_id)) {
       await releasePushLock(base44, projectId);
       return addDeprecationHeader(Response.json({
-        ok: true,
+        ok: false,
+        code: 'parity_unverified',
+        error: PARITY_UNVERIFIED_NOTE,
         action: 'estimate_cached',
         sos_estimate_id: preFlightFresh.sos_estimate_id,
         sos_estimate_number: preFlightFresh.sos_estimate_number || null,
-        data_parity_verified: false,
-        data_parity_note: DATA_PARITY_NOTE,
-      }));
+      }, { status: 409 }));
     }
     if (status === 'approved' && isNonEmptyString(preFlightFresh?.sos_order_id)) {
       await releasePushLock(base44, projectId);
       return addDeprecationHeader(Response.json({
-        ok: true,
+        ok: false,
+        code: 'parity_unverified',
+        error: PARITY_UNVERIFIED_NOTE,
         action: 'salesorder_cached',
         sos_order_id: preFlightFresh.sos_order_id,
         sos_order_number: preFlightFresh.sos_order_number || null,
-        data_parity_verified: false,
-        data_parity_note: DATA_PARITY_NOTE,
-      }));
+      }, { status: 409 }));
     }
 
     const endpoint = status === 'submitted' ? '/estimate' : '/salesorder';

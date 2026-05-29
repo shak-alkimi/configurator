@@ -217,33 +217,31 @@ async function releasePushLock(base44, projectId, extraPatch) {
   });
 }
 
-// DATA PARITY NOTE (Codex audit of #43, passes 1–3):
+// DATA PARITY POSTURE — FAIL CLOSED (Codex audit of #43, passes 1–4):
 //
-// Cached responses below return the previously-persisted SOS id WITHOUT
-// re-verifying that current Opus state matches what SOS holds. A timestamp-
-// based staleness check was attempted across two follow-up fixes (#119)
-// and produced new bugs each iteration — fundamentally because Base44's
-// updated_date bumps on every Project.update including this function's
-// own sync-metadata writes, so timestamp comparison alone cannot reliably
-// distinguish a user edit from the function's own release write or from an
-// edit that lands inside any tolerance window.
+// When a Project already has sos_estimate_id/sos_order_id set, this
+// function CANNOT verify that current Opus state matches what SOS holds.
+// Three iterations of timestamp-based staleness detection (#119) each
+// produced new bugs — Base44's updated_date conflates user content
+// writes with this function's own sync-metadata writes, so timestamp
+// comparison cannot reliably distinguish them. The correct fix is
+// content-hash drift detection (SHA-256 of the SOS body persisted in
+// new Project schema fields). That requires update_entity_schema MCP
+// for schema additions and is filed as a deferred follow-up.
 //
-// The correct fix is content-hash drift detection: SHA-256 the SOS body
-// before POST, persist the hash in two new Project fields
-// (sos_estimate_payload_hash, sos_order_payload_hash), and on cached
-// returns recompute the hash and compare. That requires schema additions
-// via update_entity_schema MCP, which is currently unavailable. Filed as
-// a follow-up — see task list.
-//
-// Until that lands, cached responses surface DATA_PARITY_NOTE explicitly
-// so callers + admins know the response does not assert content parity
-// between Opus and SOS. Idempotency (no duplicate POST) is still
-// guaranteed via the sos_*_id pre-check.
-const DATA_PARITY_NOTE =
-  'Opus state may have diverged from SOS since the original push. This call ' +
-  'did not verify content parity (no PUT/refresh against the SOS record). ' +
-  'Content-hash drift detection is a deferred follow-up; in the meantime, ' +
-  'use SOS UI / reconcile flow to confirm parity before relying on cached state.';
+// Until that lands, cached returns FAIL CLOSED: HTTP 409 with
+// ok:false + code='parity_unverified'. Callers / Base44 automations
+// that gate on ok:true will NOT treat the previously-pushed state as
+// a fresh successful push. Idempotency (no duplicate POST) is still
+// guaranteed via the sos_*_id pre-check below — failing closed only
+// prevents falsely signalling success on a state we can't verify.
+const PARITY_UNVERIFIED_NOTE =
+  'Project was previously pushed (cached SOS id present). This function ' +
+  'cannot verify current Opus state matches what SOS holds without ' +
+  'content-hash drift detection (deferred follow-up). No duplicate POST ' +
+  'was issued. To force a re-push of current Opus state to SOS, admin ' +
+  'must manually reconcile via the SOS UI or wait for the content-hash ' +
+  'check to ship.';
 
 // ── Main handler ────────────────────────────────────────────────────────────
 
@@ -304,28 +302,30 @@ Deno.serve(async (req) => {
     }
 
     // 5. Idempotency pre-check (fast path before lock acquisition).
-    // Cached returns are honest about NOT verifying content parity — see
-    // DATA_PARITY_NOTE above for why staleness detection via timestamps
-    // was reverted in favor of the deferred content-hash approach.
+    // FAIL CLOSED on cached returns: callers gating on ok:true won't
+    // mistake "previously pushed" for "just pushed in sync". The cached
+    // sos_*_id values are returned for diagnostic/operational use but
+    // the response is non-success until #120 (content-hash drift check)
+    // can verify current parity. No duplicate POST is issued.
     if (status === 'submitted' && isNonEmptyString(project.sos_estimate_id)) {
       return Response.json({
-        ok: true,
+        ok: false,
+        code: 'parity_unverified',
+        error: PARITY_UNVERIFIED_NOTE,
         action: 'estimate_cached',
         sos_estimate_id: project.sos_estimate_id,
         sos_estimate_number: project.sos_estimate_number || null,
-        data_parity_verified: false,
-        data_parity_note: DATA_PARITY_NOTE,
-      });
+      }, { status: 409 });
     }
     if (status === 'approved' && isNonEmptyString(project.sos_order_id)) {
       return Response.json({
-        ok: true,
+        ok: false,
+        code: 'parity_unverified',
+        error: PARITY_UNVERIFIED_NOTE,
         action: 'salesorder_cached',
         sos_order_id: project.sos_order_id,
         sos_order_number: project.sos_order_number || null,
-        data_parity_verified: false,
-        data_parity_note: DATA_PARITY_NOTE,
-      });
+      }, { status: 409 });
     }
 
     // 6. Deterministic linkage: Project.opus_customer_id must be non-empty.
@@ -362,28 +362,29 @@ Deno.serve(async (req) => {
     const nowIso = new Date().toISOString();
     lockAcquired = await acquirePushLock(base44, projectId, nowIso);
     if (!lockAcquired) {
-      // Re-read project to distinguish "race winner already finished" (return
-      // cached) from "another call still in flight" (409 in_progress).
+      // Re-read project to distinguish "race winner already finished" (still
+      // fail-closed parity_unverified — see DATA PARITY POSTURE) from
+      // "another call still in flight" (409 in_progress).
       const fresh = await base44.asServiceRole.entities.Project.get(projectId).catch(() => null);
       if (status === 'submitted' && isNonEmptyString(fresh?.sos_estimate_id)) {
         return Response.json({
-          ok: true,
+          ok: false,
+          code: 'parity_unverified',
+          error: PARITY_UNVERIFIED_NOTE,
           action: 'estimate_cached',
           sos_estimate_id: fresh.sos_estimate_id,
           sos_estimate_number: fresh.sos_estimate_number || null,
-          data_parity_verified: false,
-          data_parity_note: DATA_PARITY_NOTE,
-        });
+        }, { status: 409 });
       }
       if (status === 'approved' && isNonEmptyString(fresh?.sos_order_id)) {
         return Response.json({
-          ok: true,
+          ok: false,
+          code: 'parity_unverified',
+          error: PARITY_UNVERIFIED_NOTE,
           action: 'salesorder_cached',
           sos_order_id: fresh.sos_order_id,
           sos_order_number: fresh.sos_order_number || null,
-          data_parity_verified: false,
-          data_parity_note: DATA_PARITY_NOTE,
-        });
+        }, { status: 409 });
       }
       return err(409, 'in_progress',
         'Push already in progress for this Project; retry shortly');
@@ -406,24 +407,24 @@ Deno.serve(async (req) => {
     if (status === 'submitted' && isNonEmptyString(preFlightFresh?.sos_estimate_id)) {
       await releasePushLock(base44, projectId);
       return Response.json({
-        ok: true,
+        ok: false,
+        code: 'parity_unverified',
+        error: PARITY_UNVERIFIED_NOTE,
         action: 'estimate_cached',
         sos_estimate_id: preFlightFresh.sos_estimate_id,
         sos_estimate_number: preFlightFresh.sos_estimate_number || null,
-        data_parity_verified: false,
-        data_parity_note: DATA_PARITY_NOTE,
-      });
+      }, { status: 409 });
     }
     if (status === 'approved' && isNonEmptyString(preFlightFresh?.sos_order_id)) {
       await releasePushLock(base44, projectId);
       return Response.json({
-        ok: true,
+        ok: false,
+        code: 'parity_unverified',
+        error: PARITY_UNVERIFIED_NOTE,
         action: 'salesorder_cached',
         sos_order_id: preFlightFresh.sos_order_id,
         sos_order_number: preFlightFresh.sos_order_number || null,
-        data_parity_verified: false,
-        data_parity_note: DATA_PARITY_NOTE,
-      });
+      }, { status: 409 });
     }
 
     // 12. Branch: POST /estimate or POST /salesorder.
