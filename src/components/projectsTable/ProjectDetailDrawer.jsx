@@ -331,7 +331,7 @@ function CustomerPanel({ project, isAdmin }) {
           </span>
         ) : (
           <span
-            className="inline-flex items-center h-5 px-1.5 rounded-[3px] text-[10px] font-medium uppercase tracking-wider border border-amber-500/40 bg-amber-50/40 text-amber-700"
+            className="inline-flex items-center h-5 px-1.5 rounded-[3px] text-[10px] font-medium uppercase tracking-wider border border-foreground/20 bg-foreground/5 text-foreground/70"
             aria-label="Customer not linked to a Customer record"
           >
             Not linked
@@ -399,7 +399,7 @@ function CustomerPanel({ project, isAdmin }) {
       ) : (
         <div className="space-y-3">
           <div className="text-sm text-foreground/60 flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" aria-hidden="true" />
+            <AlertCircle className="h-4 w-4 text-foreground/60 mt-0.5 shrink-0" aria-hidden="true" />
             <span>
               This project isn't linked to a Customer record.
               {isAdmin

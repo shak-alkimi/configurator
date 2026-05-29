@@ -188,7 +188,7 @@ function CustomerCell({ project }) {
         role="status"
         aria-label="Customer not linked to a Customer record"
         title="Customer not linked. An admin must link a Customer record before this project can be submitted."
-        className="inline-flex items-center h-5 px-1.5 rounded-[3px] text-[10px] font-medium uppercase tracking-wider border border-amber-500/40 bg-amber-50/40 text-amber-700"
+        className="inline-flex items-center h-5 px-1.5 rounded-[3px] text-[10px] font-medium uppercase tracking-wider border border-foreground/20 bg-foreground/5 text-foreground/70"
       >
         Not linked
       </span>

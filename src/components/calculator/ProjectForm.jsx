@@ -233,8 +233,8 @@ export default function ProjectForm({ project, onChange, isAdmin = false, linked
       ) : (
         /* Rep view, unlinked: legacy free-text inputs + linkage notice. */
         <div className="space-y-3">
-          <Alert variant="default" className="border-amber-500/40 bg-amber-50/30">
-            <AlertCircle className="h-4 w-4 text-amber-600" />
+          <Alert variant="default" className="border-foreground/20 bg-foreground/5">
+            <AlertCircle className="h-4 w-4 text-foreground/60" />
             <AlertDescription className="text-sm">
               This project isn't linked to a customer record yet. You can capture lead info below,
               but an admin must link a Customer before this project can be submitted.
