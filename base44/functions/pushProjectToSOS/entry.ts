@@ -219,14 +219,27 @@ async function releasePushLock(base44, projectId, extraPatch) {
 
 // P1 fix from Codex audit of #43: detect whether the cached SOS ID still
 // reflects the current Opus state. If Project.updated_date OR any TapeRun's
-// updated_date is newer than last_sos_sync_at, the cached SOS record is
-// stale — returning *_cached would silently report success while leaving
-// SOS with v1 data.
+// updated_date is newer than last_sos_sync_at (beyond tolerance), the
+// cached SOS record is stale — returning *_cached would silently report
+// success while leaving SOS with v1 data.
 //
 // Updating the existing SOS record (PUT /estimate/<id> or PUT /salesorder/<id>)
 // is a meaningful feature add and out of scope for this pass. Until that
 // lands, fail loud: return 409 opus_state_changed_since_push so callers
 // can surface the divergence to admin.
+//
+// TOLERANCE rationale (P1 fix from Codex pass 2 on #43): releasePushLock's
+// own Project.update bumps Base44's auto-set updated_date a few ms after
+// the last_sos_sync_at value we recorded. Even with last_sos_sync_at now
+// captured at release time (not lock-acquire time), the two timestamps
+// will differ by a few hundred ms due to client→server latency. Without
+// tolerance the staleness check would fire on the function's OWN sync
+// write, breaking idempotent reuse. 2 seconds is wide enough to absorb
+// realistic clock skew + Base44 internal latency, narrow enough that a
+// genuine user edit (always seconds-to-days after the sync) still trips
+// the check.
+const STALE_TOLERANCE_MS = 2000;
+
 async function isCachedStateStale(base44, project, projectId) {
   if (!isNonEmptyString(project.last_sos_sync_at)) {
     // Never successfully synced; the cached id (if any) is from a state we
@@ -239,7 +252,7 @@ async function isCachedStateStale(base44, project, projectId) {
   // Project-level edits bump Project.updated_date.
   if (isNonEmptyString(project.updated_date)) {
     const projectEdited = new Date(project.updated_date).getTime();
-    if (Number.isFinite(projectEdited) && projectEdited > lastSync) {
+    if (Number.isFinite(projectEdited) && projectEdited - lastSync > STALE_TOLERANCE_MS) {
       return true;
     }
   }
@@ -250,7 +263,7 @@ async function isCachedStateStale(base44, project, projectId) {
   for (const r of runs) {
     if (isNonEmptyString(r.updated_date)) {
       const runEdited = new Date(r.updated_date).getTime();
-      if (Number.isFinite(runEdited) && runEdited > lastSync) {
+      if (Number.isFinite(runEdited) && runEdited - lastSync > STALE_TOLERANCE_MS) {
         return true;
       }
     }
@@ -470,11 +483,18 @@ Deno.serve(async (req) => {
     }
     const sosNumber = obj?.number ? String(obj.number) : null;
 
+    // P1 fix from Codex pass 2 on #43: capture last_sos_sync_at at RELEASE
+    // time (not lock-acquire time). The Base44 write below also bumps
+    // updated_date — these two timestamps need to be ~simultaneous so the
+    // staleness check doesn't trip on its own sync write. Together with
+    // STALE_TOLERANCE_MS, this closes the false-positive gap.
+    const syncedAtIso = new Date().toISOString();
+
     if (status === 'submitted') {
       const patch = {
         sos_estimate_id: sosId,
         sos_estimate_status_at_push: String(obj?.status || obj?.statusDescription || ''),
-        last_sos_sync_at: nowIso,
+        last_sos_sync_at: syncedAtIso,
         last_sos_sync_error: '',
       };
       if (sosNumber) patch.sos_estimate_number = sosNumber;
@@ -490,7 +510,7 @@ Deno.serve(async (req) => {
     // status === 'approved'
     const patch = {
       sos_order_id: sosId,
-      last_sos_sync_at: nowIso,
+      last_sos_sync_at: syncedAtIso,
       last_sos_sync_error: '',
     };
     if (sosNumber) patch.sos_order_number = sosNumber;

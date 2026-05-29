@@ -183,8 +183,14 @@ async function releasePushLock(base44, projectId, extraPatch) {
   });
 }
 
-// P1 fix from Codex audit of #43 — see pushProjectToSOS for full rationale.
-// Keep this implementation byte-identical to the canonical handler.
+// P1 fix from Codex audit of #43 (pass 1 + 2) — see pushProjectToSOS for
+// full rationale. Keep this implementation byte-identical to the canonical
+// handler. STALE_TOLERANCE_MS absorbs the ms-level drift between
+// last_sos_sync_at (captured at release time) and Base44's auto-set
+// updated_date on the same write, preventing false-stale on the function's
+// own sync write.
+const STALE_TOLERANCE_MS = 2000;
+
 async function isCachedStateStale(base44, project, projectId) {
   if (!isNonEmptyString(project.last_sos_sync_at)) {
     return true;
@@ -194,7 +200,7 @@ async function isCachedStateStale(base44, project, projectId) {
 
   if (isNonEmptyString(project.updated_date)) {
     const projectEdited = new Date(project.updated_date).getTime();
-    if (Number.isFinite(projectEdited) && projectEdited > lastSync) {
+    if (Number.isFinite(projectEdited) && projectEdited - lastSync > STALE_TOLERANCE_MS) {
       return true;
     }
   }
@@ -203,7 +209,7 @@ async function isCachedStateStale(base44, project, projectId) {
   for (const r of runs) {
     if (isNonEmptyString(r.updated_date)) {
       const runEdited = new Date(r.updated_date).getTime();
-      if (Number.isFinite(runEdited) && runEdited > lastSync) {
+      if (Number.isFinite(runEdited) && runEdited - lastSync > STALE_TOLERANCE_MS) {
         return true;
       }
     }
@@ -395,11 +401,17 @@ Deno.serve(async (req) => {
     }
     const sosNumber = obj?.number ? String(obj.number) : null;
 
+    // P1 fix from Codex pass 2 on #43 (mirrors pushProjectToSOS): capture
+    // last_sos_sync_at at RELEASE time to keep it ~simultaneous with
+    // Base44's auto-set updated_date, preventing the staleness check from
+    // tripping on the function's own sync write.
+    const syncedAtIso = new Date().toISOString();
+
     if (status === 'submitted') {
       const patch = {
         sos_estimate_id: sosId,
         sos_estimate_status_at_push: String(obj?.status || obj?.statusDescription || ''),
-        last_sos_sync_at: nowIso,
+        last_sos_sync_at: syncedAtIso,
         last_sos_sync_error: '',
       };
       if (sosNumber) patch.sos_estimate_number = sosNumber;
@@ -414,7 +426,7 @@ Deno.serve(async (req) => {
 
     const patch = {
       sos_order_id: sosId,
-      last_sos_sync_at: nowIso,
+      last_sos_sync_at: syncedAtIso,
       last_sos_sync_error: '',
     };
     if (sosNumber) patch.sos_order_number = sosNumber;
